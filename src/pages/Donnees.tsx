@@ -10,7 +10,7 @@ const sources: SourceDonnee[] = [
   { nom: "Documents budgétaires de l'Assemblée nationale", url: 'https://www.assemblee-nationale.fr/' },
 ];
 
-export function Donnees() {
+export default function Donnees() {
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">Données</h1>
@@ -36,4 +36,3 @@ export function Donnees() {
   );
 }
 
-export default Donnees;

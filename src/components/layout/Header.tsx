@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { Nav } from './Nav';
 
-export function Header() {
+export default function Header() {
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-4">
@@ -15,4 +15,3 @@ export function Header() {
   );
 }
 
-export default Header;

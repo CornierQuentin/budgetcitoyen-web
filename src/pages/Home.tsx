@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 
 import { Card } from '../components/ui/Card';
 
-export function Home() {
+export default function Home() {
   return (
     <div className="space-y-8">
       <section>
@@ -64,4 +64,3 @@ export function Home() {
   );
 }
 
-export default Home;

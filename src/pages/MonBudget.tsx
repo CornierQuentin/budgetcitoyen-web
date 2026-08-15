@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 
 import { Button } from '../components/ui/Button';
 
-export function MonBudget() {
+export default function MonBudget() {
   const [revenuNetMensuel, setRevenuNetMensuel] = useState('');
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -18,17 +18,17 @@ export function MonBudget() {
         <div>
           <label htmlFor="revenu-net-mensuel" className="block text-sm font-medium text-gray-700">
             Revenu net mensuel (€)
+            <input
+              id="revenu-net-mensuel"
+              type="number"
+              min={0}
+              step={1}
+              value={revenuNetMensuel}
+              onChange={(event) => setRevenuNetMensuel(event.target.value)}
+              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+              placeholder="2000"
+            />
           </label>
-          <input
-            id="revenu-net-mensuel"
-            type="number"
-            min={0}
-            step={1}
-            value={revenuNetMensuel}
-            onChange={(event) => setRevenuNetMensuel(event.target.value)}
-            className="mt-1 w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm"
-            placeholder="2000"
-          />
         </div>
 
         <Button type="submit">Calculer</Button>
@@ -37,4 +37,3 @@ export function MonBudget() {
   );
 }
 
-export default MonBudget;

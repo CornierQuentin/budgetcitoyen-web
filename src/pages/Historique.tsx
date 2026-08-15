@@ -5,7 +5,7 @@ import LineChart from '../components/charts/LineChart';
 const ANNEE_MIN = 2010;
 const ANNEE_MAX = new Date().getFullYear();
 
-export function Historique() {
+export default function Historique() {
   const [annee, setAnnee] = useState(ANNEE_MAX);
 
   return (
@@ -32,4 +32,3 @@ export function Historique() {
   );
 }
 
-export default Historique;
