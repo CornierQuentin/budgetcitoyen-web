@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 
-export function Mission() {
+export default function Mission() {
   const { slug } = useParams<{ slug: string }>();
 
   return (
@@ -11,4 +11,3 @@ export function Mission() {
   );
 }
 
-export default Mission;

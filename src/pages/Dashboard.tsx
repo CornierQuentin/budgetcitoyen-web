@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import BudgetTreemap from '../components/charts/BudgetTreemap';
 import DonutChart from '../components/charts/DonutChart';
 
-export function Dashboard() {
+export default function Dashboard() {
   return (
     <div className="space-y-8">
       <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
@@ -18,4 +18,3 @@ export function Dashboard() {
   );
 }
 
-export default Dashboard;

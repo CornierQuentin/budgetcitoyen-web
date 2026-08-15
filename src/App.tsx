@@ -5,7 +5,7 @@ import { router } from './router';
 
 const queryClient = new QueryClient();
 
-export function App() {
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <RouterProvider router={router} />
@@ -13,4 +13,3 @@ export function App() {
   );
 }
 
-export default App;
