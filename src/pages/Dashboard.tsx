@@ -3,7 +3,9 @@ import { Outlet } from 'react-router-dom';
 
 import BudgetTreemap from '../components/charts/BudgetTreemap';
 import DonutChart from '../components/charts/DonutChart';
+import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
+import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useMissions } from '../hooks/useMissions';
 import { useRecettes } from '../hooks/useRecettes';
 import { useFiltersStore } from '../store/useFiltersStore';
@@ -26,6 +28,10 @@ export default function Dashboard() {
 
   const { data: missions } = useMissions(anneeActive);
   const { data: recettes } = useRecettes(anneeActive);
+  // Ni /missions ni /recettes n'exposent de sourceUrl propre : les totaux
+  // agrégés affichés ci-dessous renvoient donc vers la source officielle du
+  // budget de l'année (même donnée d'origine), via /budget/{annee}.
+  const { data: budgetAnnee } = useBudgetAnnee(anneeActive);
 
   const treemapData = (missions ?? []).map((mission) => ({
     slug: mission.slug,
@@ -72,13 +78,21 @@ export default function Dashboard() {
             {missions && missions.length > 0 && (
               <span className="ml-2 font-normal text-gray-500">
                 (total {formatMd(missions.reduce((sum, mission) => sum + mission.montantTotal, 0))})
+                {budgetAnnee && (
+                  <SourceIcon url={budgetAnnee.sourceUrl} label={`missions ${anneeActive}`} />
+                )}
               </span>
             )}
           </h2>
           <BudgetTreemap data={treemapData} />
         </div>
         <div>
-          <h2 className="mb-2 text-sm font-semibold text-gray-700">Recettes par type</h2>
+          <h2 className="mb-2 text-sm font-semibold text-gray-700">
+            Recettes par type
+            {budgetAnnee && (
+              <SourceIcon url={budgetAnnee.sourceUrl} label={`recettes ${anneeActive}`} />
+            )}
+          </h2>
           <DonutChart data={donutData} />
         </div>
       </section>

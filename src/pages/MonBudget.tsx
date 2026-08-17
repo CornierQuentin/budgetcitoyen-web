@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { useBudgetPerso } from '../hooks/useBudgetPerso';
 import { formatEuros, formatPct } from '../utils/format';
 
@@ -91,7 +92,8 @@ export default function MonBudget() {
 
           <section>
             <h2 className="text-lg font-semibold text-gray-900">
-              Répartition par mission (année {budgetPerso.anneeReference})
+              Répartition par <GlossaryTerm term="Mission">mission</GlossaryTerm> (année{' '}
+              {budgetPerso.anneeReference})
             </h2>
             <ul className="mt-3 space-y-1.5">
               {repartitionTriee.map((item) => (
