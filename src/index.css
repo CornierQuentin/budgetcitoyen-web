@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Fond/texte de page global, avec équivalent mode sombre (cf. cahier des
+   charges, section 6.2 : « Mode sombre supporté nativement »). La classe
+   `dark` est posée sur <html> par src/store/useThemeStore.ts, dès le chargement
+   du module (avant le premier rendu) pour éviter tout flash de mauvais thème. */
+body {
+  @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+}

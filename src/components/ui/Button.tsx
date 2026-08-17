@@ -8,8 +8,9 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export function Button({ children, variant = 'primary', className = '', ...rest }: ButtonProps) {
   const base = 'rounded-md px-4 py-2 text-sm font-medium transition-colors';
   const variants: Record<string, string> = {
-    primary: 'bg-blue-800 text-white hover:bg-blue-900',
-    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200',
+    primary: 'bg-blue-800 text-white hover:bg-blue-900 dark:bg-blue-700 dark:hover:bg-blue-600',
+    secondary:
+      'bg-gray-100 text-gray-900 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700',
   };
 
   return (

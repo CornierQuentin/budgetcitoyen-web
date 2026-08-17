@@ -24,7 +24,8 @@ export function SourceIcon({ url, label, className = '' }: SourceIconProps) {
       rel="noopener noreferrer"
       title={accessibleLabel}
       aria-label={accessibleLabel}
-      className={`ml-1 inline-flex align-middle text-gray-400 no-underline hover:text-blue-800 focus:text-blue-800 ${className}`}
+      className={`ml-1 inline-flex align-middle text-gray-400 no-underline hover:text-blue-800
+        focus:text-blue-800 dark:text-gray-500 dark:hover:text-blue-300 dark:focus:text-blue-300 ${className}`}
     >
       <span aria-hidden="true">🔗</span>
     </a>

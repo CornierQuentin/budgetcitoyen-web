@@ -9,6 +9,7 @@ import {
   YAxis,
 } from 'recharts';
 
+import { useThemeStore } from '../../store/useThemeStore';
 import { formatMd } from '../../utils/format';
 
 export interface LineChartDatum {
@@ -34,28 +35,40 @@ const SERIES = [
 ] as const;
 
 export default function LineChart({ data }: LineChartProps) {
+  const estSombre = useThemeStore((state) => state.theme === 'dark');
+
   if (data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-gray-300 text-sm text-gray-500">
+      <div
+        className="flex h-64 items-center justify-center rounded-lg border border-dashed
+          border-gray-300 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400"
+      >
         Aucune donnée à afficher pour cette période.
       </div>
     );
   }
 
+  // Couleurs de grille/axes recalculées pour rester lisibles sur fond sombre
+  // (les teintes claires d'origine, conçues pour un fond blanc, s'effacent
+  // sur bg-gray-900).
+  const gridColor = estSombre ? '#374151' : '#e1e0d9';
+  const axisLineColor = estSombre ? '#4b5563' : '#c3c2b7';
+  const tickColor = estSombre ? '#d1d5db' : '#898781';
+
   return (
-    <div className="h-80 rounded-lg border border-gray-200 bg-white p-4">
+    <div className="h-80 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900">
       <ResponsiveContainer width="100%" height="100%">
         <RechartsLineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-          <CartesianGrid stroke="#e1e0d9" strokeDasharray="0" vertical={false} />
+          <CartesianGrid stroke={gridColor} strokeDasharray="0" vertical={false} />
           <XAxis
             dataKey="annee"
-            stroke="#c3c2b7"
-            tick={{ fill: '#898781', fontSize: 12 }}
+            stroke={axisLineColor}
+            tick={{ fill: tickColor, fontSize: 12 }}
             tickLine={false}
           />
           <YAxis
-            stroke="#c3c2b7"
-            tick={{ fill: '#898781', fontSize: 12 }}
+            stroke={axisLineColor}
+            tick={{ fill: tickColor, fontSize: 12 }}
             tickLine={false}
             tickFormatter={(value: number) => formatMd(value)}
             width={70}
@@ -63,9 +76,15 @@ export default function LineChart({ data }: LineChartProps) {
           <Tooltip
             formatter={(value: number) => formatMd(value)}
             labelFormatter={(label: number) => `Année ${label}`}
-            contentStyle={{ fontSize: 12, borderRadius: 6 }}
+            contentStyle={{
+              fontSize: 12,
+              borderRadius: 6,
+              backgroundColor: estSombre ? '#1f2937' : '#ffffff',
+              borderColor: estSombre ? '#374151' : '#e1e0d9',
+              color: estSombre ? '#f3f4f6' : '#1f2937',
+            }}
           />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Legend wrapperStyle={{ fontSize: 12, color: tickColor }} />
           {SERIES.map((serie) => (
             <Line
               key={serie.key}
@@ -74,7 +93,7 @@ export default function LineChart({ data }: LineChartProps) {
               name={serie.label}
               stroke={serie.color}
               strokeWidth={2}
-              dot={{ r: 4, strokeWidth: 2, stroke: '#fcfcfb' }}
+              dot={{ r: 4, strokeWidth: 2, stroke: estSombre ? '#111827' : '#fcfcfb' }}
               activeDot={{ r: 5 }}
             />
           ))}

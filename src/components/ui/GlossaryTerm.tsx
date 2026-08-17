@@ -38,7 +38,8 @@ export function GlossaryTerm({ term, children, className = '' }: GlossaryTermPro
       <button
         type="button"
         className={`cursor-help border-0 border-b border-dotted border-gray-400 bg-transparent p-0
-          text-inherit outline-none [font:inherit] focus:border-blue-800 ${className}`}
+          text-inherit outline-none [font:inherit] focus:border-blue-800 dark:border-gray-500
+          dark:focus:border-blue-400 ${className}`}
       >
         {children}
       </button>

@@ -19,16 +19,16 @@ export default function Mission() {
 
   if (isLoading) {
     return (
-      <section className="rounded-lg border border-gray-200 p-4">
-        <p className="text-sm text-gray-500">Chargement de la mission…</p>
+      <section className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+        <p className="text-sm text-gray-500 dark:text-gray-400">Chargement de la mission…</p>
       </section>
     );
   }
 
   if (isError || !detail) {
     return (
-      <section className="rounded-lg border border-gray-200 p-4">
-        <p className="text-sm text-gray-500">
+      <section className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Mission introuvable pour « {slug} ».
         </p>
       </section>
@@ -36,10 +36,12 @@ export default function Mission() {
   }
 
   return (
-    <section className="space-y-6 rounded-lg border border-gray-200 p-4">
+    <section className="space-y-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900">{detail.nomOfficiel}</h2>
-        <p className="mt-1 text-sm text-gray-500">
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+          {detail.nomOfficiel}
+        </h2>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Année {detail.annee} — {formatMd(detail.montantTotal)} au total
           {budgetAnnee && (
             <SourceIcon url={budgetAnnee.sourceUrl} label={`mission ${detail.nomOfficiel}`} />
@@ -49,8 +51,10 @@ export default function Mission() {
 
       {historique && historique.length > 1 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-700">Libellé au fil du temps</h3>
-          <ul className="mt-1 space-y-0.5 text-sm text-gray-600">
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Libellé au fil du temps
+          </h3>
+          <ul className="mt-1 space-y-0.5 text-sm text-gray-600 dark:text-gray-300">
             {historique
               .slice()
               .sort((a, b) => a.annee - b.annee)
@@ -64,51 +68,63 @@ export default function Mission() {
       )}
 
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700">
+        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
           <GlossaryTerm term="Programme">Programmes</GlossaryTerm>
         </h3>
         {detail.programmes
           .slice()
           .sort((a, b) => b.montantTotal - a.montantTotal)
           .map((programme) => (
-            <div key={programme.id} className="rounded-md border border-gray-100 p-3">
+            <div
+              key={programme.id}
+              className="rounded-md border border-gray-100 p-3 dark:border-gray-800"
+            >
               <div className="flex items-baseline justify-between gap-4">
-                <p className="font-medium text-gray-900">
+                <p className="font-medium text-gray-900 dark:text-gray-100">
                   {programme.code} — {programme.nom}
                 </p>
-                <p className="whitespace-nowrap text-sm text-gray-600">
+                <p className="whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                   {formatMd(programme.montantTotal)}
                 </p>
               </div>
 
               <div className="mt-2 overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-100 text-xs">
+                <table className="min-w-full divide-y divide-gray-100 text-xs dark:divide-gray-800">
                   <thead>
                     <tr>
-                      <th scope="col" className="px-2 py-1 text-left font-medium text-gray-500">
+                      <th
+                        scope="col"
+                        className="px-2 py-1 text-left font-medium text-gray-500 dark:text-gray-400"
+                      >
                         <GlossaryTerm term="Action">Action</GlossaryTerm>
                       </th>
-                      <th scope="col" className="px-2 py-1 text-right font-medium text-gray-500">
+                      <th
+                        scope="col"
+                        className="px-2 py-1 text-right font-medium text-gray-500 dark:text-gray-400"
+                      >
                         <GlossaryTerm term="AE">AE</GlossaryTerm>
                       </th>
-                      <th scope="col" className="px-2 py-1 text-right font-medium text-gray-500">
+                      <th
+                        scope="col"
+                        className="px-2 py-1 text-right font-medium text-gray-500 dark:text-gray-400"
+                      >
                         <GlossaryTerm term="CP">CP</GlossaryTerm>
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50">
+                  <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
                     {programme.actions
                       .slice()
                       .sort((a, b) => b.cp - a.cp)
                       .map((action) => (
                         <tr key={action.id}>
-                          <td className="px-2 py-1 text-gray-700">
+                          <td className="px-2 py-1 text-gray-700 dark:text-gray-300">
                             {action.code} — {action.nom}
                           </td>
-                          <td className="px-2 py-1 text-right text-gray-600">
+                          <td className="px-2 py-1 text-right text-gray-600 dark:text-gray-300">
                             {formatEuros(action.ae)}
                           </td>
-                          <td className="px-2 py-1 text-right text-gray-600">
+                          <td className="px-2 py-1 text-right text-gray-600 dark:text-gray-300">
                             {formatEuros(action.cp)}
                           </td>
                         </tr>
