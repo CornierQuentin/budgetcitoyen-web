@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { animate } from 'framer-motion';
+import { animate, useReducedMotion } from 'framer-motion';
 
 import { Card } from '../components/ui/Card';
 import { useAnnees } from '../hooks/useAnnees';
@@ -28,15 +28,24 @@ interface AnimatedValueProps {
 // changement de valeur, sans dépendance à un composant supplémentaire.
 function AnimatedValue({ value, format }: AnimatedValueProps) {
   const [display, setDisplay] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // Respecte prefers-reduced-motion : affiche directement la valeur finale
+    // plutôt que d'animer puis de couper court à l'animation (cf. cahier des
+    // charges, section 6.2 : animations "désactivables (prefers-reduced-motion)").
+    if (prefersReducedMotion) {
+      setDisplay(value);
+      return undefined;
+    }
+
     const controls = animate(0, value, {
       duration: 1.2,
       ease: 'easeOut',
       onUpdate: setDisplay,
     });
     return () => controls.stop();
-  }, [value]);
+  }, [value, prefersReducedMotion]);
 
   return <>{format(display)}</>;
 }
