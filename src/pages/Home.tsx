@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { animate } from 'framer-motion';
+import { animate, useReducedMotion } from 'framer-motion';
 
 import { Card } from '../components/ui/Card';
+import { GlossaryTerm } from '../components/ui/GlossaryTerm';
+import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useIndicateur } from '../hooks/useIndicateur';
@@ -28,15 +30,24 @@ interface AnimatedValueProps {
 // changement de valeur, sans dépendance à un composant supplémentaire.
 function AnimatedValue({ value, format }: AnimatedValueProps) {
   const [display, setDisplay] = useState(0);
+  const prefersReducedMotion = useReducedMotion();
 
   useEffect(() => {
+    // Respecte prefers-reduced-motion : affiche directement la valeur finale
+    // plutôt que d'animer puis de couper court à l'animation (cf. cahier des
+    // charges, section 6.2 : animations "désactivables (prefers-reduced-motion)").
+    if (prefersReducedMotion) {
+      setDisplay(value);
+      return undefined;
+    }
+
     const controls = animate(0, value, {
       duration: 1.2,
       ease: 'easeOut',
       onUpdate: setDisplay,
     });
     return () => controls.stop();
-  }, [value]);
+  }, [value, prefersReducedMotion]);
 
   return <>{format(display)}</>;
 }
@@ -73,6 +84,9 @@ export default function Home() {
           </p>
           <p className="mt-1 text-2xl font-bold text-gray-900">
             {budget ? <AnimatedValue value={budget.depensesNettes} format={formatMd} /> : '—'}
+            {budget && (
+              <SourceIcon url={budget.sourceUrl} label={`dépenses ${derniereAnnee}`} />
+            )}
           </p>
         </Card>
         <Card>
@@ -81,17 +95,20 @@ export default function Home() {
           </p>
           <p className="mt-1 text-2xl font-bold text-gray-900">
             {budget ? <AnimatedValue value={budget.recettesNettes} format={formatMd} /> : '—'}
+            {budget && (
+              <SourceIcon url={budget.sourceUrl} label={`recettes ${derniereAnnee}`} />
+            )}
           </p>
         </Card>
         <Card>
           <p className="text-sm text-gray-500">
-            Solde budgétaire {derniereAnnee ? `(${derniereAnnee})` : ''}
+            <GlossaryTerm term="déficit">Solde budgétaire</GlossaryTerm>{' '}
+            {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
           <p className="mt-1 text-2xl font-bold text-gray-900">
-            {budget ? (
-              <AnimatedValue value={-budget.deficit} format={formatMd} />
-            ) : (
-              '—'
+            {budget ? <AnimatedValue value={-budget.deficit} format={formatMd} /> : '—'}
+            {budget && (
+              <SourceIcon url={budget.sourceUrl} label={`déficit ${derniereAnnee}`} />
             )}
           </p>
         </Card>
@@ -104,6 +121,12 @@ export default function Home() {
             <p className="mt-1 text-2xl font-bold text-blue-800">
               <AnimatedValue value={parFrancaisParSeconde} format={parSecondeFormatter.format} />
               <span className="ml-1 text-sm font-normal text-gray-500">/ seconde</span>
+              {(indicateur?.sourcePopulationUrl ?? indicateur?.sourcePibUrl) && (
+                <SourceIcon
+                  url={(indicateur?.sourcePopulationUrl ?? indicateur?.sourcePibUrl) as string}
+                  label={`population ${derniereAnnee}`}
+                />
+              )}
             </p>
           ) : (
             <p className="mt-1 text-sm text-gray-500">

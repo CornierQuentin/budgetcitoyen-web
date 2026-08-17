@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 
 import { Card } from '../components/ui/Card';
+import { GlossaryTerm } from '../components/ui/GlossaryTerm';
+import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
 import { useComparateur } from '../hooks/useComparateur';
 import { formatMd, formatPct } from '../utils/format';
@@ -23,6 +25,16 @@ export default function Comparateur() {
   }, [annees]);
 
   const { data: comparateur } = useComparateur(anneeA, anneeB);
+
+  // Un écart provient de deux sources officielles (une par année comparée) :
+  // on affiche les deux icônes source côte à côte plutôt que d'en choisir
+  // une arbitrairement.
+  const sourcesEcart = comparateur && (
+    <>
+      <SourceIcon url={comparateur.anneeA.sourceUrl} label={`année ${anneeA}`} />
+      <SourceIcon url={comparateur.anneeB.sourceUrl} label={`année ${anneeB}`} />
+    </>
+  );
 
   return (
     <div className="space-y-6">
@@ -73,18 +85,23 @@ export default function Comparateur() {
               <p className="text-sm text-gray-500">Écart de dépenses</p>
               <p className="mt-1 text-xl font-bold text-gray-900">
                 {formatMd(comparateur.ecartDepenses)}
+                {sourcesEcart}
               </p>
             </Card>
             <Card>
               <p className="text-sm text-gray-500">Écart de recettes</p>
               <p className="mt-1 text-xl font-bold text-gray-900">
                 {formatMd(comparateur.ecartRecettes)}
+                {sourcesEcart}
               </p>
             </Card>
             <Card>
-              <p className="text-sm text-gray-500">Écart de déficit</p>
+              <p className="text-sm text-gray-500">
+                Écart de <GlossaryTerm term="déficit">déficit</GlossaryTerm>
+              </p>
               <p className="mt-1 text-xl font-bold text-gray-900">
                 {formatMd(comparateur.ecartDeficit)}
+                {sourcesEcart}
               </p>
             </Card>
           </section>
@@ -92,6 +109,7 @@ export default function Comparateur() {
           <section>
             <h2 className="text-lg font-semibold text-gray-900">
               Missions — {anneeA} vs {anneeB}
+              {sourcesEcart}
             </h2>
             <p className="mt-1 text-sm text-gray-500">
               Triées par écart absolu décroissant : les plus fortes hausses en tête, les plus
@@ -151,6 +169,7 @@ export default function Comparateur() {
           <section>
             <h2 className="text-lg font-semibold text-gray-900">
               Recettes par type — {anneeA} vs {anneeB}
+              {sourcesEcart}
             </h2>
             <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200">
               <table className="min-w-full divide-y divide-gray-200 text-sm">
