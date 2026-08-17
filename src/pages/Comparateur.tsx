@@ -1,11 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
+import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
 import { useComparateur } from '../hooks/useComparateur';
+import { useExportPng } from '../hooks/useExportPng';
+import type { MissionDelta, RecetteDelta } from '../types/domain';
+import { exportCsv } from '../utils/exportCsv';
 import { formatMd, formatPct } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
 
@@ -54,6 +58,46 @@ export default function Comparateur() {
   }, [anneeA, anneeB, searchParams, setSearchParams]);
 
   const { data: comparateur } = useComparateur(anneeA, anneeB);
+
+  const {
+    ref: comparatifRef,
+    exporterPng,
+    enCours: exportPngEnCours,
+  } = useExportPng<HTMLDivElement>();
+
+  const handleExportMissionsCsv = () => {
+    if (!comparateur) return;
+    exportCsv<MissionDelta>(
+      comparateur.missions,
+      `comparateur-missions-${anneeA}-vs-${anneeB}.csv`,
+      [
+        { cle: 'nom', libelle: 'Mission' },
+        { cle: 'montantA', libelle: `Montant ${anneeA} (€)` },
+        { cle: 'montantB', libelle: `Montant ${anneeB} (€)` },
+        { cle: 'deltaAbsolu', libelle: 'Écart (€)' },
+        { cle: 'deltaRelatifPct', libelle: 'Écart (%)' },
+      ],
+    );
+  };
+
+  const handleExportRecettesCsv = () => {
+    if (!comparateur) return;
+    exportCsv<RecetteDelta>(
+      comparateur.recettes,
+      `comparateur-recettes-${anneeA}-vs-${anneeB}.csv`,
+      [
+        { cle: 'type', libelle: 'Type de recette' },
+        { cle: 'montantA', libelle: `Montant ${anneeA} (€)` },
+        { cle: 'montantB', libelle: `Montant ${anneeB} (€)` },
+        { cle: 'deltaAbsolu', libelle: 'Écart (€)' },
+        { cle: 'deltaRelatifPct', libelle: 'Écart (%)' },
+      ],
+    );
+  };
+
+  const handleExportPng = () => {
+    exporterPng(`comparateur-${anneeA}-vs-${anneeB}.png`);
+  };
 
   // Un écart provient de deux sources officielles (une par année comparée) :
   // on affiche les deux icônes source côte à côte plutôt que d'en choisir
@@ -117,191 +161,228 @@ export default function Comparateur() {
 
       {comparateur && (
         <>
-          <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Card>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Écart de dépenses</p>
-              <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
-                {formatMd(comparateur.ecartDepenses)}
-                {sourcesEcart}
-              </p>
-            </Card>
-            <Card>
-              <p className="text-sm text-gray-500 dark:text-gray-400">Écart de recettes</p>
-              <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
-                {formatMd(comparateur.ecartRecettes)}
-                {sourcesEcart}
-              </p>
-            </Card>
-            <Card>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Écart de <GlossaryTerm term="déficit">déficit</GlossaryTerm>
-              </p>
-              <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
-                {formatMd(comparateur.ecartDeficit)}
-                {sourcesEcart}
-              </p>
-            </Card>
-          </section>
+          <div className="flex justify-end">
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={handleExportPng}
+              disabled={exportPngEnCours}
+            >
+              {exportPngEnCours ? 'Export en cours…' : 'Exporter PNG du comparatif'}
+            </Button>
+          </div>
 
-          <section>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Missions — {anneeA} vs {anneeB}
-              {sourcesEcart}
-            </h2>
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Triées par écart absolu décroissant : les plus fortes hausses en tête, les plus fortes
-              baisses en bas.
-            </p>
-            <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-              <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Mission
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      {anneeA}
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      {anneeB}
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Écart
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Écart %
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {comparateur.missions.map((mission) => (
-                    <tr key={mission.slug}>
-                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{mission.nom}</td>
-                      <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                        {formatMd(mission.montantA)}
-                      </td>
-                      <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                        {formatMd(mission.montantB)}
-                      </td>
-                      <td
-                        className={`px-3 py-2 text-right font-medium ${
-                          mission.deltaAbsolu >= 0
-                            ? 'text-red-700 dark:text-red-400'
-                            : 'text-green-700 dark:text-green-400'
-                        }`}
+          <div ref={comparatifRef} className="space-y-6 bg-white p-1 dark:bg-gray-900">
+            <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <Card>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Écart de dépenses</p>
+                <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {formatMd(comparateur.ecartDepenses)}
+                  {sourcesEcart}
+                </p>
+              </Card>
+              <Card>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Écart de recettes</p>
+                <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {formatMd(comparateur.ecartRecettes)}
+                  {sourcesEcart}
+                </p>
+              </Card>
+              <Card>
+                <p className="text-sm text-gray-500 dark:text-gray-400">
+                  Écart de <GlossaryTerm term="déficit">déficit</GlossaryTerm>
+                </p>
+                <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
+                  {formatMd(comparateur.ecartDeficit)}
+                  {sourcesEcart}
+                </p>
+              </Card>
+            </section>
+
+            <section>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Missions — {anneeA} vs {anneeB}
+                  {sourcesEcart}
+                </h2>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="px-3 py-1 text-xs"
+                  onClick={handleExportMissionsCsv}
+                >
+                  Exporter CSV
+                </Button>
+              </div>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                Triées par écart absolu décroissant : les plus fortes hausses en tête, les plus
+                fortes baisses en bas.
+              </p>
+              <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
                       >
-                        {mission.deltaAbsolu >= 0 ? '+' : ''}
-                        {formatMd(mission.deltaAbsolu)}
-                      </td>
-                      <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                        {mission.deltaRelatifPct !== null
-                          ? formatPct(mission.deltaRelatifPct / 100)
-                          : '—'}
-                      </td>
+                        Mission
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        {anneeA}
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        {anneeB}
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Écart
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Écart %
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {comparateur.missions.map((mission) => (
+                      <tr key={mission.slug}>
+                        <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                          {mission.nom}
+                        </td>
+                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          {formatMd(mission.montantA)}
+                        </td>
+                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          {formatMd(mission.montantB)}
+                        </td>
+                        <td
+                          className={`px-3 py-2 text-right font-medium ${
+                            mission.deltaAbsolu >= 0
+                              ? 'text-red-700 dark:text-red-400'
+                              : 'text-green-700 dark:text-green-400'
+                          }`}
+                        >
+                          {mission.deltaAbsolu >= 0 ? '+' : ''}
+                          {formatMd(mission.deltaAbsolu)}
+                        </td>
+                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          {mission.deltaRelatifPct !== null
+                            ? formatPct(mission.deltaRelatifPct / 100)
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </section>
 
-          <section>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-              Recettes par type — {anneeA} vs {anneeB}
-              {sourcesEcart}
-            </h2>
-            <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-              <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-                <thead className="bg-gray-50 dark:bg-gray-800">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Type
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      {anneeA}
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      {anneeB}
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Écart
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
-                    >
-                      Écart %
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                  {comparateur.recettes.map((recette) => (
-                    <tr key={recette.type}>
-                      <td className="px-3 py-2 text-gray-900 dark:text-gray-100">{recette.type}</td>
-                      <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                        {recette.montantA !== null ? formatMd(recette.montantA) : '—'}
-                      </td>
-                      <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                        {recette.montantB !== null ? formatMd(recette.montantB) : '—'}
-                      </td>
-                      <td className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300">
-                        {recette.deltaAbsolu !== null ? (
-                          <span
-                            className={
-                              recette.deltaAbsolu >= 0
-                                ? 'text-red-700 dark:text-red-400'
-                                : 'text-green-700 dark:text-green-400'
-                            }
-                          >
-                            {recette.deltaAbsolu >= 0 ? '+' : ''}
-                            {formatMd(recette.deltaAbsolu)}
-                          </span>
-                        ) : (
-                          '—'
-                        )}
-                      </td>
-                      <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                        {recette.deltaRelatifPct !== null
-                          ? formatPct(recette.deltaRelatifPct / 100)
-                          : '—'}
-                      </td>
+            <section>
+              <div className="flex flex-wrap items-start justify-between gap-2">
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                  Recettes par type — {anneeA} vs {anneeB}
+                  {sourcesEcart}
+                </h2>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="px-3 py-1 text-xs"
+                  onClick={handleExportRecettesCsv}
+                >
+                  Exporter CSV
+                </Button>
+              </div>
+              <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-800">
+                    <tr>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Type
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        {anneeA}
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        {anneeB}
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Écart
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                      >
+                        Écart %
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Un écart affiché « — » signifie que la donnée n&apos;est pas disponible pour
-              l&apos;une des deux années comparées.
-            </p>
-          </section>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                    {comparateur.recettes.map((recette) => (
+                      <tr key={recette.type}>
+                        <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                          {recette.type}
+                        </td>
+                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          {recette.montantA !== null ? formatMd(recette.montantA) : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          {recette.montantB !== null ? formatMd(recette.montantB) : '—'}
+                        </td>
+                        <td className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300">
+                          {recette.deltaAbsolu !== null ? (
+                            <span
+                              className={
+                                recette.deltaAbsolu >= 0
+                                  ? 'text-red-700 dark:text-red-400'
+                                  : 'text-green-700 dark:text-green-400'
+                              }
+                            >
+                              {recette.deltaAbsolu >= 0 ? '+' : ''}
+                              {formatMd(recette.deltaAbsolu)}
+                            </span>
+                          ) : (
+                            '—'
+                          )}
+                        </td>
+                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          {recette.deltaRelatifPct !== null
+                            ? formatPct(recette.deltaRelatifPct / 100)
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                Un écart affiché « — » signifie que la donnée n&apos;est pas disponible pour
+                l&apos;une des deux années comparées.
+              </p>
+            </section>
+          </div>
         </>
       )}
     </div>
