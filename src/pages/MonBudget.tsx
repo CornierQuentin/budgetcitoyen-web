@@ -1,10 +1,9 @@
 import { useState, type FormEvent } from 'react';
 
-import DonutChart from '../components/charts/DonutChart';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { useBudgetPerso } from '../hooks/useBudgetPerso';
-import { formatEuros } from '../utils/format';
+import { formatEuros, formatPct } from '../utils/format';
 
 export default function MonBudget() {
   const [revenuNetMensuel, setRevenuNetMensuel] = useState('');
@@ -20,10 +19,17 @@ export default function MonBudget() {
     }
   };
 
-  const repartitionData = (budgetPerso?.repartition ?? []).map((item) => ({
-    label: item.missionNom,
-    value: item.montant,
-  }));
+  // Triée par montant décroissant. Une trentaine de missions sont concernées :
+  // un donut catégoriel n'est pas adapté au-delà de 8 séries (voir DonutChart),
+  // une liste classée avec barre de magnitude (une seule teinte) convient mieux.
+  const repartitionTriee = (budgetPerso?.repartition ?? [])
+    .slice()
+    .sort((a, b) => b.montant - a.montant);
+  const repartitionMax = repartitionTriee.reduce(
+    (max, item) => Math.max(max, item.montant),
+    0,
+  );
+  const repartitionTotal = repartitionTriee.reduce((sum, item) => sum + item.montant, 0);
 
   return (
     <div className="space-y-6">
@@ -87,9 +93,29 @@ export default function MonBudget() {
             <h2 className="text-lg font-semibold text-gray-900">
               Répartition par mission (année {budgetPerso.anneeReference})
             </h2>
-            <div className="mt-3">
-              <DonutChart data={repartitionData} />
-            </div>
+            <ul className="mt-3 space-y-1.5">
+              {repartitionTriee.map((item) => (
+                <li key={item.missionSlug} className="flex items-center gap-3 text-sm">
+                  <span className="w-56 flex-none truncate text-gray-700" title={item.missionNom}>
+                    {item.missionNom}
+                  </span>
+                  <span className="h-2 flex-1 rounded-full bg-gray-100">
+                    <span
+                      className="block h-2 rounded-full bg-blue-700"
+                      style={{
+                        width: `${repartitionMax > 0 ? (item.montant / repartitionMax) * 100 : 0}%`,
+                      }}
+                    />
+                  </span>
+                  <span className="w-20 flex-none text-right text-gray-600">
+                    {formatEuros(item.montant)}
+                  </span>
+                  <span className="w-14 flex-none text-right text-gray-400">
+                    {formatPct(repartitionTotal > 0 ? item.montant / repartitionTotal : 0)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </section>
 
           <section>
