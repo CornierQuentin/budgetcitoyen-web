@@ -1,14 +1,27 @@
 import { useState, type FormEvent } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { useBudgetPerso } from '../hooks/useBudgetPerso';
 import { formatEuros, formatPct } from '../utils/format';
+import { parseIntSearchParam } from '../utils/searchParams';
 
 export default function MonBudget() {
-  const [revenuNetMensuel, setRevenuNetMensuel] = useState('');
-  const [revenuSoumis, setRevenuSoumis] = useState<number | undefined>(undefined);
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // `?revenu_net=` permet de partager un résultat déjà calculé : s'il est
+  // présent, il pré-remplit le formulaire et déclenche directement le calcul
+  // (pas seulement le champ), pour que la vue partagée affiche le résultat.
+  const revenuParam = parseIntSearchParam(searchParams.get('revenu_net'));
+  const revenuInitialValide =
+    revenuParam !== undefined && revenuParam >= 0 ? revenuParam : undefined;
+
+  const [revenuNetMensuel, setRevenuNetMensuel] = useState(
+    revenuInitialValide !== undefined ? String(revenuInitialValide) : '',
+  );
+  const [revenuSoumis, setRevenuSoumis] = useState<number | undefined>(revenuInitialValide);
 
   const { data: budgetPerso, isLoading, isError } = useBudgetPerso(revenuSoumis);
 
@@ -17,6 +30,9 @@ export default function MonBudget() {
     const valeur = Number(revenuNetMensuel);
     if (Number.isFinite(valeur) && valeur >= 0) {
       setRevenuSoumis(valeur);
+      const next = new URLSearchParams(searchParams);
+      next.set('revenu_net', String(valeur));
+      setSearchParams(next, { replace: true });
     }
   };
 
@@ -26,18 +42,15 @@ export default function MonBudget() {
   const repartitionTriee = (budgetPerso?.repartition ?? [])
     .slice()
     .sort((a, b) => b.montant - a.montant);
-  const repartitionMax = repartitionTriee.reduce(
-    (max, item) => Math.max(max, item.montant),
-    0,
-  );
+  const repartitionMax = repartitionTriee.reduce((max, item) => Math.max(max, item.montant), 0);
   const repartitionTotal = repartitionTriee.reduce((sum, item) => sum + item.montant, 0);
 
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Mon budget</h1>
       <p className="max-w-2xl text-gray-600 dark:text-gray-300">
-        Estimez votre contribution personnelle au budget de l&apos;État à partir de votre revenu
-        net mensuel, et la façon dont elle se répartit entre les grandes missions de l&apos;État.
+        Estimez votre contribution personnelle au budget de l&apos;État à partir de votre revenu net
+        mensuel, et la façon dont elle se répartit entre les grandes missions de l&apos;État.
       </p>
 
       <form onSubmit={handleSubmit} className="max-w-sm space-y-4">
@@ -64,9 +77,7 @@ export default function MonBudget() {
         <Button type="submit">Calculer</Button>
       </form>
 
-      {isLoading && (
-        <p className="text-sm text-gray-500 dark:text-gray-400">Calcul en cours…</p>
-      )}
+      {isLoading && <p className="text-sm text-gray-500 dark:text-gray-400">Calcul en cours…</p>}
       {isError && (
         <p className="text-sm text-red-700 dark:text-red-400">
           Une erreur est survenue lors du calcul. Réessayez avec une autre valeur.
@@ -89,7 +100,9 @@ export default function MonBudget() {
               </p>
             </Card>
             <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-              <p className="text-sm text-blue-900 dark:text-blue-200">Contribution totale estimée</p>
+              <p className="text-sm text-blue-900 dark:text-blue-200">
+                Contribution totale estimée
+              </p>
               <p className="mt-1 text-xl font-bold text-blue-900 dark:text-blue-100">
                 {formatEuros(budgetPerso.contributionTotaleEstimee)} / an
               </p>
