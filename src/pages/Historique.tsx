@@ -1,16 +1,48 @@
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import LineChart from '../components/charts/LineChart';
 import { Card } from '../components/ui/Card';
 import { useHistorique } from '../hooks/useHistorique';
 import { useFiltersStore } from '../store/useFiltersStore';
 import { formatMd } from '../utils/format';
+import { parseIntSearchParam } from '../utils/searchParams';
 
 export default function Historique() {
   const anneeActive = useFiltersStore((state) => state.anneeActive);
   const setAnneeActive = useFiltersStore((state) => state.setAnneeActive);
 
   const { data: historique } = useHistorique();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  // `anneeActive` vit dans un store Zustand partagé avec le Dashboard : au
+  // montage, on n'applique le `?annee=` de l'URL que s'il diffère de l'année
+  // déjà active (héritée d'une navigation précédente), pour ne jamais forcer
+  // une redirection entre les deux pages. Le flag évite que l'effet de
+  // synchronisation URL <- état (ci-dessous) n'écrase cette lecture initiale
+  // avec la valeur (obsolète) du rendu précédant la mise à jour du store.
+  const skipProchaineEcritureUrl = useRef(false);
+  useEffect(() => {
+    const parsed = parseIntSearchParam(searchParams.get('annee'));
+    if (parsed !== undefined && parsed !== anneeActive) {
+      skipProchaineEcritureUrl.current = true;
+      setAnneeActive(parsed);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Répercute l'année active dans l'URL de cette page, pour la rendre
+  // partageable.
+  useEffect(() => {
+    if (skipProchaineEcritureUrl.current) {
+      skipProchaineEcritureUrl.current = false;
+      return;
+    }
+    if (searchParams.get('annee') === String(anneeActive)) return;
+    const next = new URLSearchParams(searchParams);
+    next.set('annee', String(anneeActive));
+    setSearchParams(next, { replace: true });
+  }, [anneeActive, searchParams, setSearchParams]);
 
   const annees = useMemo(
     () => (historique ?? []).map((item) => item.annee).sort((a, b) => a - b),

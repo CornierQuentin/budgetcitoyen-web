@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import { Card } from '../components/ui/Card';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
@@ -6,16 +7,26 @@ import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
 import { useComparateur } from '../hooks/useComparateur';
 import { formatMd, formatPct } from '../utils/format';
+import { parseIntSearchParam } from '../utils/searchParams';
 
 export default function Comparateur() {
   const { data: annees } = useAnnees();
   const anneesDisponibles = (annees ?? []).map((item) => item.annee).sort((a, b) => b - a);
 
-  const [anneeA, setAnneeA] = useState<number | undefined>(undefined);
-  const [anneeB, setAnneeB] = useState<number | undefined>(undefined);
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  // Par défaut : compare les deux dernières années disponibles, dès que la
-  // liste des années arrive.
+  // La query string est lue une seule fois à l'initialisation (état React
+  // ensuite source de vérité, réécrit vers l'URL par l'effet ci-dessous) :
+  // cela évite toute boucle de synchronisation URL <-> état.
+  const [anneeA, setAnneeA] = useState<number | undefined>(() =>
+    parseIntSearchParam(searchParams.get('annee_a')),
+  );
+  const [anneeB, setAnneeB] = useState<number | undefined>(() =>
+    parseIntSearchParam(searchParams.get('annee_b')),
+  );
+
+  // Par défaut (aucune année dans l'URL au chargement) : compare les deux
+  // dernières années disponibles, dès que la liste des années arrive.
   useEffect(() => {
     if (anneesDisponibles.length > 0 && anneeA === undefined && anneeB === undefined) {
       setAnneeB(anneesDisponibles[0]);
@@ -23,6 +34,24 @@ export default function Comparateur() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [annees]);
+
+  // Répercute la sélection dans l'URL (`?annee_a=...&annee_b=...`), pour que
+  // la vue soit partageable. Garde d'égalité avant écriture : sans elle,
+  // `setSearchParams` créerait une nouvelle entrée d'historique à chaque
+  // rendu et provoquerait une boucle de mise à jour.
+  useEffect(() => {
+    if (anneeA === undefined || anneeB === undefined) return;
+    if (
+      searchParams.get('annee_a') === String(anneeA) &&
+      searchParams.get('annee_b') === String(anneeB)
+    ) {
+      return;
+    }
+    const next = new URLSearchParams(searchParams);
+    next.set('annee_a', String(anneeA));
+    next.set('annee_b', String(anneeB));
+    setSearchParams(next, { replace: true });
+  }, [anneeA, anneeB, searchParams, setSearchParams]);
 
   const { data: comparateur } = useComparateur(anneeA, anneeB);
 
@@ -120,8 +149,8 @@ export default function Comparateur() {
               {sourcesEcart}
             </h2>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Triées par écart absolu décroissant : les plus fortes hausses en tête, les plus
-              fortes baisses en bas.
+              Triées par écart absolu décroissant : les plus fortes hausses en tête, les plus fortes
+              baisses en bas.
             </p>
             <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
               <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
@@ -269,8 +298,8 @@ export default function Comparateur() {
               </table>
             </div>
             <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
-              Un écart affiché « — » signifie que la donnée n&apos;est pas disponible pour l&apos;une
-              des deux années comparées.
+              Un écart affiché « — » signifie que la donnée n&apos;est pas disponible pour
+              l&apos;une des deux années comparées.
             </p>
           </section>
         </>

@@ -38,9 +38,12 @@ type LeafNode = HierarchyRectangularNode<TreemapDatum | TreemapRoot>;
 export default function BudgetTreemap({ data }: BudgetTreemapProps) {
   const navigate = useNavigate();
   const estSombre = useThemeStore((state) => state.theme === 'dark');
-  const [tooltip, setTooltip] = useState<{ x: number; y: number; nom: string; montant: number } | null>(
-    null,
-  );
+  const [tooltip, setTooltip] = useState<{
+    x: number;
+    y: number;
+    nom: string;
+    montant: number;
+  } | null>(null);
   // Trait de séparation entre rectangles : proche du fond de la carte dans
   // les deux thèmes, pour rester discret sans dépendre d'une couleur fixe.
   const strokeSeparation = estSombre ? '#111827' : '#fcfcfb';
@@ -70,6 +73,15 @@ export default function BudgetTreemap({ data }: BudgetTreemapProps) {
       .range([BLUE_LIGHTEST, BLUE_DARKEST]);
   }, [data]);
 
+  // Repli mobile : sous le breakpoint `md`, un treemap devient illisible
+  // (pavés trop petits pour rester cliquables/lisibles) — il est remplacé
+  // par une liste scrollable triée par montant décroissant, avec barre de
+  // magnitude. Même pattern visuel que la répartition par mission de
+  // MonBudget (src/pages/MonBudget.tsx), alimentée par les mêmes données
+  // `data` (pas de logique de calcul dupliquée : simple tri d'affichage).
+  const listeTriee = useMemo(() => data.slice().sort((a, b) => b.montant - a.montant), [data]);
+  const listeMax = listeTriee.reduce((max, item) => Math.max(max, item.montant), 0);
+
   if (data.length === 0) {
     return (
       <div
@@ -85,8 +97,8 @@ export default function BudgetTreemap({ data }: BudgetTreemapProps) {
     <div className="relative">
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className="h-auto w-full rounded-lg border border-gray-200 bg-white dark:border-gray-700
-          dark:bg-gray-900"
+        className="hidden h-auto w-full rounded-lg border border-gray-200 bg-white
+          dark:border-gray-700 dark:bg-gray-900 md:block"
         role="img"
         aria-label="Répartition des dépenses de l'État par mission budgétaire"
       >
@@ -147,6 +159,36 @@ export default function BudgetTreemap({ data }: BudgetTreemapProps) {
           <p>{formatMd(tooltip.montant)}</p>
         </div>
       )}
+
+      <ul className="block max-h-96 space-y-1.5 overflow-y-auto md:hidden">
+        {listeTriee.map((item) => (
+          <li key={item.slug}>
+            <button
+              type="button"
+              onClick={() => navigate(`/tableau-de-bord/mission/${item.slug}`)}
+              className="flex w-full items-center gap-3 rounded px-1 py-1 text-left text-sm
+                hover:bg-gray-50 dark:hover:bg-gray-800"
+              aria-label={`${item.nom} : ${formatMd(item.montant)}`}
+            >
+              <span
+                className="w-32 flex-none truncate text-gray-700 dark:text-gray-300"
+                title={item.nom}
+              >
+                {item.nom}
+              </span>
+              <span className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                <span
+                  className="block h-2 rounded-full bg-blue-700 dark:bg-blue-500"
+                  style={{ width: `${listeMax > 0 ? (item.montant / listeMax) * 100 : 0}%` }}
+                />
+              </span>
+              <span className="w-20 flex-none text-right text-gray-600 dark:text-gray-300">
+                {formatMd(item.montant)}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

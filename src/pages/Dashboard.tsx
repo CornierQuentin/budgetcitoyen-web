@@ -1,5 +1,5 @@
-import { useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { useEffect, useRef } from 'react';
+import { Outlet, useSearchParams } from 'react-router-dom';
 
 import BudgetTreemap from '../components/charts/BudgetTreemap';
 import DonutChart from '../components/charts/DonutChart';
@@ -10,6 +10,7 @@ import { useMissions } from '../hooks/useMissions';
 import { useRecettes } from '../hooks/useRecettes';
 import { useFiltersStore } from '../store/useFiltersStore';
 import { formatMd } from '../utils/format';
+import { parseIntSearchParam } from '../utils/searchParams';
 
 export default function Dashboard() {
   const anneeActive = useFiltersStore((state) => state.anneeActive);
@@ -25,6 +26,37 @@ export default function Dashboard() {
       setAnneeActive(Math.max(...annees.map((item) => item.annee)));
     }
   }, [annees, anneeActive, setAnneeActive]);
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  // `anneeActive` vit dans un store Zustand partagé avec la page Historique :
+  // au montage, on n'applique le `?annee=` de l'URL que s'il diffère de
+  // l'année déjà active (héritée d'une navigation précédente), pour ne
+  // jamais forcer de redirection entre les deux pages. Le flag évite que
+  // l'effet de synchronisation URL <- état (ci-dessous) n'écrase cette
+  // lecture initiale avec la valeur (obsolète) du rendu précédant la mise à
+  // jour du store.
+  const skipProchaineEcritureUrl = useRef(false);
+  useEffect(() => {
+    const parsed = parseIntSearchParam(searchParams.get('annee'));
+    if (parsed !== undefined && parsed !== anneeActive) {
+      skipProchaineEcritureUrl.current = true;
+      setAnneeActive(parsed);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Répercute l'année active dans l'URL de cette page, pour la rendre
+  // partageable.
+  useEffect(() => {
+    if (skipProchaineEcritureUrl.current) {
+      skipProchaineEcritureUrl.current = false;
+      return;
+    }
+    if (searchParams.get('annee') === String(anneeActive)) return;
+    const next = new URLSearchParams(searchParams);
+    next.set('annee', String(anneeActive));
+    setSearchParams(next, { replace: true });
+  }, [anneeActive, searchParams, setSearchParams]);
 
   const { data: missions } = useMissions(anneeActive);
   const { data: recettes } = useRecettes(anneeActive);
