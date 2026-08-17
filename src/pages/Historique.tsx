@@ -2,9 +2,11 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import LineChart from '../components/charts/LineChart';
+import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { useHistorique } from '../hooks/useHistorique';
 import { useFiltersStore } from '../store/useFiltersStore';
+import { exportCsv } from '../utils/exportCsv';
 import { formatMd } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
 
@@ -69,9 +71,25 @@ export default function Historique() {
 
   const anneeSelectionnee = historique?.find((item) => item.annee === anneeActive);
 
+  const handleExportCsv = () => {
+    exportCsv(data, 'historique-depenses-recettes-deficit.csv', [
+      { cle: 'annee', libelle: 'Année' },
+      { cle: 'depenses', libelle: 'Dépenses nettes (€)' },
+      { cle: 'recettes', libelle: 'Recettes nettes (€)' },
+      { cle: 'deficit', libelle: 'Déficit (€)' },
+    ]);
+  };
+
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Historique</h1>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Historique</h1>
+        {data.length > 0 && (
+          <Button type="button" variant="secondary" onClick={handleExportCsv}>
+            Exporter CSV
+          </Button>
+        )}
+      </div>
 
       <LineChart data={data} />
 

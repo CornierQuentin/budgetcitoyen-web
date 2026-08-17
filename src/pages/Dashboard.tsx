@@ -3,12 +3,14 @@ import { Outlet, useSearchParams } from 'react-router-dom';
 
 import BudgetTreemap from '../components/charts/BudgetTreemap';
 import DonutChart from '../components/charts/DonutChart';
+import { Button } from '../components/ui/Button';
 import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useMissions } from '../hooks/useMissions';
 import { useRecettes } from '../hooks/useRecettes';
 import { useFiltersStore } from '../store/useFiltersStore';
+import { exportCsv } from '../utils/exportCsv';
 import { formatMd } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
 
@@ -76,6 +78,20 @@ export default function Dashboard() {
     value: recette.montantNet,
   }));
 
+  const handleExportMissionsCsv = () => {
+    exportCsv(treemapData, `missions-${anneeActive}.csv`, [
+      { cle: 'nom', libelle: 'Mission' },
+      { cle: 'montant', libelle: 'Montant (€)' },
+    ]);
+  };
+
+  const handleExportRecettesCsv = () => {
+    exportCsv(donutData, `recettes-${anneeActive}.csv`, [
+      { cle: 'label', libelle: 'Type de recette' },
+      { cle: 'value', libelle: 'Montant net (€)' },
+    ]);
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -109,27 +125,52 @@ export default function Dashboard() {
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div>
-          <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Dépenses par mission
-            {missions && missions.length > 0 && (
-              <span className="ml-2 font-normal text-gray-500 dark:text-gray-400">
-                (total {formatMd(missions.reduce((sum, mission) => sum + mission.montantTotal, 0))})
-                {budgetAnnee && (
-                  <SourceIcon url={budgetAnnee.sourceUrl} label={`missions ${anneeActive}`} />
-                )}
-              </span>
+          <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Dépenses par mission
+              {missions && missions.length > 0 && (
+                <span className="ml-2 font-normal text-gray-500 dark:text-gray-400">
+                  (total{' '}
+                  {formatMd(missions.reduce((sum, mission) => sum + mission.montantTotal, 0))})
+                  {budgetAnnee && (
+                    <SourceIcon url={budgetAnnee.sourceUrl} label={`missions ${anneeActive}`} />
+                  )}
+                </span>
+              )}
+            </h2>
+            {treemapData.length > 0 && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="px-3 py-1 text-xs"
+                onClick={handleExportMissionsCsv}
+              >
+                Exporter CSV
+              </Button>
             )}
-          </h2>
-          <BudgetTreemap data={treemapData} />
+          </div>
+          <BudgetTreemap data={treemapData} nomFichierExport={`missions-${anneeActive}.png`} />
         </div>
         <div>
-          <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Recettes par type
-            {budgetAnnee && (
-              <SourceIcon url={budgetAnnee.sourceUrl} label={`recettes ${anneeActive}`} />
+          <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
+            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+              Recettes par type
+              {budgetAnnee && (
+                <SourceIcon url={budgetAnnee.sourceUrl} label={`recettes ${anneeActive}`} />
+              )}
+            </h2>
+            {donutData.length > 0 && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="px-3 py-1 text-xs"
+                onClick={handleExportRecettesCsv}
+              >
+                Exporter CSV
+              </Button>
             )}
-          </h2>
-          <DonutChart data={donutData} />
+          </div>
+          <DonutChart data={donutData} nomFichierExport={`recettes-${anneeActive}.png`} />
         </div>
       </section>
 
