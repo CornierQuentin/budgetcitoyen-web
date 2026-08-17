@@ -20,7 +20,11 @@ export function Nav() {
       <ul className="flex flex-wrap gap-4">
         {links.map((link) => (
           <li key={link.to}>
-            <Link to={link.to} className="text-sm font-medium text-gray-700 hover:text-blue-800">
+            <Link
+              to={link.to}
+              className="text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-300
+                dark:hover:text-blue-300"
+            >
               {link.label}
             </Link>
           </li>

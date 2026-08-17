@@ -41,8 +41,8 @@ export default function Donnees() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Données</h1>
-      <p className="text-gray-600">
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Données</h1>
+      <p className="text-gray-600 dark:text-gray-300">
         Les données présentées sur BudgetCitoyen.fr proviennent de sources publiques officielles.
       </p>
 
@@ -53,7 +53,7 @@ export default function Donnees() {
               href={source.url}
               target="_blank"
               rel="noreferrer"
-              className="text-blue-800 hover:underline"
+              className="text-blue-800 hover:underline dark:text-blue-300"
             >
               {source.nom}
             </a>

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { hierarchy, treemap, treemapSquarify, type HierarchyRectangularNode } from 'd3-hierarchy';
 import { scaleLinear } from 'd3-scale';
 
+import { useThemeStore } from '../../store/useThemeStore';
 import { formatMd } from '../../utils/format';
 
 export interface TreemapDatum {
@@ -36,9 +37,13 @@ type LeafNode = HierarchyRectangularNode<TreemapDatum | TreemapRoot>;
 
 export default function BudgetTreemap({ data }: BudgetTreemapProps) {
   const navigate = useNavigate();
+  const estSombre = useThemeStore((state) => state.theme === 'dark');
   const [tooltip, setTooltip] = useState<{ x: number; y: number; nom: string; montant: number } | null>(
     null,
   );
+  // Trait de séparation entre rectangles : proche du fond de la carte dans
+  // les deux thèmes, pour rester discret sans dépendre d'une couleur fixe.
+  const strokeSeparation = estSombre ? '#111827' : '#fcfcfb';
 
   const leaves = useMemo<LeafNode[]>(() => {
     if (data.length === 0) return [];
@@ -67,7 +72,10 @@ export default function BudgetTreemap({ data }: BudgetTreemapProps) {
 
   if (data.length === 0) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg border border-dashed border-gray-300 text-sm text-gray-500">
+      <div
+        className="flex h-64 items-center justify-center rounded-lg border border-dashed
+          border-gray-300 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400"
+      >
         Aucune donnée à afficher pour cette année.
       </div>
     );
@@ -77,7 +85,8 @@ export default function BudgetTreemap({ data }: BudgetTreemapProps) {
     <div className="relative">
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-        className="h-auto w-full rounded-lg border border-gray-200 bg-white"
+        className="h-auto w-full rounded-lg border border-gray-200 bg-white dark:border-gray-700
+          dark:bg-gray-900"
         role="img"
         aria-label="Répartition des dépenses de l'État par mission budgétaire"
       >
@@ -93,7 +102,7 @@ export default function BudgetTreemap({ data }: BudgetTreemapProps) {
                 width={rectWidth}
                 height={rectHeight}
                 fill={colorScale(datum.montant)}
-                stroke="#fcfcfb"
+                stroke={strokeSeparation}
                 strokeWidth={2}
                 className="cursor-pointer transition-opacity hover:opacity-80"
                 role="button"

@@ -68,10 +68,10 @@ export default function Home() {
   return (
     <div className="space-y-8">
       <section>
-        <h1 className="text-3xl font-bold text-gray-900">
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
           Le budget de l&apos;État, expliqué simplement
         </h1>
-        <p className="mt-2 max-w-2xl text-gray-600">
+        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
           BudgetCitoyen.fr rend le budget de l&apos;État français explorable par toutes et tous :
           missions, programmes, actions, dépenses et recettes.
         </p>
@@ -79,10 +79,10 @@ export default function Home() {
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Dépenses totales {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">
+          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
             {budget ? <AnimatedValue value={budget.depensesNettes} format={formatMd} /> : '—'}
             {budget && (
               <SourceIcon url={budget.sourceUrl} label={`dépenses ${derniereAnnee}`} />
@@ -90,10 +90,10 @@ export default function Home() {
           </p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Recettes totales {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">
+          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
             {budget ? <AnimatedValue value={budget.recettesNettes} format={formatMd} /> : '—'}
             {budget && (
               <SourceIcon url={budget.sourceUrl} label={`recettes ${derniereAnnee}`} />
@@ -101,11 +101,11 @@ export default function Home() {
           </p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             <GlossaryTerm term="déficit">Solde budgétaire</GlossaryTerm>{' '}
             {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">
+          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
             {budget ? <AnimatedValue value={-budget.deficit} format={formatMd} /> : '—'}
             {budget && (
               <SourceIcon url={budget.sourceUrl} label={`déficit ${derniereAnnee}`} />
@@ -116,11 +116,13 @@ export default function Home() {
 
       <section>
         <Card>
-          <p className="text-sm text-gray-500">Dépense de l&apos;État par Français, chaque seconde</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Dépense de l&apos;État par Français, chaque seconde</p>
           {parFrancaisParSeconde !== null ? (
-            <p className="mt-1 text-2xl font-bold text-blue-800">
+            <p className="mt-1 text-2xl font-bold text-blue-800 dark:text-blue-300">
               <AnimatedValue value={parFrancaisParSeconde} format={parSecondeFormatter.format} />
-              <span className="ml-1 text-sm font-normal text-gray-500">/ seconde</span>
+              <span className="ml-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+                / seconde
+              </span>
               {(indicateur?.sourcePopulationUrl ?? indicateur?.sourcePibUrl) && (
                 <SourceIcon
                   url={(indicateur?.sourcePopulationUrl ?? indicateur?.sourcePibUrl) as string}
@@ -129,7 +131,7 @@ export default function Home() {
               )}
             </p>
           ) : (
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Donnée de population non disponible pour {derniereAnnee ?? 'cette année'} : cet
               indicateur ne peut pas être calculé pour le moment.
             </p>
@@ -138,30 +140,33 @@ export default function Home() {
       </section>
 
       <section>
-        <h2 className="text-xl font-semibold text-gray-900">Explorer</h2>
+        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Explorer</h2>
         <ul className="mt-2 flex flex-wrap gap-4">
           <li>
-            <Link to="/tableau-de-bord" className="text-blue-800 hover:underline">
+            <Link
+              to="/tableau-de-bord"
+              className="text-blue-800 hover:underline dark:text-blue-300"
+            >
               Tableau de bord
             </Link>
           </li>
           <li>
-            <Link to="/historique" className="text-blue-800 hover:underline">
+            <Link to="/historique" className="text-blue-800 hover:underline dark:text-blue-300">
               Historique
             </Link>
           </li>
           <li>
-            <Link to="/comparer" className="text-blue-800 hover:underline">
+            <Link to="/comparer" className="text-blue-800 hover:underline dark:text-blue-300">
               Comparateur
             </Link>
           </li>
           <li>
-            <Link to="/mon-budget" className="text-blue-800 hover:underline">
+            <Link to="/mon-budget" className="text-blue-800 hover:underline dark:text-blue-300">
               Mon budget
             </Link>
           </li>
           <li>
-            <Link to="/donnees" className="text-blue-800 hover:underline">
+            <Link to="/donnees" className="text-blue-800 hover:underline dark:text-blue-300">
               Données
             </Link>
           </li>

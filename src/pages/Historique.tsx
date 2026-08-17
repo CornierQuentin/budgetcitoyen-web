@@ -39,14 +39,17 @@ export default function Historique() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Historique</h1>
+      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Historique</h1>
 
       <LineChart data={data} />
 
       {annees.length > 0 && (
         <div className="space-y-4">
           <div>
-            <label htmlFor="annee-historique" className="block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="annee-historique"
+              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            >
               Année sélectionnée : {anneeActive}
             </label>
             <input
@@ -62,8 +65,10 @@ export default function Historique() {
 
           {anneeSelectionnee && (
             <Card className="max-w-sm">
-              <p className="text-sm font-semibold text-gray-900">Année {anneeSelectionnee.annee}</p>
-              <dl className="mt-2 space-y-1 text-sm text-gray-600">
+              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                Année {anneeSelectionnee.annee}
+              </p>
+              <dl className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
                 <div className="flex justify-between">
                   <dt>Dépenses nettes</dt>
                   <dd>{formatMd(anneeSelectionnee.depensesNettes)}</dd>

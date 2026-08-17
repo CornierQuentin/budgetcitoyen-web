@@ -47,16 +47,20 @@ export default function Dashboard() {
   return (
     <div className="space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900">Tableau de bord</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tableau de bord</h1>
 
         {annees && annees.length > 0 && (
-          <label htmlFor="annee-dashboard" className="text-sm font-medium text-gray-700">
+          <label
+            htmlFor="annee-dashboard"
+            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          >
             Année
             <select
               id="annee-dashboard"
               value={anneeActive}
               onChange={(event) => setAnneeActive(Number(event.target.value))}
-              className="ml-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm"
+              className="ml-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm dark:border-gray-600
+                dark:bg-gray-800 dark:text-gray-100"
             >
               {annees
                 .map((item) => item.annee)
@@ -73,10 +77,10 @@ export default function Dashboard() {
 
       <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <div>
-          <h2 className="mb-2 text-sm font-semibold text-gray-700">
+          <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
             Dépenses par mission
             {missions && missions.length > 0 && (
-              <span className="ml-2 font-normal text-gray-500">
+              <span className="ml-2 font-normal text-gray-500 dark:text-gray-400">
                 (total {formatMd(missions.reduce((sum, mission) => sum + mission.montantTotal, 0))})
                 {budgetAnnee && (
                   <SourceIcon url={budgetAnnee.sourceUrl} label={`missions ${anneeActive}`} />
@@ -87,7 +91,7 @@ export default function Dashboard() {
           <BudgetTreemap data={treemapData} />
         </div>
         <div>
-          <h2 className="mb-2 text-sm font-semibold text-gray-700">
+          <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
             Recettes par type
             {budgetAnnee && (
               <SourceIcon url={budgetAnnee.sourceUrl} label={`recettes ${anneeActive}`} />
