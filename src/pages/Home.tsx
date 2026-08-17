@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { animate, useReducedMotion } from 'framer-motion';
 
 import { Card } from '../components/ui/Card';
+import { GlossaryTerm } from '../components/ui/GlossaryTerm';
+import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useIndicateur } from '../hooks/useIndicateur';
@@ -82,6 +84,9 @@ export default function Home() {
           </p>
           <p className="mt-1 text-2xl font-bold text-gray-900">
             {budget ? <AnimatedValue value={budget.depensesNettes} format={formatMd} /> : '—'}
+            {budget && (
+              <SourceIcon url={budget.sourceUrl} label={`dépenses ${derniereAnnee}`} />
+            )}
           </p>
         </Card>
         <Card>
@@ -90,17 +95,20 @@ export default function Home() {
           </p>
           <p className="mt-1 text-2xl font-bold text-gray-900">
             {budget ? <AnimatedValue value={budget.recettesNettes} format={formatMd} /> : '—'}
+            {budget && (
+              <SourceIcon url={budget.sourceUrl} label={`recettes ${derniereAnnee}`} />
+            )}
           </p>
         </Card>
         <Card>
           <p className="text-sm text-gray-500">
-            Solde budgétaire {derniereAnnee ? `(${derniereAnnee})` : ''}
+            <GlossaryTerm term="déficit">Solde budgétaire</GlossaryTerm>{' '}
+            {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
           <p className="mt-1 text-2xl font-bold text-gray-900">
-            {budget ? (
-              <AnimatedValue value={-budget.deficit} format={formatMd} />
-            ) : (
-              '—'
+            {budget ? <AnimatedValue value={-budget.deficit} format={formatMd} /> : '—'}
+            {budget && (
+              <SourceIcon url={budget.sourceUrl} label={`déficit ${derniereAnnee}`} />
             )}
           </p>
         </Card>
@@ -113,6 +121,12 @@ export default function Home() {
             <p className="mt-1 text-2xl font-bold text-blue-800">
               <AnimatedValue value={parFrancaisParSeconde} format={parSecondeFormatter.format} />
               <span className="ml-1 text-sm font-normal text-gray-500">/ seconde</span>
+              {(indicateur?.sourcePopulationUrl ?? indicateur?.sourcePibUrl) && (
+                <SourceIcon
+                  url={(indicateur?.sourcePopulationUrl ?? indicateur?.sourcePibUrl) as string}
+                  label={`population ${derniereAnnee}`}
+                />
+              )}
             </p>
           ) : (
             <p className="mt-1 text-sm text-gray-500">
