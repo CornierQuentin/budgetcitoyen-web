@@ -1,17 +1,18 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { apiClient } from '../services/apiClient';
-import type { AnneeBudget } from '../types/budget';
+import type { AnneeBudget } from '../types/domain';
 
 /**
  * Récupère l'historique pluriannuel du budget de l'État.
- * TODO Phase 1 : brancher l'appel réel et le mapping snake_case -> camelCase.
  */
-export function useHistorique() {
+export function useHistorique(de?: number, a?: number) {
   return useQuery({
-    queryKey: ['historique'] as const,
+    queryKey: ['historique', de, a] as const,
     queryFn: async () => {
-      const { data } = await apiClient.get<AnneeBudget[]>('/historique');
+      const { data } = await apiClient.get<AnneeBudget[]>('/budget/historique', {
+        params: { de, a },
+      });
       return data;
     },
   });
