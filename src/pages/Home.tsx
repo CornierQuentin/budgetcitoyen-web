@@ -1,8 +1,59 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { animate } from 'framer-motion';
 
 import { Card } from '../components/ui/Card';
+import { useAnnees } from '../hooks/useAnnees';
+import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
+import { useIndicateur } from '../hooks/useIndicateur';
+import { formatMd } from '../utils/format';
+
+// Nombre moyen de secondes dans une année (365,25 jours, cohérent avec les
+// années bissextiles) — utilisé uniquement pour l'indicateur "par seconde".
+const SECONDES_PAR_AN = 365.25 * 24 * 60 * 60;
+
+const parSecondeFormatter = new Intl.NumberFormat('fr-FR', {
+  style: 'currency',
+  currency: 'EUR',
+  minimumFractionDigits: 4,
+  maximumFractionDigits: 4,
+});
+
+interface AnimatedValueProps {
+  value: number;
+  format: (value: number) => string;
+}
+
+// Compteur animé (Framer Motion) : anime de 0 à `value` au montage / à chaque
+// changement de valeur, sans dépendance à un composant supplémentaire.
+function AnimatedValue({ value, format }: AnimatedValueProps) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const controls = animate(0, value, {
+      duration: 1.2,
+      ease: 'easeOut',
+      onUpdate: setDisplay,
+    });
+    return () => controls.stop();
+  }, [value]);
+
+  return <>{format(display)}</>;
+}
 
 export default function Home() {
+  const { data: annees } = useAnnees();
+  const derniereAnnee =
+    annees && annees.length > 0 ? Math.max(...annees.map((item) => item.annee)) : undefined;
+
+  const { data: budget } = useBudgetAnnee(derniereAnnee);
+  const { data: indicateur } = useIndicateur(derniereAnnee);
+
+  const parFrancaisParSeconde =
+    budget && indicateur?.population
+      ? budget.depensesNettes / indicateur.population / SECONDES_PAR_AN
+      : null;
+
   return (
     <div className="space-y-8">
       <section>
@@ -17,16 +68,49 @@ export default function Home() {
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <p className="text-sm text-gray-500">Dépenses totales</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">— à venir</p>
+          <p className="text-sm text-gray-500">
+            Dépenses totales {derniereAnnee ? `(${derniereAnnee})` : ''}
+          </p>
+          <p className="mt-1 text-2xl font-bold text-gray-900">
+            {budget ? <AnimatedValue value={budget.depensesNettes} format={formatMd} /> : '—'}
+          </p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500">Recettes totales</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">— à venir</p>
+          <p className="text-sm text-gray-500">
+            Recettes totales {derniereAnnee ? `(${derniereAnnee})` : ''}
+          </p>
+          <p className="mt-1 text-2xl font-bold text-gray-900">
+            {budget ? <AnimatedValue value={budget.recettesNettes} format={formatMd} /> : '—'}
+          </p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500">Solde budgétaire</p>
-          <p className="mt-1 text-2xl font-bold text-gray-900">— à venir</p>
+          <p className="text-sm text-gray-500">
+            Solde budgétaire {derniereAnnee ? `(${derniereAnnee})` : ''}
+          </p>
+          <p className="mt-1 text-2xl font-bold text-gray-900">
+            {budget ? (
+              <AnimatedValue value={-budget.deficit} format={formatMd} />
+            ) : (
+              '—'
+            )}
+          </p>
+        </Card>
+      </section>
+
+      <section>
+        <Card>
+          <p className="text-sm text-gray-500">Dépense de l&apos;État par Français, chaque seconde</p>
+          {parFrancaisParSeconde !== null ? (
+            <p className="mt-1 text-2xl font-bold text-blue-800">
+              <AnimatedValue value={parFrancaisParSeconde} format={parSecondeFormatter.format} />
+              <span className="ml-1 text-sm font-normal text-gray-500">/ seconde</span>
+            </p>
+          ) : (
+            <p className="mt-1 text-sm text-gray-500">
+              Donnée de population non disponible pour {derniereAnnee ?? 'cette année'} : cet
+              indicateur ne peut pas être calculé pour le moment.
+            </p>
+          )}
         </Card>
       </section>
 
@@ -63,4 +147,3 @@ export default function Home() {
     </div>
   );
 }
-

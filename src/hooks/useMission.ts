@@ -1,17 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { apiClient } from '../services/apiClient';
-import type { Mission } from '../types/budget';
+import type { Mission } from '../types/domain';
 
 /**
- * Récupère le détail d'une mission budgétaire par son slug.
- * TODO Phase 1 : brancher l'appel réel et le mapping snake_case -> camelCase.
+ * Récupère une mission budgétaire par son slug, optionnellement pour une
+ * année donnée (dernière année disponible côté API si omise).
  */
-export function useMission(slug: string) {
+export function useMission(slug: string | undefined, annee?: number) {
   return useQuery({
-    queryKey: ['mission', slug] as const,
+    queryKey: ['mission', slug, annee] as const,
     queryFn: async () => {
-      const { data } = await apiClient.get<Mission>(`/missions/${slug}`);
+      const { data } = await apiClient.get<Mission>(`/missions/${slug}`, {
+        params: { annee },
+      });
       return data;
     },
     enabled: Boolean(slug),

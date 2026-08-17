@@ -1,20 +1,21 @@
 import { useQuery } from '@tanstack/react-query';
 
 import { apiClient } from '../services/apiClient';
-import type { AnneeBudget } from '../types/budget';
+import type { Comparateur } from '../types/domain';
 
 /**
- * Récupère les données budgétaires de deux années à comparer.
- * TODO Phase 1 : brancher l'appel réel et le mapping snake_case -> camelCase.
+ * Compare deux années budgétaires (missions et recettes, écarts déjà triés
+ * par écart absolu décroissant côté backend pour les missions).
  */
-export function useComparateur(anneeA: number, anneeB: number) {
+export function useComparateur(anneeA: number | undefined, anneeB: number | undefined) {
   return useQuery({
     queryKey: ['comparateur', anneeA, anneeB] as const,
     queryFn: async () => {
-      const { data } = await apiClient.get<[AnneeBudget, AnneeBudget]>('/comparateur', {
-        params: { anneeA, anneeB },
+      const { data } = await apiClient.get<Comparateur>('/comparateur', {
+        params: { annee_a: anneeA, annee_b: anneeB },
       });
       return data;
     },
+    enabled: anneeA !== undefined && anneeB !== undefined,
   });
 }
