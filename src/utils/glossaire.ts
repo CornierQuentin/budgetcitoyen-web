@@ -21,6 +21,15 @@ export const glossaire: Record<string, string> = {
     'Direction Générale des Finances Publiques — administration qui collecte les impôts.',
   déficit:
     "Écart entre les dépenses et les recettes de l'État sur une année : les dépenses dépassent les recettes.",
+  // Types de recettes (TypeRecette, src/types/domain.ts) : clés alignées sur
+  // les valeurs exactes de l'enum, réutilisées telles quelles dans le
+  // Comparateur (colonne « type » de recette) comme dans le Tableau de bord.
+  IR: 'Impôt sur le Revenu : impôt payé par les particuliers sur leurs revenus.',
+  TVA: 'Taxe sur la Valeur Ajoutée : impôt sur la consommation, payé par les ménages et les entreprises.',
+  IS: 'Impôt sur les Sociétés : impôt payé par les entreprises sur leurs bénéfices.',
+  TICPE:
+    'Taxe Intérieure de Consommation sur les Produits Énergétiques : taxe sur les carburants et autres produits énergétiques.',
+  AUTRES: 'Autres recettes fiscales et non fiscales (hors IR, TVA, IS et TICPE).',
 };
 
 export type GlossaryTermKey = keyof typeof glossaire;
