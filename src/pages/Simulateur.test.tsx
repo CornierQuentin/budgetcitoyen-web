@@ -36,7 +36,10 @@ const missionsMock: Mission[] = [
     nomNormalise: 'justice',
     nomOfficiel: 'Justice',
     annee: 2025,
-    montantTotal: 10_000_000_000,
+    // Volontairement non-rond (comme la plupart des montants réels, ex.
+    // Défense ~ 60,0035 Md€) : sert à vérifier que le champ de saisie se
+    // pré-remplit avec la valeur arrondie affichée, pas la division brute.
+    montantTotal: 10_003_543_448,
   },
 ];
 
@@ -121,7 +124,7 @@ describe('Simulateur', () => {
     expect(screen.getByText('156 Md€')).toBeInTheDocument();
   });
 
-  it('le mode avancé révèle les curseurs de recettes fiscales, absents en mode simple', () => {
+  it('le mode avancé révèle les curseurs de recettes (IR/TVA/IS/TICPE/AUTRES), absents en mode simple', () => {
     configurerMocksParDefaut();
 
     render(<Simulateur />);
@@ -134,8 +137,46 @@ describe('Simulateur', () => {
     expect(screen.getByLabelText('IR')).toBeInTheDocument();
     expect(screen.getByLabelText('IS')).toBeInTheDocument();
     expect(screen.getByLabelText('TICPE')).toBeInTheDocument();
-    // AUTRES exclu : pas une recette fiscale au sens du CDC.
-    expect(screen.queryByLabelText('AUTRES')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('AUTRES')).toBeInTheDocument();
+  });
+
+  it('cliquer sur le montant permet de saisir une valeur exacte, convertie en ajustement du curseur', () => {
+    configurerMocksParDefaut();
+
+    render(<Simulateur />);
+
+    // Défense : 60 Md€ -> clic sur le montant affiché, saisie de 75 Md€.
+    fireEvent.click(screen.getByRole('button', { name: '60 Md€' }));
+    const champSaisie = screen.getByLabelText('Montant exact pour Défense (Md€)');
+    fireEvent.change(champSaisie, { target: { value: '75' } });
+    fireEvent.blur(champSaisie);
+
+    expect(screen.getByLabelText('Défense')).toHaveValue('25'); // (75/60 - 1) * 100 = +25%
+    expect(screen.getByText('165 Md€')).toBeInTheDocument(); // déficit : 150 + 15
+  });
+
+  it('le champ de saisie se pré-remplit avec le montant arrondi affiché, pas la division brute', () => {
+    configurerMocksParDefaut();
+
+    render(<Simulateur />);
+
+    // Justice : 10 003 543 448 € (non-rond), affiché "10 Md€".
+    fireEvent.click(screen.getByRole('button', { name: '10 Md€' }));
+
+    expect(screen.getByLabelText('Montant exact pour Justice (Md€)')).toHaveValue(10);
+  });
+
+  it('la saisie exacte est bornée à -100% (pas de montant négatif)', () => {
+    configurerMocksParDefaut();
+
+    render(<Simulateur />);
+
+    fireEvent.click(screen.getByRole('button', { name: '60 Md€' }));
+    const champSaisie = screen.getByLabelText('Montant exact pour Défense (Md€)');
+    fireEvent.change(champSaisie, { target: { value: '-10' } });
+    fireEvent.blur(champSaisie);
+
+    expect(screen.getByLabelText('Défense')).toHaveValue('-100');
   });
 
   it('réinitialiser remet tous les curseurs et le déficit simulé à leur valeur de référence', () => {

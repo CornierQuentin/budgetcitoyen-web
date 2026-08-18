@@ -13,14 +13,23 @@ import { type AjustementLigne, simuler } from '../utils/simulateur';
 
 type Mode = 'simple' | 'avance';
 
-// Seuls les types de recette FISCAUX sont ajustables en mode avancé (libellé
-// CDC : « recettes fiscales IR/TVA/IS/TICPE ») — AUTRES (recettes non
-// fiscales et fourre-tout) en est explicitement exclu.
-const TYPES_RECETTE_AJUSTABLES: TypeRecette[] = ['IR', 'TVA', 'IS', 'TICPE'];
+// Types de recette ajustables en mode avancé : les 4 types fiscaux du CDC
+// (« recettes fiscales IR/TVA/IS/TICPE ») + AUTRES, à la demande explicite
+// de l'utilisateur (retour direct sur cette page) — au départ exclu car pas
+// une recette « fiscale » au sens strict du libellé CDC, mais l'utilisateur
+// veut pouvoir l'ajuster comme les autres types.
+const TYPES_RECETTE_AJUSTABLES: TypeRecette[] = ['IR', 'TVA', 'IS', 'TICPE', 'AUTRES'];
 
 const PAS_CURSEUR = 5;
-const AJUSTEMENT_MIN = -50;
-const AJUSTEMENT_MAX = 100;
+// Bornes larges (jusqu'à -100%, soit un définancement complet d'une ligne) :
+// nécessaire pour que la saisie exacte d'un montant (cf. CurseurAjustement)
+// puisse aller jusqu'à zéro, pas seulement -50%.
+const AJUSTEMENT_MIN = -100;
+const AJUSTEMENT_MAX = 200;
+
+function clamp(valeur: number, min: number, max: number): number {
+  return Math.min(Math.max(valeur, min), max);
+}
 
 function formatDeltaMd(montant: number): string {
   return `${montant >= 0 ? '+' : ''}${formatMd(montant)}`;
@@ -42,6 +51,38 @@ function CurseurAjustement({
   onChange,
 }: CurseurAjustementProps) {
   const id = `curseur-${cle}`;
+  const montant = montantActuel * (1 + ajustementPct / 100);
+
+  // Deuxième façon d'ajuster une ligne, en plus du curseur : cliquer sur le
+  // montant affiché le transforme en champ de saisie (montant exact en
+  // Md€, même précision que l'affichage) — converti en pourcentage
+  // d'ajustement à la validation, pour rester la seule source de vérité
+  // partagée avec le curseur (pas de second état à synchroniser).
+  const [enEdition, setEnEdition] = useState(false);
+  const [brouillon, setBrouillon] = useState('');
+
+  const commencerEdition = () => {
+    // Arrondi au dixième de Md€, comme `formatMd` : les montants réels ne
+    // sont pas des ronds exacts (ex. Défense ~ 60,0035 Md€, affiché
+    // "60 Md€") - pré-remplir avec la division brute afficherait une valeur
+    // qui ne correspond pas à ce que l'utilisateur vient de voir.
+    setBrouillon((Math.round((montant / 1_000_000_000) * 10) / 10).toString());
+    setEnEdition(true);
+  };
+
+  const validerEdition = () => {
+    const montantSaisi = Number(brouillon.replace(',', '.'));
+    if (Number.isFinite(montantSaisi) && montantActuel > 0) {
+      const pct = clamp(
+        ((montantSaisi * 1_000_000_000) / montantActuel - 1) * 100,
+        AJUSTEMENT_MIN,
+        AJUSTEMENT_MAX,
+      );
+      onChange(pct);
+    }
+    setEnEdition(false);
+  };
+
   return (
     <li className="flex flex-wrap items-center gap-3 py-1.5 text-sm">
       <label htmlFor={id} className="w-56 flex-none truncate text-gray-700 dark:text-gray-300">
@@ -59,11 +100,36 @@ function CurseurAjustement({
       />
       <span className="w-14 flex-none text-right tabular-nums text-gray-500 dark:text-gray-400">
         {ajustementPct >= 0 ? '+' : ''}
-        {ajustementPct}%
+        {Math.round(ajustementPct)}%
       </span>
-      <span className="w-24 flex-none text-right tabular-nums text-gray-900 dark:text-gray-100">
-        {formatMd(montantActuel * (1 + ajustementPct / 100))}
-      </span>
+      {enEdition ? (
+        <input
+          type="number"
+          step="0.1"
+          ref={(element) => element?.focus()}
+          value={brouillon}
+          onChange={(event) => setBrouillon(event.target.value)}
+          onBlur={validerEdition}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter') event.currentTarget.blur();
+            if (event.key === 'Escape') setEnEdition(false);
+          }}
+          aria-label={`Montant exact pour ${libelle} (Md€)`}
+          className="w-24 flex-none rounded border border-gray-300 bg-white px-1 py-0.5 text-right
+            tabular-nums text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={commencerEdition}
+          title="Cliquer pour saisir un montant exact"
+          className="w-24 flex-none text-right tabular-nums text-gray-900 underline
+            decoration-dotted decoration-gray-400 hover:text-blue-800 dark:text-gray-100
+            dark:hover:text-blue-300"
+        >
+          {formatMd(montant)}
+        </button>
+      )}
     </li>
   );
 }
@@ -108,10 +174,10 @@ export default function Simulateur() {
     ajustementPct: ajustementsMissions[mission.slug] ?? 0,
   }));
 
-  const recettesFiscales = TYPES_RECETTE_AJUSTABLES.map((type) =>
+  const recettesAjustables = TYPES_RECETTE_AJUSTABLES.map((type) =>
     recettes.find((recette) => recette.type === type),
   ).filter((recette): recette is NonNullable<typeof recette> => recette !== undefined);
-  const recettesAjustees: AjustementLigne[] = recettesFiscales.map((recette) => ({
+  const recettesAjustees: AjustementLigne[] = recettesAjustables.map((recette) => ({
     cle: recette.type,
     montantActuel: recette.montantNet,
     ajustementPct: ajustementsRecettes[recette.type] ?? 0,
@@ -244,11 +310,9 @@ export default function Simulateur() {
 
       {mode === 'avance' && (
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Recettes fiscales
-          </h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recettes</h2>
           <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
-            {recettesFiscales.map((recette) => (
+            {recettesAjustables.map((recette) => (
               <CurseurAjustement
                 key={recette.type}
                 cle={recette.type}
