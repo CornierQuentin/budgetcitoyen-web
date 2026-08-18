@@ -26,7 +26,15 @@ module.exports = {
     },
   },
   plugins: ['react', 'react-hooks', '@typescript-eslint'],
-  ignorePatterns: ['dist', 'node_modules', '.eslintrc.cjs', 'vite.config.ts'],
+  ignorePatterns: [
+    'dist',
+    'node_modules',
+    '.eslintrc.cjs',
+    'vite.config.ts',
+    'playwright.config.ts',
+    'playwright-report',
+    'e2e',
+  ],
   rules: {
     'react/react-in-jsx-scope': 'off',
     'react/jsx-uses-react': 'off',
