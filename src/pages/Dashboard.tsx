@@ -227,7 +227,13 @@ export default function Dashboard() {
             )}
           </div>
           {missionsDonutData.length > NB_MISSIONS_DISTINCTES && (
-            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+            // min-h-8 (même valeur que la légende « Sigles » de la colonne
+            // recettes, ci-dessous) : ce texte est plus long et s'enveloppe
+            // sur 2 lignes là où « Sigles » tient sur 1 - sans hauteur
+            // minimale partagée, les deux camemberts ne démarraient pas à la
+            // même hauteur (retour utilisateur : « celui des recettes est
+            // légèrement plus haut »).
+            <p className="mb-2 min-h-8 text-xs text-gray-500 dark:text-gray-400">
               Les {NB_MISSIONS_DISTINCTES} missions les plus importantes sont détaillées
               individuellement ; les autres sont regroupées dans la tranche « Autres »
               (survolez-la pour le détail).
@@ -319,7 +325,9 @@ export default function Dashboard() {
             )}
           </div>
           {donutDataRecettes.length > 0 && (
-            <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+            // min-h-8 : voir le commentaire équivalent sur la légende de la
+            // colonne missions, ci-dessus (même hauteur minimale partagée).
+            <p className="mb-2 flex min-h-8 flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
               <span>Sigles :</span>
               {SIGLES_RECETTES.map((code) => (
                 <GlossaryTerm key={code} term={code}>

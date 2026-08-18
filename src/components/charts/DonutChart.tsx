@@ -96,8 +96,13 @@ const HAUTEUR_LIGNE_SUPPLEMENTAIRE = 12;
 // : au-delà, le libellé s'enveloppe sur une ligne supplémentaire plutôt que
 // d'être tronqué — le nom complet de chaque mission doit rester lisible
 // directement sur le graphique (retour utilisateur), pas seulement dans la
-// légende ou la tooltip au survol.
-const MAX_CARACTERES_PAR_LIGNE_LABEL = 26;
+// légende ou la tooltip au survol. Volontairement réduite (26 à l'origine) :
+// la marge horizontale réservée aux étiquettes a elle-même été réduite pour
+// agrandir le disque (cf. le composant plus bas) — des lignes plus courtes
+// compensent en s'enveloppant davantage, plutôt que de dépasser la largeur
+// du graphique. La hauteur du conteneur, elle, reste généreuse pour
+// absorber ces lignes supplémentaires sans se sentir à l'étroit.
+const MAX_CARACTERES_PAR_LIGNE_LABEL = 18;
 
 /**
  * Enveloppe `label` en plusieurs lignes d'au plus `maxCaracteres` caractères
@@ -401,22 +406,21 @@ export default function DonutChart({
         </Button>
       </div>
 
-      <div
-        ref={exportRef}
-        className="space-y-2 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700
-          dark:bg-gray-900"
-      >
+      <div ref={exportRef} className="space-y-2 bg-white dark:bg-gray-900">
         {/* donut-chart-pie : classe ciblée par src/index.css pour neutraliser
             le contour de focus par défaut du navigateur au clic souris tout
             en le conservant à la navigation clavier (:focus-visible).
-            Hauteur et marges généreuses : les étiquettes affichent désormais
-            le nom complet de chaque tranche (éventuellement enveloppé sur
-            plusieurs lignes, cf. envelopperLabel), ce qui leur demande plus
-            d'espace horizontal (marges gauche/droite) et vertical (hauteur
-            du conteneur) qu'avec l'ancienne troncature à 15 caractères. */}
-        <div className="donut-chart-pie h-[34rem]">
+            Marges horizontales réduites au minimum tenant compte de
+            MAX_CARACTERES_PAR_LIGNE_LABEL (retour utilisateur : graphiques
+            trop petits une fois les deux camemberts côte à côte - moins de
+            marge réservée aux étiquettes laisse plus de place au disque
+            lui-même). La hauteur du conteneur, elle, ne contraint jamais le
+            rayon ici (bien plus grande que la largeur disponible en colonne
+            côte à côte) : elle sert uniquement à donner assez d'espace
+            vertical aux étiquettes qui s'enveloppent sur plusieurs lignes. */}
+        <div className="donut-chart-pie h-[26rem]">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={{ top: 40, right: 170, bottom: 40, left: 170 }}>
+            <PieChart margin={{ top: 24, right: 110, bottom: 24, left: 110 }}>
               <Pie
                 data={data}
                 dataKey="value"
