@@ -119,7 +119,7 @@ export default function LineChart({ data, series, nomFichierExport = 'graphique.
                 name={serie.label}
                 stroke={serie.color}
                 strokeWidth={2}
-                dot={{ r: 4, strokeWidth: 2, stroke: estSombre ? '#111827' : '#fcfcfb' }}
+                dot={{ r: 4, strokeWidth: 2, fill: serie.color, stroke: estSombre ? '#111827' : '#fcfcfb' }}
                 activeDot={{ r: 5 }}
               />
             ))}

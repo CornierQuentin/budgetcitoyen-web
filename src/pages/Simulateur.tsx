@@ -123,9 +123,8 @@ function CurseurAjustement({
           type="button"
           onClick={commencerEdition}
           title="Cliquer pour saisir un montant exact"
-          className="w-24 flex-none text-right tabular-nums text-gray-900 underline
-            decoration-dotted decoration-gray-400 hover:text-blue-800 dark:text-gray-100
-            dark:hover:text-blue-300"
+          className="w-24 flex-none text-right tabular-nums text-gray-900 hover:text-blue-800
+            dark:text-gray-100 dark:hover:text-blue-300"
         >
           {formatMd(montant)}
         </button>

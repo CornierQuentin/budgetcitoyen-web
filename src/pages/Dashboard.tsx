@@ -200,7 +200,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      <section className="grid grid-cols-1 gap-8">
+      <section className="grid grid-cols-1 gap-8 lg:grid-cols-2">
         <div>
           <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
