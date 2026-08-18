@@ -140,6 +140,39 @@ describe('Dashboard', () => {
     expect(screen.getByText('Page mission')).toBeInTheDocument();
   });
 
+  it('affiche, dépliable, le détail complet de toutes les missions triées par montant décroissant', () => {
+    const { container } = renderDashboard();
+
+    // Repliée par défaut : une trentaine de lignes d'un coup surchargerait la
+    // page à l'arrivée sur le Dashboard (cf. commentaire dans Dashboard.tsx).
+    expect(container.querySelector('#detail-complet-missions')).not.toBeInTheDocument();
+
+    const boutonDetail = screen.getByRole('button', {
+      name: `Voir le détail complet des ${missionsMock.length} missions`,
+    });
+    fireEvent.click(boutonDetail);
+
+    const liste = container.querySelector('#detail-complet-missions');
+    expect(liste).toBeInTheDocument();
+
+    // Toutes les missions apparaissent, y compris celles qui seraient
+    // regroupées dans « Autres » sur le camembert (avec seulement 2 missions
+    // ici, aucune ne l'est réellement, mais la liste doit rester exhaustive
+    // quel que soit le nombre de missions).
+    const lignes = liste?.querySelectorAll('li') ?? [];
+    expect(lignes).toHaveLength(missionsMock.length);
+
+    // Triée par montant décroissant : Défense (50 Md€) avant Justice
+    // (10 Md€), avec le montant de chacune.
+    expect(lignes[0]).toHaveTextContent('Défense');
+    expect(lignes[0]).toHaveTextContent('50 Md€');
+    expect(lignes[1]).toHaveTextContent('Justice');
+    expect(lignes[1]).toHaveTextContent('10 Md€');
+
+    // Le bouton bascule vers une action de repli une fois la liste dépliée.
+    expect(screen.getByRole('button', { name: 'Masquer le détail complet' })).toBeInTheDocument();
+  });
+
   it('affiche un rappel des sigles de recettes (IR, TVA, IS, TICPE, AUTRES) avec leur définition', () => {
     renderDashboard();
 

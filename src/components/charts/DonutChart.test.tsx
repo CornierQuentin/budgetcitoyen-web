@@ -85,7 +85,7 @@ describe('DonutChart', () => {
     expect(screen.getAllByText(/Md€/)).toHaveLength(data.length);
   });
 
-  it('tronque un libellé trop long dans son étiquette à trait, sans toucher à la légende', () => {
+  it('enveloppe (sans le tronquer) un libellé trop long pour tenir sur une seule ligne dans son étiquette à trait', () => {
     const libelleLong = 'Écologie, développement et mobilité durables';
     const donneesAvecLibelleLong: DonutDatum[] = [
       ...data,
@@ -96,13 +96,22 @@ describe('DonutChart', () => {
 
     // La légende affiche le libellé complet, intact.
     expect(screen.getByText(libelleLong)).toBeInTheDocument();
-    // L'étiquette à trait, elle, est tronquée avec une ellipse — le texte
-    // complet ne doit donc apparaître qu'une seule fois (dans la légende).
-    expect(screen.getAllByText(libelleLong)).toHaveLength(1);
-    const lignesTexte = Array.from(container.querySelectorAll('.recharts-pie-labels tspan'));
-    const ligneTronquee = lignesTexte.find((tspan) => tspan.textContent?.endsWith('…'));
-    expect(ligneTronquee).toBeDefined();
-    expect(ligneTronquee?.textContent?.length).toBeLessThan(libelleLong.length);
+
+    // Plus aucune troncature avec ellipse nulle part dans le graphique (le
+    // libellé complet doit rester lisible directement sur le graphique).
+    const tousLesTspans = Array.from(container.querySelectorAll('.recharts-pie-labels tspan'));
+    expect(tousLesTspans.some((tspan) => tspan.textContent?.includes('…'))).toBe(false);
+
+    // Les tspans de valeur (formatés en Md€) et les libellés courts ('TVA',
+    // 'IR', déjà couverts par le test précédent) sont exclus pour isoler les
+    // lignes du libellé long : leur concaténation doit reconstituer le
+    // libellé complet, réparti sur plusieurs lignes.
+    const lignesLibelleLong = tousLesTspans
+      .map((tspan) => tspan.textContent ?? '')
+      .filter((texte) => !/Md€/.test(texte) && texte !== 'TVA' && texte !== 'IR');
+
+    expect(lignesLibelleLong.length).toBeGreaterThan(1);
+    expect(lignesLibelleLong.join(' ')).toBe(libelleLong);
   });
 
   it("recalcule les positions de façon stable même si <Pie> rappelle le label plusieurs fois (navigation clavier)", () => {
@@ -146,6 +155,13 @@ describe('DonutChart', () => {
 
     // Une entrée de légende par tranche, dont « Autres ».
     expect(screen.getAllByText('Autres').length).toBeGreaterThanOrEqual(1);
+
+    // Aucun nom de mission tronqué avec une ellipse sur le graphique, même
+    // parmi les libellés les plus longs de ce jeu de données (« Solidarité,
+    // insertion et égalité des chances », « Écologie, développement et
+    // mobilité durables »...).
+    const tspans = container.querySelectorAll('.recharts-pie-labels tspan');
+    expect(Array.from(tspans).some((tspan) => tspan.textContent?.includes('…'))).toBe(false);
   });
 
   it('ne plante pas quand une entrée porte un champ `details` (tranche « Autres » groupée)', () => {
