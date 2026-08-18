@@ -11,6 +11,7 @@ const links: NavLink[] = [
   { to: '/historique', label: 'Historique' },
   { to: '/comparer', label: 'Comparateur' },
   { to: '/mon-budget', label: 'Mon budget' },
+  { to: '/simulateur', label: 'Simulateur' },
   { to: '/donnees', label: 'Données' },
 ];
 

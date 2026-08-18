@@ -26,6 +26,10 @@ describe('Nav', () => {
       'href',
       '/mon-budget',
     );
+    expect(screen.getByRole('link', { name: 'Simulateur' })).toHaveAttribute(
+      'href',
+      '/simulateur',
+    );
     expect(screen.getByRole('link', { name: 'Données' })).toHaveAttribute('href', '/donnees');
   });
 });
