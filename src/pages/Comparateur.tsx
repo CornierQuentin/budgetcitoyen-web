@@ -402,10 +402,14 @@ export default function Comparateur() {
                         <td className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300">
                           {recette.deltaAbsolu !== null ? (
                             <span
+                              // Convention inversée par rapport au tableau des missions :
+                              // pour une recette, une hausse est une bonne nouvelle
+                              // (plus de recettes perçues) donc verte ; une baisse est
+                              // rouge. Retour utilisateur explicite.
                               className={
                                 recette.deltaAbsolu >= 0
-                                  ? 'text-red-700 dark:text-red-400'
-                                  : 'text-green-700 dark:text-green-400'
+                                  ? 'text-green-700 dark:text-green-400'
+                                  : 'text-red-700 dark:text-red-400'
                               }
                             >
                               {recette.deltaAbsolu >= 0 ? '+' : ''}

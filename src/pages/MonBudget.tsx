@@ -14,9 +14,11 @@ export default function MonBudget() {
   // `?revenu_net=` permet de partager un résultat déjà calculé : s'il est
   // présent, il pré-remplit le formulaire et déclenche directement le calcul
   // (pas seulement le champ), pour que la vue partagée affiche le résultat.
+  // En l'absence de valeur dans l'URL, la page affiche par défaut une
+  // estimation pour 2000€/mois plutôt qu'un formulaire vide, pour que le
+  // résultat (et la méthodologie) soit visible dès l'arrivée sur la page.
   const revenuParam = parseIntSearchParam(searchParams.get('revenu_net'));
-  const revenuInitialValide =
-    revenuParam !== undefined && revenuParam >= 0 ? revenuParam : undefined;
+  const revenuInitialValide = revenuParam !== undefined && revenuParam >= 0 ? revenuParam : 2000;
 
   const [revenuNetMensuel, setRevenuNetMensuel] = useState(
     revenuInitialValide !== undefined ? String(revenuInitialValide) : '',
