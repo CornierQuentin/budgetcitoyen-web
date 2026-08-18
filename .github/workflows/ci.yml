@@ -38,6 +38,13 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    env:
+      # .env n'est jamais committe (secrets/config locale) : sans cette
+      # variable, le build embarquerait une baseURL axios vide et les
+      # appels /api/v1/** interceptes par e2e/helpers/mockApi.ts ne
+      # correspondraient jamais, laissant l'app sans donnees. Meme valeur
+      # que .env.example (arbitraire ici, purement mockee).
+      VITE_API_BASE_URL: http://localhost:8001/api/v1
     steps:
       - name: Checkout
         uses: actions/checkout@v4
