@@ -1,18 +1,36 @@
-import { useEffect, useRef } from 'react';
-import { Outlet, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef } from 'react';
+import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 
-import BudgetTreemap from '../components/charts/BudgetTreemap';
 import DonutChart from '../components/charts/DonutChart';
 import { Button } from '../components/ui/Button';
+import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useMissions } from '../hooks/useMissions';
 import { useRecettes } from '../hooks/useRecettes';
 import { useFiltersStore } from '../store/useFiltersStore';
+import type { TypeRecette } from '../types/domain';
 import { exportCsv } from '../utils/exportCsv';
 import { formatMd } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
+import { topNAvecAutres } from '../utils/topNAvecAutres';
+
+// Au-delà de 8 tranches, un camembert devient illisible (cf. skill dataviz :
+// une palette catégorielle n'est validée que jusqu'à 8 séries) — avec une
+// trentaine de missions, les 8 plus grosses restent des tranches distinctes,
+// le reste est cumulé dans une tranche « Autres » (détail au survol).
+const NB_MISSIONS_DISTINCTES = 8;
+
+// Sigles affichés dans la légende du camembert des recettes : la légende est
+// rendue par <Legend> de recharts (à l'intérieur de DonutChart), qui ne
+// permet pas d'y injecter un composant React par entrée (ex. GlossaryTerm
+// avec sa tooltip accessible au clavier). On affiche donc à la place un
+// rappel des sigles juste au-dessus du graphique, chacun cliquable/focusable
+// via GlossaryTerm — mêmes clés que le glossaire (src/utils/glossaire.ts) et
+// que TypeRecette, pour rester aligné avec les valeurs réellement reçues de
+// l'API.
+const SIGLES_RECETTES: TypeRecette[] = ['IR', 'TVA', 'IS', 'TICPE', 'AUTRES'];
 
 export default function Dashboard() {
   const anneeActive = useFiltersStore((state) => state.anneeActive);
@@ -60,6 +78,7 @@ export default function Dashboard() {
     setSearchParams(next, { replace: true });
   }, [anneeActive, searchParams, setSearchParams]);
 
+  const navigate = useNavigate();
   const { data: missions } = useMissions(anneeActive);
   const { data: recettes } = useRecettes(anneeActive);
   // Ni /missions ni /recettes n'exposent de sourceUrl propre : les totaux
@@ -67,26 +86,57 @@ export default function Dashboard() {
   // budget de l'année (même donnée d'origine), via /budget/{annee}.
   const { data: budgetAnnee } = useBudgetAnnee(anneeActive);
 
-  const treemapData = (missions ?? []).map((mission) => ({
-    slug: mission.slug,
+  // Liste complète (non groupée) pour l'export CSV : contrairement au
+  // camembert, l'export ne perd aucune mission dans une tranche « Autres ».
+  const missionsCsvData = (missions ?? []).map((mission) => ({
     nom: mission.nomOfficiel,
     montant: mission.montantTotal,
   }));
 
-  const donutData = (recettes ?? []).map((recette) => ({
+  // Regroupement top-8 + Autres pour le camembert uniquement (cf.
+  // src/utils/topNAvecAutres.ts) : au-delà de 8 tranches un camembert devient
+  // illisible, or une année compte une trentaine de missions.
+  const missionsDonutData = useMemo(
+    () =>
+      topNAvecAutres(
+        (missions ?? []).map((mission) => ({
+          label: mission.nomOfficiel,
+          value: mission.montantTotal,
+        })),
+        NB_MISSIONS_DISTINCTES,
+      ),
+    [missions],
+  );
+
+  // Nom de mission -> slug, pour la navigation au clic sur une tranche : la
+  // tranche « Autres » (qui ne correspond à aucune mission précise) n'a pas
+  // d'entrée dans cette map, donc onSliceClick n'y déclenche aucune
+  // navigation — sans avoir besoin de la distinguer explicitement par son
+  // libellé.
+  const slugParNomMission = useMemo(
+    () => new Map((missions ?? []).map((mission) => [mission.nomOfficiel, mission.slug])),
+    [missions],
+  );
+
+  const handleClicTrancheMission = (label: string) => {
+    const slug = slugParNomMission.get(label);
+    if (slug) navigate(`/tableau-de-bord/mission/${slug}`);
+  };
+
+  const donutDataRecettes = (recettes ?? []).map((recette) => ({
     label: recette.type,
     value: recette.montantNet,
   }));
 
   const handleExportMissionsCsv = () => {
-    exportCsv(treemapData, `missions-${anneeActive}.csv`, [
+    exportCsv(missionsCsvData, `missions-${anneeActive}.csv`, [
       { cle: 'nom', libelle: 'Mission' },
       { cle: 'montant', libelle: 'Montant (€)' },
     ]);
   };
 
   const handleExportRecettesCsv = () => {
-    exportCsv(donutData, `recettes-${anneeActive}.csv`, [
+    exportCsv(donutDataRecettes, `recettes-${anneeActive}.csv`, [
       { cle: 'label', libelle: 'Type de recette' },
       { cle: 'value', libelle: 'Montant net (€)' },
     ]);
@@ -123,7 +173,7 @@ export default function Dashboard() {
         )}
       </div>
 
-      <section className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <section className="grid grid-cols-1 gap-8">
         <div>
           <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
             <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -138,7 +188,7 @@ export default function Dashboard() {
                 </span>
               )}
             </h2>
-            {treemapData.length > 0 && (
+            {missionsCsvData.length > 0 && (
               <Button
                 type="button"
                 variant="secondary"
@@ -149,7 +199,18 @@ export default function Dashboard() {
               </Button>
             )}
           </div>
-          <BudgetTreemap data={treemapData} nomFichierExport={`missions-${anneeActive}.png`} />
+          {missionsDonutData.length > NB_MISSIONS_DISTINCTES && (
+            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+              Les {NB_MISSIONS_DISTINCTES} missions les plus importantes sont détaillées
+              individuellement ; les autres sont regroupées dans la tranche « Autres »
+              (survolez-la pour le détail).
+            </p>
+          )}
+          <DonutChart
+            data={missionsDonutData}
+            nomFichierExport={`missions-${anneeActive}.png`}
+            onSliceClick={handleClicTrancheMission}
+          />
         </div>
         <div>
           <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
@@ -159,7 +220,7 @@ export default function Dashboard() {
                 <SourceIcon url={budgetAnnee.sourceUrl} label={`recettes ${anneeActive}`} />
               )}
             </h2>
-            {donutData.length > 0 && (
+            {donutDataRecettes.length > 0 && (
               <Button
                 type="button"
                 variant="secondary"
@@ -170,7 +231,17 @@ export default function Dashboard() {
               </Button>
             )}
           </div>
-          <DonutChart data={donutData} nomFichierExport={`recettes-${anneeActive}.png`} />
+          {donutDataRecettes.length > 0 && (
+            <p className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400">
+              <span>Sigles :</span>
+              {SIGLES_RECETTES.map((code) => (
+                <GlossaryTerm key={code} term={code}>
+                  {code}
+                </GlossaryTerm>
+              ))}
+            </p>
+          )}
+          <DonutChart data={donutDataRecettes} nomFichierExport={`recettes-${anneeActive}.png`} />
         </div>
       </section>
 

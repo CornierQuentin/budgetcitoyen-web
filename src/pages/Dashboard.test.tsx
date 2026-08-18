@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useFiltersStore } from '../store/useFiltersStore';
 import type { AnneeBudget, AnneeBudgetDetail, Mission, Recette } from '../types/domain';
@@ -31,6 +31,7 @@ const missionsMock: Mission[] = [
 
 const recettesMock: Recette[] = [
   { annee: 2023, type: 'TVA', montantBrut: 200, montantNet: 190 },
+  { annee: 2023, type: 'IR', montantBrut: 100, montantNet: 95 },
 ];
 
 const budgetAnneeMock: AnneeBudgetDetail = {
@@ -71,6 +72,7 @@ function renderDashboard(initialPath = '/tableau-de-bord') {
     <MemoryRouter initialEntries={[initialPath]}>
       <Routes>
         <Route path="/tableau-de-bord" element={<Dashboard />} />
+        <Route path="/tableau-de-bord/mission/:slug" element={<div>Page mission</div>} />
       </Routes>
       <SondeUrl />
     </MemoryRouter>,
@@ -78,17 +80,36 @@ function renderDashboard(initialPath = '/tableau-de-bord') {
 }
 
 describe('Dashboard', () => {
+  // jsdom ne calcule pas de vraie mise en page : getBoundingClientRect
+  // renvoie 0x0 par défaut, ce qui fait que le ResponsiveContainer de
+  // recharts (utilisé par les deux camemberts) refuse de rendre ses enfants
+  // (Pie, Legend...). On simule un conteneur non vide, comme dans un vrai
+  // navigateur (même pattern que DonutChart.test.tsx).
   beforeEach(() => {
     useFiltersStore.setState({ anneeActive: new Date().getFullYear() });
+    vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+      width: 400,
+      height: 300,
+      top: 0,
+      left: 0,
+      right: 400,
+      bottom: 300,
+      x: 0,
+      y: 0,
+      toJSON: () => {},
+    } as DOMRect);
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it('affiche le titre, les missions par dépense et se recale sur la dernière année disponible', () => {
     renderDashboard();
 
     expect(screen.getByRole('heading', { name: 'Tableau de bord' })).toBeInTheDocument();
-    // "Défense"/"Justice" apparaissent à la fois dans le SVG du treemap et
-    // dans sa liste de repli mobile (toujours présente dans le DOM, visible
-    // uniquement sous md via CSS) : on vérifie juste leur présence.
+    // "Défense"/"Justice" apparaissent dans la légende du camembert des
+    // missions (recharts <Legend>).
     expect(screen.getAllByText('Défense').length).toBeGreaterThan(0);
     expect(screen.getAllByText('Justice').length).toBeGreaterThan(0);
     expect(screen.getByTestId('url-actuelle')).toHaveTextContent('/tableau-de-bord?annee=2023');
@@ -106,5 +127,29 @@ describe('Dashboard', () => {
     renderDashboard();
 
     expect(screen.getAllByRole('button', { name: /exporter csv/i }).length).toBeGreaterThan(0);
+  });
+
+  it('navigue vers la page de la mission cliquée dans le camembert des missions', () => {
+    const { container } = renderDashboard();
+
+    const secteurs = container.querySelectorAll('.recharts-pie-sector path');
+    expect(secteurs.length).toBeGreaterThan(0);
+
+    fireEvent.click(secteurs[0]);
+
+    expect(screen.getByText('Page mission')).toBeInTheDocument();
+  });
+
+  it('affiche un rappel des sigles de recettes (IR, TVA, IS, TICPE, AUTRES) avec leur définition', () => {
+    renderDashboard();
+
+    // Un seul <GlossaryTerm> par sigle est affiché en rappel au-dessus du
+    // camembert des recettes (la légende recharts en affiche aussi, d'où le
+    // `getAllByText`).
+    expect(screen.getAllByText('IR').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('TVA').length).toBeGreaterThan(0);
+    expect(screen.getByText('IS')).toBeInTheDocument();
+    expect(screen.getByText('TICPE')).toBeInTheDocument();
+    expect(screen.getByText('AUTRES')).toBeInTheDocument();
   });
 });
