@@ -14,3 +14,11 @@ function ResizeObserverMock(this: ResizeObserver) {
 if (typeof globalThis.ResizeObserver === 'undefined') {
   globalThis.ResizeObserver = ResizeObserverMock as unknown as typeof ResizeObserver;
 }
+
+// jsdom n'implémente pas non plus Element.prototype.scrollIntoView (utilisé
+// par Mission.tsx pour défiler automatiquement jusqu'à son contenu, monté
+// tout en bas du Dashboard via <Outlet />). Polyfill minimal : aucun test
+// n'a besoin d'un vrai défilement.
+if (typeof Element.prototype.scrollIntoView === 'undefined') {
+  Element.prototype.scrollIntoView = () => {};
+}

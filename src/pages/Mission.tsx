@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
@@ -10,7 +11,26 @@ import { formatEuros, formatMd } from '../utils/format';
 export default function Mission() {
   const { slug } = useParams<{ slug: string }>();
 
+  // Cette page se monte dans l'<Outlet /> du Dashboard, tout en bas de la
+  // page (sous les deux camemberts) : sans défilement automatique, rien ne
+  // laisse deviner qu'un clic sur une mission (tranche du camembert ou ligne
+  // du détail complet) a bien affiché quelque chose — retour utilisateur.
+  const conteneurRef = useRef<HTMLElement>(null);
   const { data: detail, isLoading, isError } = useMissionDetail(slug);
+
+  // Dépend aussi de `isLoading` : au premier rendu (état de chargement), la
+  // section est très courte et le défilement calculé à ce moment-là n'amène
+  // pas la vraie hauteur finale à l'écran. Une fois les données arrivées
+  // (isLoading passe à false, `slug` inchangé), l'effet se redéclenche et
+  // défile vers le contenu complet, désormais dans sa hauteur définitive.
+  // `behavior: 'auto'` (saut instantané) plutôt que 'smooth' : ce dernier
+  // dépend de l'animation par compositing du navigateur (rAF), qui peut être
+  // throttled ou simplement ignorée selon le contexte (onglet en arrière-plan,
+  // prefers-reduced-motion) — un saut instantané est fiable dans tous les cas
+  // et répond au besoin exprimé (voir qu'un clic a bien affiché du contenu).
+  useEffect(() => {
+    conteneurRef.current?.scrollIntoView({ behavior: 'auto', block: 'start' });
+  }, [slug, isLoading]);
   const { data: historique } = useMissionHistorique(slug);
   // Ne garde que les années où le libellé change réellement par rapport à
   // l'année précédente : sur ~7 ans, la plupart des missions gardent le même
@@ -31,7 +51,7 @@ export default function Mission() {
 
   if (isLoading) {
     return (
-      <section className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+      <section ref={conteneurRef} className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
         <p className="text-sm text-gray-500 dark:text-gray-400">Chargement de la mission…</p>
       </section>
     );
@@ -39,7 +59,7 @@ export default function Mission() {
 
   if (isError || !detail) {
     return (
-      <section className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+      <section ref={conteneurRef} className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
         <p className="text-sm text-gray-500 dark:text-gray-400">
           Mission introuvable pour « {slug} ».
         </p>
@@ -48,7 +68,7 @@ export default function Mission() {
   }
 
   return (
-    <section className="space-y-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+    <section ref={conteneurRef} className="space-y-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
       <div>
         <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
           {detail.nomOfficiel}
