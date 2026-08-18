@@ -1,8 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
-import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useFiltersStore } from '../store/useFiltersStore';
 import type { AnneeBudget } from '../types/domain';
 
 const historiqueMock: AnneeBudget[] = [
@@ -18,56 +16,56 @@ vi.mock('../hooks/useHistorique', () => ({
 // eslint-disable-next-line import/first
 import Historique from './Historique';
 
-function SondeUrl() {
-  const location = useLocation();
-  return <div data-testid="url-actuelle">{`${location.pathname}${location.search}`}</div>;
-}
-
-function renderHistorique(initialPath = '/historique') {
-  return render(
-    <MemoryRouter initialEntries={[initialPath]}>
-      <Routes>
-        <Route path="/historique" element={<Historique />} />
-      </Routes>
-      <SondeUrl />
-    </MemoryRouter>,
-  );
-}
+// jsdom ne calcule pas de vraie mise en page : getBoundingClientRect renvoie
+// 0x0 par défaut, ce qui fait que le ResponsiveContainer de recharts refuse
+// de rendre ses enfants (Line, Legend...). On simule un conteneur non vide,
+// comme dans un vrai navigateur (cf. LineChart.test.tsx).
+beforeEach(() => {
+  vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
+    width: 600,
+    height: 300,
+    top: 0,
+    left: 0,
+    right: 600,
+    bottom: 300,
+    x: 0,
+    y: 0,
+    toJSON: () => {},
+  } as DOMRect);
+});
 
 describe('Historique', () => {
-  beforeEach(() => {
-    useFiltersStore.setState({ anneeActive: new Date().getFullYear() });
-  });
-
-  it('se recale sur la dernière année disponible et affiche son détail', () => {
-    renderHistorique();
+  it("affiche deux graphiques distincts (dépenses/recettes, puis déficit sur sa propre échelle)", () => {
+    render(<Historique />);
 
     expect(screen.getByRole('heading', { name: 'Historique' })).toBeInTheDocument();
-    expect(screen.getByText('Année sélectionnée : 2023')).toBeInTheDocument();
-    expect(screen.getByText('Année 2023')).toBeInTheDocument();
-    expect(screen.getByText('100 Md€')).toBeInTheDocument();
-    expect(screen.getByTestId('url-actuelle')).toHaveTextContent('/historique?annee=2023');
+    expect(screen.getByRole('heading', { name: 'Dépenses et recettes nettes' })).toBeInTheDocument();
+    // Le nom accessible du second titre inclut aussi la définition du
+    // glossaire (portée par le GlossaryTerm imbriqué), d'où le match partiel.
+    expect(screen.getByRole('heading', { name: /^Déficit/ })).toBeInTheDocument();
+
+    // Le graphique dépenses/recettes ne trace pas le déficit, et
+    // inversement : chaque légende recharts est bien limitée à ses propres
+    // séries (vérifie que series= est correctement cloisonné entre les deux
+    // instances de LineChart).
+    expect(screen.getByText('Dépenses nettes')).toBeInTheDocument();
+    expect(screen.getByText('Recettes nettes')).toBeInTheDocument();
+    // Le titre de section (bouton GlossaryTerm) et la légende du graphique
+    // affichent tous deux le texte exact « Déficit ».
+    expect(screen.getAllByText('Déficit')).toHaveLength(2);
   });
 
-  it("respecte l'année passée dans l'URL au montage", () => {
-    renderHistorique('/historique?annee=2021');
+  it("ne propose plus de sélecteur d'année (retiré : faisait doublon avec le survol des courbes)", () => {
+    render(<Historique />);
 
-    expect(screen.getByText('Année sélectionnée : 2021')).toBeInTheDocument();
-    expect(screen.getByText('Année 2021')).toBeInTheDocument();
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument();
+    expect(screen.queryByText(/année sélectionnée/i)).not.toBeInTheDocument();
   });
 
-  it("met à jour l'année sélectionnée (et l'URL) via le curseur", () => {
-    renderHistorique();
-
-    fireEvent.change(screen.getByLabelText(/année sélectionnée/i), { target: { value: '2022' } });
-
-    expect(screen.getByText('Année sélectionnée : 2022')).toBeInTheDocument();
-    expect(screen.getByTestId('url-actuelle')).toHaveTextContent('/historique?annee=2022');
-  });
-
-  it('propose un export CSV', () => {
-    renderHistorique();
+  it('propose un export CSV et un export PNG par graphique', () => {
+    render(<Historique />);
 
     expect(screen.getByRole('button', { name: /exporter csv/i })).toBeInTheDocument();
+    expect(screen.getAllByRole('button', { name: /exporter png/i })).toHaveLength(2);
   });
 });

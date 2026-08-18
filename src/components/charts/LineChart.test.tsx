@@ -1,12 +1,19 @@
 import { render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import LineChart, { type LineChartDatum } from './LineChart';
+import LineChart, { type LineChartDatum, type LineChartSerie } from './LineChart';
 
 const data: LineChartDatum[] = [
   { annee: 2022, depenses: 100_000_000_000, recettes: 90_000_000_000, deficit: -10_000_000_000 },
   { annee: 2023, depenses: 110_000_000_000, recettes: 95_000_000_000, deficit: -15_000_000_000 },
 ];
+
+const seriesDepensesRecettes: LineChartSerie[] = [
+  { key: 'depenses', label: 'Dépenses nettes', color: '#2a78d6' },
+  { key: 'recettes', label: 'Recettes nettes', color: '#eb6834' },
+];
+
+const seriesDeficit: LineChartSerie[] = [{ key: 'deficit', label: 'Déficit', color: '#1baf7a' }];
 
 // jsdom ne calcule pas de vraie mise en page : getBoundingClientRect renvoie
 // 0x0 par défaut, ce qui fait que le ResponsiveContainer de recharts refuse
@@ -32,18 +39,25 @@ afterEach(() => {
 
 describe('LineChart', () => {
   it("affiche le message d'absence de données sans planter, quand data est vide", () => {
-    render(<LineChart data={[]} />);
+    render(<LineChart data={[]} series={seriesDepensesRecettes} />);
 
     expect(screen.getByText(/aucune donnée à afficher/i)).toBeInTheDocument();
   });
 
   it('se rend sans planter avec des données et propose un export PNG', () => {
-    render(<LineChart data={data} />);
+    render(<LineChart data={data} series={seriesDepensesRecettes} />);
 
     expect(screen.getByRole('button', { name: /exporter png/i })).toBeInTheDocument();
     // La légende recharts affiche le nom de chaque série.
     expect(screen.getByText('Dépenses nettes')).toBeInTheDocument();
     expect(screen.getByText('Recettes nettes')).toBeInTheDocument();
+  });
+
+  it("ne trace que les séries passées en prop (ex. le déficit seul, sur son propre graphique)", () => {
+    render(<LineChart data={data} series={seriesDeficit} />);
+
     expect(screen.getByText('Déficit')).toBeInTheDocument();
+    expect(screen.queryByText('Dépenses nettes')).not.toBeInTheDocument();
+    expect(screen.queryByText('Recettes nettes')).not.toBeInTheDocument();
   });
 });
