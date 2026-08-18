@@ -16,32 +16,34 @@ import { Button } from '../ui/Button';
 
 export interface LineChartDatum {
   annee: number;
-  depenses: number;
-  recettes: number;
-  deficit: number;
+  [cle: string]: number;
+}
+
+/**
+ * Une courbe à tracer : sa clé dans `data`, son libellé de légende/tooltip et
+ * sa couleur. Généricité volontaire (plutôt qu'une liste de séries figée en
+ * dur dans ce composant) : elle permet à un même appelant de tracer plusieurs
+ * graphiques avec des sous-ensembles différents des mêmes données — ex.
+ * dépenses/recettes d'un côté, déficit de l'autre, chacun sur sa propre
+ * échelle Y (recharts calcule le domaine de l'axe à partir des seules
+ * `dataKey` réellement tracées par ce graphique, même si `data` contient
+ * d'autres champs numériques inutilisés ici).
+ */
+export interface LineChartSerie {
+  key: string;
+  label: string;
+  color: string;
 }
 
 interface LineChartProps {
   data: LineChartDatum[];
+  /** Courbes à tracer sur ce graphique (voir LineChartSerie). */
+  series: LineChartSerie[];
   /** Nom de fichier proposé pour l'export PNG (CDC 6.2). */
   nomFichierExport?: string;
 }
 
-// Palette catégorielle validée (skill dataviz), ordre fixe.
-const COLOR_DEPENSES = '#2a78d6'; // blue
-const COLOR_RECETTES = '#eb6834'; // orange
-const COLOR_DEFICIT = '#1baf7a'; // aqua
-
-const SERIES = [
-  { key: 'depenses', label: 'Dépenses nettes', color: COLOR_DEPENSES },
-  { key: 'recettes', label: 'Recettes nettes', color: COLOR_RECETTES },
-  { key: 'deficit', label: 'Déficit', color: COLOR_DEFICIT },
-] as const;
-
-export default function LineChart({
-  data,
-  nomFichierExport = 'historique-depenses-recettes-deficit.png',
-}: LineChartProps) {
+export default function LineChart({ data, series, nomFichierExport = 'graphique.png' }: LineChartProps) {
   const estSombre = useThemeStore((state) => state.theme === 'dark');
   const { ref: exportRef, exporterPng, enCours: exportEnCours } = useExportPng<HTMLDivElement>();
 
@@ -109,7 +111,7 @@ export default function LineChart({
               }}
             />
             <Legend wrapperStyle={{ fontSize: 12, color: tickColor }} />
-            {SERIES.map((serie) => (
+            {series.map((serie) => (
               <Line
                 key={serie.key}
                 type="monotone"

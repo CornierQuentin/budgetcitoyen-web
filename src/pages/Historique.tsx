@@ -1,72 +1,25 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-
-import LineChart from '../components/charts/LineChart';
+import LineChart, { type LineChartSerie } from '../components/charts/LineChart';
 import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
+import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { useHistorique } from '../hooks/useHistorique';
-import { useFiltersStore } from '../store/useFiltersStore';
+import { CATEGORICAL_COLORS } from '../utils/couleurCategorielle';
 import { exportCsv } from '../utils/exportCsv';
-import { formatMd } from '../utils/format';
-import { parseIntSearchParam } from '../utils/searchParams';
+
+// Mêmes couleurs que l'ancien graphique unique (palette catégorielle
+// validée, cf. skill dataviz) : dépenses/recettes gardent leurs deux
+// premières teintes, le déficit garde la sienne bien qu'il vive désormais
+// dans son propre graphique — la continuité visuelle facilite le repérage
+// pour les utilisateurs habitués à l'ancien affichage.
+const SERIES_DEPENSES_RECETTES: LineChartSerie[] = [
+  { key: 'depenses', label: 'Dépenses nettes', color: CATEGORICAL_COLORS[0] },
+  { key: 'recettes', label: 'Recettes nettes', color: CATEGORICAL_COLORS[1] },
+];
+const SERIES_DEFICIT: LineChartSerie[] = [
+  { key: 'deficit', label: 'Déficit', color: CATEGORICAL_COLORS[2] },
+];
 
 export default function Historique() {
-  const anneeActive = useFiltersStore((state) => state.anneeActive);
-  const setAnneeActive = useFiltersStore((state) => state.setAnneeActive);
-
   const { data: historique } = useHistorique();
-
-  const annees = useMemo(
-    () => (historique ?? []).map((item) => item.annee).sort((a, b) => a - b),
-    [historique],
-  );
-  const anneeMin = annees[0];
-  const anneeMax = annees[annees.length - 1];
-
-  // Recale l'année active sur une année réellement disponible dans la série,
-  // dès que celle-ci est chargée (le store est initialisé sur l'année civile
-  // en cours, qui n'a pas forcément de données). Déclaré AVANT l'effet de
-  // lecture de l'URL ci-dessous (même ordre que Dashboard.tsx) : les deux
-  // effets s'exécutent dans le même flush et lisent le même `anneeActive`
-  // (celui du rendu courant, potentiellement obsolète l'un pour l'autre) ;
-  // que ce recalage tourne en premier garantit qu'une année valide passée
-  // dans l'URL (traitée juste après) a toujours le dernier mot, même quand
-  // `historique` est déjà en cache et disponible dès le premier rendu.
-  useEffect(() => {
-    if (annees.length > 0 && !annees.includes(anneeActive)) {
-      setAnneeActive(anneeMax);
-    }
-  }, [annees, anneeActive, anneeMax, setAnneeActive]);
-
-  const [searchParams, setSearchParams] = useSearchParams();
-  // `anneeActive` vit dans un store Zustand partagé avec le Dashboard : au
-  // montage, on n'applique le `?annee=` de l'URL que s'il diffère de l'année
-  // déjà active (héritée d'une navigation précédente), pour ne jamais forcer
-  // une redirection entre les deux pages. Le flag évite que l'effet de
-  // synchronisation URL <- état (ci-dessous) n'écrase cette lecture initiale
-  // avec la valeur (obsolète) du rendu précédant la mise à jour du store.
-  const skipProchaineEcritureUrl = useRef(false);
-  useEffect(() => {
-    const parsed = parseIntSearchParam(searchParams.get('annee'));
-    if (parsed !== undefined && parsed !== anneeActive) {
-      skipProchaineEcritureUrl.current = true;
-      setAnneeActive(parsed);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // Répercute l'année active dans l'URL de cette page, pour la rendre
-  // partageable.
-  useEffect(() => {
-    if (skipProchaineEcritureUrl.current) {
-      skipProchaineEcritureUrl.current = false;
-      return;
-    }
-    if (searchParams.get('annee') === String(anneeActive)) return;
-    const next = new URLSearchParams(searchParams);
-    next.set('annee', String(anneeActive));
-    setSearchParams(next, { replace: true });
-  }, [anneeActive, searchParams, setSearchParams]);
 
   const data = (historique ?? []).map((item) => ({
     annee: item.annee,
@@ -74,8 +27,6 @@ export default function Historique() {
     recettes: item.recettesNettes,
     deficit: item.deficit,
   }));
-
-  const anneeSelectionnee = historique?.find((item) => item.annee === anneeActive);
 
   const handleExportCsv = () => {
     exportCsv(data, 'historique-depenses-recettes-deficit.csv', [
@@ -97,51 +48,28 @@ export default function Historique() {
         )}
       </div>
 
-      <LineChart data={data} />
+      <div>
+        <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+          Dépenses et recettes nettes
+        </h2>
+        <LineChart
+          data={data}
+          series={SERIES_DEPENSES_RECETTES}
+          nomFichierExport="historique-depenses-recettes.png"
+        />
+      </div>
 
-      {annees.length > 0 && (
-        <div className="space-y-4">
-          <div>
-            <label
-              htmlFor="annee-historique"
-              className="block text-sm font-medium text-gray-700 dark:text-gray-300"
-            >
-              Année sélectionnée : {anneeActive}
-            </label>
-            <input
-              id="annee-historique"
-              type="range"
-              min={anneeMin}
-              max={anneeMax}
-              value={anneeActive}
-              onChange={(event) => setAnneeActive(Number(event.target.value))}
-              className="mt-2 w-full max-w-md"
-            />
-          </div>
-
-          {anneeSelectionnee && (
-            <Card className="max-w-sm">
-              <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
-                Année {anneeSelectionnee.annee}
-              </p>
-              <dl className="mt-2 space-y-1 text-sm text-gray-600 dark:text-gray-300">
-                <div className="flex justify-between">
-                  <dt>Dépenses nettes</dt>
-                  <dd>{formatMd(anneeSelectionnee.depensesNettes)}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>Recettes nettes</dt>
-                  <dd>{formatMd(anneeSelectionnee.recettesNettes)}</dd>
-                </div>
-                <div className="flex justify-between">
-                  <dt>Déficit</dt>
-                  <dd>{formatMd(anneeSelectionnee.deficit)}</dd>
-                </div>
-              </dl>
-            </Card>
-          )}
-        </div>
-      )}
+      <div>
+        <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <GlossaryTerm term="déficit">Déficit</GlossaryTerm>
+        </h2>
+        {/* Graphique distinct plutôt qu'une troisième courbe sur le graphique
+            ci-dessus : le déficit (~90-150 Md€) est un ordre de grandeur
+            plus petit que dépenses/recettes (~300-600 Md€) — sur un axe Y
+            commun, sa courbe serait écrasée en bas du graphique et quasi
+            illisible. Une échelle dédiée le rend enfin lisible. */}
+        <LineChart data={data} series={SERIES_DEFICIT} nomFichierExport="historique-deficit.png" />
+      </div>
     </div>
   );
 }
