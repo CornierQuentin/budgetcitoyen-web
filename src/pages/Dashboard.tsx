@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 
 import DonutChart from '../components/charts/DonutChart';
+import { PageLoader } from '../components/layout/PageLoader';
 import { Button } from '../components/ui/Button';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { SourceIcon } from '../components/ui/SourceIcon';
@@ -331,7 +332,15 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <Outlet />
+      {/* Suspense local (plutôt que de compter sur celui du routeur, plus haut
+          dans l'arbre) : Mission est elle aussi chargée en lazy (React.lazy),
+          sans ce boundary dédié son chargement ferait disparaître toute la
+          page — camemberts déjà rendus compris — derrière le repli global le
+          temps du téléchargement du chunk, au lieu de ne montrer un repli que
+          pour la seule section de détail. */}
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
     </div>
   );
 }

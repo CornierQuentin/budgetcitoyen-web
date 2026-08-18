@@ -1,21 +1,26 @@
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 
 import Footer from './components/layout/Footer';
 import Header from './components/layout/Header';
-import Comparateur from './pages/Comparateur';
-import Dashboard from './pages/Dashboard';
-import Donnees from './pages/Donnees';
-import Historique from './pages/Historique';
-import Home from './pages/Home';
-import Mission from './pages/Mission';
-import MonBudget from './pages/MonBudget';
+import { PageLoader } from './components/layout/PageLoader';
+
+const Comparateur = lazy(() => import('./pages/Comparateur'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Donnees = lazy(() => import('./pages/Donnees'));
+const Historique = lazy(() => import('./pages/Historique'));
+const Home = lazy(() => import('./pages/Home'));
+const Mission = lazy(() => import('./pages/Mission'));
+const MonBudget = lazy(() => import('./pages/MonBudget'));
 
 function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
-        <Outlet />
+        <Suspense fallback={<PageLoader />}>
+          <Outlet />
+        </Suspense>
       </main>
       <Footer />
     </div>
