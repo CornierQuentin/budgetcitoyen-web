@@ -12,6 +12,7 @@ const Historique = lazy(() => import('./pages/Historique'));
 const Home = lazy(() => import('./pages/Home'));
 const Mission = lazy(() => import('./pages/Mission'));
 const MonBudget = lazy(() => import('./pages/MonBudget'));
+const Simulateur = lazy(() => import('./pages/Simulateur'));
 
 function Layout() {
   return (
@@ -41,6 +42,7 @@ export const router = createBrowserRouter([
       { path: 'historique', element: <Historique /> },
       { path: 'comparer', element: <Comparateur /> },
       { path: 'mon-budget', element: <MonBudget /> },
+      { path: 'simulateur', element: <Simulateur /> },
       { path: 'donnees', element: <Donnees /> },
     ],
   },

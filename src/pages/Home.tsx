@@ -166,6 +166,11 @@ export default function Home() {
             </Link>
           </li>
           <li>
+            <Link to="/simulateur" className="text-blue-800 hover:underline dark:text-blue-300">
+              Simulateur
+            </Link>
+          </li>
+          <li>
             <Link to="/donnees" className="text-blue-800 hover:underline dark:text-blue-300">
               Données
             </Link>
