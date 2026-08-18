@@ -9,3 +9,32 @@
 body {
   @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100;
 }
+
+/* Focus des tranches du DonutChart (recharts Pie), scopé à la classe
+   `donut-chart-pie` posée sur son conteneur (src/components/charts/DonutChart.tsx).
+   Recharts pose un vrai tabIndex clavier sur le camembert entier (navigation
+   par tranche aux flèches) et un tabIndex=-1 « focusable au clic » sur
+   chaque tranche (<g class="recharts-pie-sector">) pour son mécanisme interne
+   — or un élément focusable au clic affiche, par défaut, le contour de focus
+   du navigateur même lors d'un simple clic souris, ce qui donnait un
+   rectangle de sélection incongru au clic sur une tranche (retour
+   utilisateur). On masque ce contour uniquement pour :focus (qui capte aussi
+   le clic souris) et on le restaure proprement via :focus-visible, qui ne
+   s'active que pour une navigation clavier dans les navigateurs modernes —
+   l'indicateur d'accessibilité clavier reste donc intact. */
+.donut-chart-pie .recharts-pie:focus,
+.donut-chart-pie .recharts-pie-sector:focus {
+  outline: none;
+}
+
+.donut-chart-pie .recharts-pie:focus-visible,
+.donut-chart-pie .recharts-pie-sector:focus-visible {
+  outline: 2px solid #1e40af;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+.dark .donut-chart-pie .recharts-pie:focus-visible,
+.dark .donut-chart-pie .recharts-pie-sector:focus-visible {
+  outline-color: #60a5fa;
+}
