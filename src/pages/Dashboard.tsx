@@ -254,35 +254,43 @@ export default function Dashboard() {
               {detailMissionsVisible && (
                 <ul id="detail-complet-missions" className="mt-3 space-y-1.5">
                   {missionsTriees.map((mission) => (
-                    <li key={mission.slug} className="flex items-center gap-3 text-sm">
-                      <span
-                        className="w-56 flex-none truncate text-gray-700 dark:text-gray-300"
-                        title={mission.nomOfficiel}
+                    <li key={mission.slug}>
+                      <button
+                        type="button"
+                        onClick={() => navigate(`/tableau-de-bord/mission/${mission.slug}`)}
+                        className="flex w-full items-center gap-3 rounded px-1 py-1 text-left
+                          text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
+                        aria-label={`Voir le détail de la mission ${mission.nomOfficiel} : ${formatMd(mission.montantTotal)}`}
                       >
-                        {mission.nomOfficiel}
-                      </span>
-                      <span className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-gray-800">
                         <span
-                          className="block h-2 rounded-full bg-blue-700 dark:bg-blue-500"
-                          style={{
-                            width: `${
-                              missionsMontantMax > 0
-                                ? (mission.montantTotal / missionsMontantMax) * 100
-                                : 0
-                            }%`,
-                          }}
-                        />
-                      </span>
-                      <span className="w-20 flex-none text-right text-gray-600 dark:text-gray-300">
-                        {formatMd(mission.montantTotal)}
-                      </span>
-                      <span className="w-14 flex-none text-right text-gray-400 dark:text-gray-500">
-                        {formatPct(
-                          missionsMontantTotal > 0
-                            ? mission.montantTotal / missionsMontantTotal
-                            : 0,
-                        )}
-                      </span>
+                          className="w-56 flex-none truncate text-gray-700 dark:text-gray-300"
+                          title={mission.nomOfficiel}
+                        >
+                          {mission.nomOfficiel}
+                        </span>
+                        <span className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                          <span
+                            className="block h-2 rounded-full bg-blue-700 dark:bg-blue-500"
+                            style={{
+                              width: `${
+                                missionsMontantMax > 0
+                                  ? (mission.montantTotal / missionsMontantMax) * 100
+                                  : 0
+                              }%`,
+                            }}
+                          />
+                        </span>
+                        <span className="w-20 flex-none text-right text-gray-600 dark:text-gray-300">
+                          {formatMd(mission.montantTotal)}
+                        </span>
+                        <span className="w-14 flex-none text-right text-gray-400 dark:text-gray-500">
+                          {formatPct(
+                            missionsMontantTotal > 0
+                              ? mission.montantTotal / missionsMontantTotal
+                              : 0,
+                          )}
+                        </span>
+                      </button>
                     </li>
                   ))}
                 </ul>
