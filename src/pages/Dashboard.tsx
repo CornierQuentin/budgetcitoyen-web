@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 
 import DonutChart from '../components/charts/DonutChart';
@@ -12,7 +12,7 @@ import { useRecettes } from '../hooks/useRecettes';
 import { useFiltersStore } from '../store/useFiltersStore';
 import type { TypeRecette } from '../types/domain';
 import { exportCsv } from '../utils/exportCsv';
-import { formatMd } from '../utils/format';
+import { formatMd, formatPct } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
 import { topNAvecAutres } from '../utils/topNAvecAutres';
 
@@ -78,6 +78,14 @@ export default function Dashboard() {
     setSearchParams(next, { replace: true });
   }, [anneeActive, searchParams, setSearchParams]);
 
+  // Repliée par défaut : une trentaine de lignes d'un coup surchargerait la
+  // page à l'arrivée sur le Dashboard, alors que le camembert (top-8 +
+  // Autres) suffit déjà à la lecture rapide. Un simple bouton donne accès au
+  // détail complet, y compris des missions regroupées dans « Autres »
+  // (retour utilisateur : ce détail n'était visible qu'au survol du
+  // camembert, pas assez accessible).
+  const [detailMissionsVisible, setDetailMissionsVisible] = useState(false);
+
   const navigate = useNavigate();
   const { data: missions } = useMissions(anneeActive);
   const { data: recettes } = useRecettes(anneeActive);
@@ -106,6 +114,24 @@ export default function Dashboard() {
         NB_MISSIONS_DISTINCTES,
       ),
     [missions],
+  );
+
+  // Liste complète triée par montant décroissant, pour le détail dépliable
+  // sous le camembert (cf. `detailMissionsVisible` ci-dessus) : contrairement
+  // à `missionsDonutData`, aucune mission n'y est agrégée dans une tranche
+  // « Autres » — c'est justement ce qui manquait au clic (le survol de la
+  // tranche « Autres » du camembert n'en donnait le détail qu'au survol).
+  const missionsTriees = useMemo(
+    () => (missions ?? []).slice().sort((a, b) => b.montantTotal - a.montantTotal),
+    [missions],
+  );
+  const missionsMontantMax = missionsTriees.reduce(
+    (max, mission) => Math.max(max, mission.montantTotal),
+    0,
+  );
+  const missionsMontantTotal = missionsTriees.reduce(
+    (sum, mission) => sum + mission.montantTotal,
+    0,
   );
 
   // Nom de mission -> slug, pour la navigation au clic sur une tranche : la
@@ -211,6 +237,58 @@ export default function Dashboard() {
             nomFichierExport={`missions-${anneeActive}.png`}
             onSliceClick={handleClicTrancheMission}
           />
+          {missionsTriees.length > 0 && (
+            <div className="mt-3">
+              <Button
+                type="button"
+                variant="secondary"
+                className="px-3 py-1 text-xs"
+                onClick={() => setDetailMissionsVisible((visible) => !visible)}
+                aria-expanded={detailMissionsVisible}
+                aria-controls="detail-complet-missions"
+              >
+                {detailMissionsVisible
+                  ? 'Masquer le détail complet'
+                  : `Voir le détail complet des ${missionsTriees.length} missions`}
+              </Button>
+              {detailMissionsVisible && (
+                <ul id="detail-complet-missions" className="mt-3 space-y-1.5">
+                  {missionsTriees.map((mission) => (
+                    <li key={mission.slug} className="flex items-center gap-3 text-sm">
+                      <span
+                        className="w-56 flex-none truncate text-gray-700 dark:text-gray-300"
+                        title={mission.nomOfficiel}
+                      >
+                        {mission.nomOfficiel}
+                      </span>
+                      <span className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-gray-800">
+                        <span
+                          className="block h-2 rounded-full bg-blue-700 dark:bg-blue-500"
+                          style={{
+                            width: `${
+                              missionsMontantMax > 0
+                                ? (mission.montantTotal / missionsMontantMax) * 100
+                                : 0
+                            }%`,
+                          }}
+                        />
+                      </span>
+                      <span className="w-20 flex-none text-right text-gray-600 dark:text-gray-300">
+                        {formatMd(mission.montantTotal)}
+                      </span>
+                      <span className="w-14 flex-none text-right text-gray-400 dark:text-gray-500">
+                        {formatPct(
+                          missionsMontantTotal > 0
+                            ? mission.montantTotal / missionsMontantTotal
+                            : 0,
+                        )}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
         </div>
         <div>
           <div className="mb-2 flex flex-wrap items-start justify-between gap-2">

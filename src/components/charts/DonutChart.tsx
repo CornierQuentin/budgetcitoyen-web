@@ -83,19 +83,46 @@ const RAYON_COUDE_TRAIT = 16;
 const LONGUEUR_SEGMENT_HORIZONTAL = 12;
 
 // Écart vertical minimal (px) entre deux étiquettes voisines du même côté du
-// camembert (cf. résoudreChevauchements ci-dessous) : sur 2 lignes (libellé
-// + valeur) à 10px, ~26px laisse un léger interligne sans coller les blocs.
+// camembert, pour deux libellés tenant sur une seule ligne (cf.
+// résoudreChevauchements ci-dessous) : sur 2 lignes (libellé + valeur) à
+// 10px, ~26px laisse un léger interligne sans coller les blocs. Un libellé
+// qui s'enveloppe sur plusieurs lignes (cf. envelopperLabel) a besoin de
+// davantage d'espace : HAUTEUR_LIGNE_SUPPLEMENTAIRE ci-dessous s'ajoute alors
+// une fois par ligne de libellé au-delà de la première.
 const ESPACEMENT_MIN_LABELS = 26;
+const HAUTEUR_LIGNE_SUPPLEMENTAIRE = 12;
 
-// Longueur max d'un libellé affiché à côté du trait, au-delà de laquelle on
-// tronque (ex. « Écologie, développement et mobilité durables » ne doit pas
-// s'étaler indéfiniment autour du graphique — la légende ci-dessous et la
-// tooltip au survol donnent le libellé complet).
-const MAX_CARACTERES_LABEL = 15;
+// Largeur max (en caractères) d'une ligne de libellé affiché à côté du trait
+// : au-delà, le libellé s'enveloppe sur une ligne supplémentaire plutôt que
+// d'être tronqué — le nom complet de chaque mission doit rester lisible
+// directement sur le graphique (retour utilisateur), pas seulement dans la
+// légende ou la tooltip au survol.
+const MAX_CARACTERES_PAR_LIGNE_LABEL = 26;
 
-function tronquerLabel(label: string): string {
-  if (label.length <= MAX_CARACTERES_LABEL) return label;
-  return `${label.slice(0, MAX_CARACTERES_LABEL - 1).trimEnd()}…`;
+/**
+ * Enveloppe `label` en plusieurs lignes d'au plus `maxCaracteres` caractères
+ * chacune, en ne coupant jamais un mot (un mot isolé plus long que
+ * `maxCaracteres` reste seul sur sa ligne plutôt que d'être coupé ou
+ * tronqué : aucune perte d'information, contrairement à l'ancienne
+ * troncature avec « … »).
+ */
+function envelopperLabel(label: string, maxCaracteres: number): string[] {
+  const mots = label.split(' ');
+  const lignes: string[] = [];
+  let ligneActuelle = '';
+
+  mots.forEach((mot) => {
+    const candidate = ligneActuelle ? `${ligneActuelle} ${mot}` : mot;
+    if (candidate.length <= maxCaracteres || !ligneActuelle) {
+      ligneActuelle = candidate;
+    } else {
+      lignes.push(ligneActuelle);
+      ligneActuelle = mot;
+    }
+  });
+  if (ligneActuelle) lignes.push(ligneActuelle);
+
+  return lignes;
 }
 
 // Angle de séparation appliqué entre chaque tranche (prop `paddingAngle` de
@@ -140,6 +167,7 @@ function calculerAnglesMedians(donnees: DonutDatum[], paddingAngle: number): num
 interface TrancheBrute {
   index: number;
   label: string;
+  lignesLabel: string[];
   value: number;
   couleur: string;
   cote: 'gauche' | 'droite';
@@ -173,7 +201,14 @@ interface GeometriePie {
  * stateless).
  */
 function calculerPositionsLabels(
-  tranches: { index: number; label: string; value: number; couleur: string; midAngle: number }[],
+  tranches: {
+    index: number;
+    label: string;
+    lignesLabel: string[];
+    value: number;
+    couleur: string;
+    midAngle: number;
+  }[],
   { cx, cy, outerRadius }: GeometriePie,
 ): TrancheBrute[] {
   const brutes: TrancheBrute[] = tranches.map((tranche) => {
@@ -189,6 +224,7 @@ function calculerPositionsLabels(
     return {
       index: tranche.index,
       label: tranche.label,
+      lignesLabel: tranche.lignesLabel,
       value: tranche.value,
       couleur: tranche.couleur,
       cote,
@@ -206,8 +242,14 @@ function calculerPositionsLabels(
     for (let i = 1; i < surCeCote.length; i += 1) {
       const precedente = surCeCote[i - 1];
       const courante = surCeCote[i];
-      if (courante.ey - precedente.ey < ESPACEMENT_MIN_LABELS) {
-        courante.ey = precedente.ey + ESPACEMENT_MIN_LABELS;
+      // Une étiquette dont le libellé s'enveloppe sur plusieurs lignes
+      // s'étend davantage vers le haut (cf. renderLabelATrait, qui empile
+      // les lignes de libellé au-dessus de `ey`) : l'écart minimal exigé
+      // avec la voisine du dessus grandit d'autant.
+      const espacementMin =
+        ESPACEMENT_MIN_LABELS + (courante.lignesLabel.length - 1) * HAUTEUR_LIGNE_SUPPLEMENTAIRE;
+      if (courante.ey - precedente.ey < espacementMin) {
+        courante.ey = precedente.ey + espacementMin;
       }
     }
   });
@@ -244,6 +286,7 @@ export default function DonutChart({
   const tranchesGeometrieAngulaire = data.map((entry, index) => ({
     index,
     label: entry.label,
+    lignesLabel: envelopperLabel(entry.label, MAX_CARACTERES_PAR_LIGNE_LABEL),
     value: entry.value,
     couleur: couleurPourLabel(entry.label),
     midAngle: angleMedianParIndex[index],
@@ -303,6 +346,14 @@ export default function DonutChart({
     const xTexte = tranche.ex + (tranche.cote === 'droite' ? 4 : -4);
     const ancrage = tranche.cote === 'droite' ? 'start' : 'end';
 
+    // Les lignes de libellé (1 ou plus, cf. envelopperLabel) sont empilées
+    // vers le HAUT à partir de `ey - 3`, pour que la dernière ligne du
+    // libellé (la plus proche de la valeur) garde toujours cette même
+    // position quel que soit le nombre de lignes — c'est cette invariance
+    // que resoudreChevauchements (calculerPositionsLabels) suppose pour son
+    // calcul d'espacement minimal.
+    const nbLignes = tranche.lignesLabel.length;
+
     return (
       <g aria-hidden="true">
         <path
@@ -313,9 +364,20 @@ export default function DonutChart({
         />
         <circle cx={tranche.ex} cy={tranche.ey} r={2} fill={tranche.couleur} stroke="none" />
         <text fontSize={10} textAnchor={ancrage} fill={couleurTexte}>
-          <tspan x={xTexte} y={tranche.ey - 3} fontWeight={600}>
-            {tronquerLabel(tranche.label)}
-          </tspan>
+          {tranche.lignesLabel.map((ligne, indexLigne) => (
+            <tspan
+              // Lignes dérivées d'un simple découpage de texte, sans
+              // identité propre ni réordonnancement possible : l'index est
+              // un identifiant stable pour ces tspans.
+              // eslint-disable-next-line react/no-array-index-key
+              key={indexLigne}
+              x={xTexte}
+              y={tranche.ey - 3 - (nbLignes - 1 - indexLigne) * HAUTEUR_LIGNE_SUPPLEMENTAIRE}
+              fontWeight={600}
+            >
+              {ligne}
+            </tspan>
+          ))}
           <tspan x={xTexte} y={tranche.ey + 10}>
             {formatMd(tranche.value)}
           </tspan>
@@ -346,10 +408,15 @@ export default function DonutChart({
       >
         {/* donut-chart-pie : classe ciblée par src/index.css pour neutraliser
             le contour de focus par défaut du navigateur au clic souris tout
-            en le conservant à la navigation clavier (:focus-visible). */}
-        <div className="donut-chart-pie h-[28rem]">
+            en le conservant à la navigation clavier (:focus-visible).
+            Hauteur et marges généreuses : les étiquettes affichent désormais
+            le nom complet de chaque tranche (éventuellement enveloppé sur
+            plusieurs lignes, cf. envelopperLabel), ce qui leur demande plus
+            d'espace horizontal (marges gauche/droite) et vertical (hauteur
+            du conteneur) qu'avec l'ancienne troncature à 15 caractères. */}
+        <div className="donut-chart-pie h-[34rem]">
           <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={{ top: 28, right: 96, bottom: 28, left: 96 }}>
+            <PieChart margin={{ top: 40, right: 170, bottom: 40, left: 170 }}>
               <Pie
                 data={data}
                 dataKey="value"
@@ -407,8 +474,9 @@ export default function DonutChart({
             légende reste nécessaire dès 2 séries pour ne jamais faire
             reposer l'identification d'une tranche sur la seule couleur (cf.
             skill dataviz) — utile en particulier si deux tranches proches en
-            couleur (collision de hash, cf. couleurCategorielle.ts) ou si un
-            libellé tronqué prête à confusion. */}
+            couleur (collision de hash, cf. couleurCategorielle.ts) ou si le
+            libellé d'une tranche est difficile à repérer visuellement parmi
+            les autres. */}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-xs text-gray-600 dark:text-gray-300">
           {data.map((entry) => (
             <span key={entry.label} className="inline-flex items-center gap-1.5">
