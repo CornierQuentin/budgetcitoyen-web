@@ -13,6 +13,15 @@ import { exportCsv } from '../utils/exportCsv';
 import { formatMd, formatPct } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
 
+// Normalise une chaîne pour une recherche insensible à la casse et aux
+// accents (ex : "defense" doit trouver "Défense").
+function normaliserPourRecherche(valeur: string): string {
+  return valeur
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .toLowerCase();
+}
+
 export default function Comparateur() {
   const { data: annees } = useAnnees();
   const anneesDisponibles = (annees ?? []).map((item) => item.annee).sort((a, b) => b - a);
@@ -58,6 +67,17 @@ export default function Comparateur() {
   }, [anneeA, anneeB, searchParams, setSearchParams]);
 
   const { data: comparateur } = useComparateur(anneeA, anneeB);
+
+  // Filtre d'affichage du tableau des missions (~30 lignes triées par écart
+  // décroissant) : ne touche pas à l'export CSV, qui doit toujours contenir
+  // toutes les missions, filtrées ou non (cf. handleExportMissionsCsv).
+  const [rechercheMission, setRechercheMission] = useState('');
+  const rechercheNormalisee = normaliserPourRecherche(rechercheMission.trim());
+  const missionsFiltrees = (comparateur?.missions ?? []).filter(
+    (mission) =>
+      rechercheNormalisee === '' ||
+      normaliserPourRecherche(mission.nom).includes(rechercheNormalisee),
+  );
 
   const {
     ref: comparatifRef,
@@ -218,6 +238,23 @@ export default function Comparateur() {
                 Triées par écart absolu décroissant : les plus fortes hausses en tête, les plus
                 fortes baisses en bas.
               </p>
+              <div className="mt-3 max-w-sm">
+                <label
+                  htmlFor="recherche-mission"
+                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                >
+                  Rechercher une mission
+                  <input
+                    id="recherche-mission"
+                    type="search"
+                    value={rechercheMission}
+                    onChange={(event) => setRechercheMission(event.target.value)}
+                    placeholder="Ex. Défense, Enseignement scolaire…"
+                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
+                      dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                  />
+                </label>
+              </div>
               <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-800">
@@ -255,34 +292,45 @@ export default function Comparateur() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                    {comparateur.missions.map((mission) => (
-                      <tr key={mission.slug}>
-                        <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
-                          {mission.nom}
-                        </td>
-                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                          {formatMd(mission.montantA)}
-                        </td>
-                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                          {formatMd(mission.montantB)}
-                        </td>
+                    {missionsFiltrees.length === 0 ? (
+                      <tr>
                         <td
-                          className={`px-3 py-2 text-right font-medium ${
-                            mission.deltaAbsolu >= 0
-                              ? 'text-red-700 dark:text-red-400'
-                              : 'text-green-700 dark:text-green-400'
-                          }`}
+                          colSpan={5}
+                          className="px-3 py-4 text-center text-gray-500 dark:text-gray-400"
                         >
-                          {mission.deltaAbsolu >= 0 ? '+' : ''}
-                          {formatMd(mission.deltaAbsolu)}
-                        </td>
-                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
-                          {mission.deltaRelatifPct !== null
-                            ? formatPct(mission.deltaRelatifPct / 100)
-                            : '—'}
+                          Aucune mission ne correspond à « {rechercheMission.trim()} ».
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      missionsFiltrees.map((mission) => (
+                        <tr key={mission.slug}>
+                          <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                            {mission.nom}
+                          </td>
+                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                            {formatMd(mission.montantA)}
+                          </td>
+                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                            {formatMd(mission.montantB)}
+                          </td>
+                          <td
+                            className={`px-3 py-2 text-right font-medium ${
+                              mission.deltaAbsolu >= 0
+                                ? 'text-red-700 dark:text-red-400'
+                                : 'text-green-700 dark:text-green-400'
+                            }`}
+                          >
+                            {mission.deltaAbsolu >= 0 ? '+' : ''}
+                            {formatMd(mission.deltaAbsolu)}
+                          </td>
+                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                            {mission.deltaRelatifPct !== null
+                              ? formatPct(mission.deltaRelatifPct / 100)
+                              : '—'}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -343,7 +391,7 @@ export default function Comparateur() {
                     {comparateur.recettes.map((recette) => (
                       <tr key={recette.type}>
                         <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
-                          {recette.type}
+                          <GlossaryTerm term={recette.type}>{recette.type}</GlossaryTerm>
                         </td>
                         <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
                           {recette.montantA !== null ? formatMd(recette.montantA) : '—'}
