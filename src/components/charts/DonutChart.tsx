@@ -1,4 +1,5 @@
-import { Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
+import type { PieLabelRenderProps } from 'recharts';
+import { Cell, Pie, PieChart, ResponsiveContainer, Tooltip } from 'recharts';
 
 import { useExportPng } from '../../hooks/useExportPng';
 import { useThemeStore } from '../../store/useThemeStore';
@@ -67,6 +68,153 @@ function DonutTooltip({ active, payload, total, estSombre }: DonutTooltipProps) 
   );
 }
 
+// Angle en radians par degré, pour convertir les angles recharts (en degrés)
+// vers les fonctions trigonométriques natives de JS.
+const RADIAN = Math.PI / 180;
+
+// Géométrie des « callout labels » (étiquettes externes reliées à leur
+// tranche par un trait) : distances additionnelles au-delà de outerRadius,
+// en pixels. RAYON_DEPART = où le trait démarre (juste au bord de la
+// tranche) ; RAYON_COUDE = où le trait « casse » pour repartir à
+// l'horizontale ; LONGUEUR_SEGMENT = longueur du segment horizontal final,
+// jusqu'au point d'ancrage du texte.
+const RAYON_DEPART_TRAIT = 5;
+const RAYON_COUDE_TRAIT = 16;
+const LONGUEUR_SEGMENT_HORIZONTAL = 12;
+
+// Écart vertical minimal (px) entre deux étiquettes voisines du même côté du
+// camembert (cf. résoudreChevauchements ci-dessous) : sur 2 lignes (libellé
+// + valeur) à 10px, ~26px laisse un léger interligne sans coller les blocs.
+const ESPACEMENT_MIN_LABELS = 26;
+
+// Longueur max d'un libellé affiché à côté du trait, au-delà de laquelle on
+// tronque (ex. « Écologie, développement et mobilité durables » ne doit pas
+// s'étaler indéfiniment autour du graphique — la légende ci-dessous et la
+// tooltip au survol donnent le libellé complet).
+const MAX_CARACTERES_LABEL = 15;
+
+function tronquerLabel(label: string): string {
+  if (label.length <= MAX_CARACTERES_LABEL) return label;
+  return `${label.slice(0, MAX_CARACTERES_LABEL - 1).trimEnd()}…`;
+}
+
+// Angle de séparation appliqué entre chaque tranche (prop `paddingAngle` de
+// <Pie> ci-dessous) : dupliqué ici comme constante plutôt que codé en dur à
+// deux endroits, car calculerAnglesMedians doit reproduire EXACTEMENT le
+// même calcul d'angle que recharts (voir son commentaire).
+const PADDING_ANGLE_PIE = 2;
+
+/**
+ * Reproduit le calcul d'angle médian de chaque tranche fait en interne par
+ * recharts (`Pie.js`, fonction `getRealPieData`/`parseCoordinateOfPie`),
+ * pour startAngle=0, endAngle=360, minAngle=0 (valeurs par défaut, non
+ * personnalisées sur notre <Pie>). Nécessaire pour construire un rendu
+ * d'étiquette à trait STATELESS (voir renderLabelATrait) : plutôt que
+ * d'accumuler la géométrie de chaque tranche au fil des appels du callback
+ * `label` de recharts (fragile — un appel de recharts ne correspond pas
+ * forcément à un rendu complet du Pie, cf. commentaire de renderLabelATrait),
+ * on calcule ici, en une fois et indépendamment de recharts, l'angle de
+ * toutes les tranches à partir de `data` seul.
+ */
+function calculerAnglesMedians(donnees: DonutDatum[], paddingAngle: number): number[] {
+  const total = donnees.reduce((sum, item) => sum + item.value, 0);
+  if (total <= 0) return donnees.map(() => 0);
+
+  const nbTranchesNonNulles = donnees.filter((item) => item.value !== 0).length;
+  // Cercle complet (|endAngle - startAngle| = 360) : recharts compte un
+  // espacement par tranche (y compris entre la dernière et la première),
+  // pas seulement entre tranches consécutives.
+  const angleEspacementTotal = nbTranchesNonNulles * paddingAngle;
+  const angleUtileTotal = 360 - angleEspacementTotal;
+
+  let finPrecedente = 0;
+  return donnees.map((item, index) => {
+    const pourcentage = item.value / total;
+    const debut = index === 0 ? 0 : finPrecedente + (item.value !== 0 ? paddingAngle : 0);
+    const fin = debut + pourcentage * angleUtileTotal;
+    finPrecedente = fin;
+    return (debut + fin) / 2;
+  });
+}
+
+interface TrancheBrute {
+  index: number;
+  label: string;
+  value: number;
+  couleur: string;
+  cote: 'gauche' | 'droite';
+  sx: number;
+  sy: number;
+  mx: number;
+  my: number;
+  ex: number;
+  ey: number;
+}
+
+interface GeometriePie {
+  cx: number;
+  cy: number;
+  outerRadius: number;
+}
+
+/**
+ * Calcule la position de chaque étiquette externe (point de départ du trait
+ * sur le bord de la tranche, coude, point d'ancrage du texte), puis
+ * redistribue verticalement les étiquettes qui se chevaucheraient — tri par
+ * position naturelle, puis écart minimal forcé entre voisines du même côté
+ * (gauche/droite) du camembert. Sur de très petites tranches adjacentes, un
+ * chevauchement mineur peut subsister : on privilégie un espacement propre
+ * pour l'immense majorité des cas plutôt qu'une garantie absolue.
+ *
+ * Fonction pure — même géométrie (`cx`/`cy`/`outerRadius`, identique pour
+ * toutes les tranches d'un même Pie) et mêmes tranches en entrée =
+ * exactement le même résultat en sortie, quel que soit le nombre de fois où
+ * elle est appelée (voir renderLabelATrait, qui en dépend pour rester
+ * stateless).
+ */
+function calculerPositionsLabels(
+  tranches: { index: number; label: string; value: number; couleur: string; midAngle: number }[],
+  { cx, cy, outerRadius }: GeometriePie,
+): TrancheBrute[] {
+  const brutes: TrancheBrute[] = tranches.map((tranche) => {
+    const cos = Math.cos(-tranche.midAngle * RADIAN);
+    const sin = Math.sin(-tranche.midAngle * RADIAN);
+    const sx = cx + (outerRadius + RAYON_DEPART_TRAIT) * cos;
+    const sy = cy + (outerRadius + RAYON_DEPART_TRAIT) * sin;
+    const mx = cx + (outerRadius + RAYON_COUDE_TRAIT) * cos;
+    const my = cy + (outerRadius + RAYON_COUDE_TRAIT) * sin;
+    const cote: 'gauche' | 'droite' = cos >= 0 ? 'droite' : 'gauche';
+    const ex = mx + (cote === 'droite' ? LONGUEUR_SEGMENT_HORIZONTAL : -LONGUEUR_SEGMENT_HORIZONTAL);
+
+    return {
+      index: tranche.index,
+      label: tranche.label,
+      value: tranche.value,
+      couleur: tranche.couleur,
+      cote,
+      sx,
+      sy,
+      mx,
+      my,
+      ex,
+      ey: my,
+    };
+  });
+
+  (['gauche', 'droite'] as const).forEach((cote) => {
+    const surCeCote = brutes.filter((tranche) => tranche.cote === cote).sort((a, b) => a.ey - b.ey);
+    for (let i = 1; i < surCeCote.length; i += 1) {
+      const precedente = surCeCote[i - 1];
+      const courante = surCeCote[i];
+      if (courante.ey - precedente.ey < ESPACEMENT_MIN_LABELS) {
+        courante.ey = precedente.ey + ESPACEMENT_MIN_LABELS;
+      }
+    }
+  });
+
+  return brutes;
+}
+
 export default function DonutChart({
   data,
   nomFichierExport = 'recettes-par-type.png',
@@ -88,6 +236,19 @@ export default function DonutChart({
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
 
+  // Géométrie ANGULAIRE des étiquettes à trait (tout sauf la position
+  // pixel réelle, qui dépend de la taille rendue du graphique — voir
+  // renderLabelATrait) : calculée une fois par rendu de DonutChart, à
+  // partir de `data` seul, indépendamment de recharts.
+  const angleMedianParIndex = calculerAnglesMedians(data, PADDING_ANGLE_PIE);
+  const tranchesGeometrieAngulaire = data.map((entry, index) => ({
+    index,
+    label: entry.label,
+    value: entry.value,
+    couleur: couleurPourLabel(entry.label),
+    midAngle: angleMedianParIndex[index],
+  }));
+
   // Recharts câble les gestionnaires d'événements posés sur <Pie> (et pas sur
   // chaque <Cell>) à chaque secteur, y compris son support clavier natif : le
   // Pie entier est un seul arrêt de tabulation (rootTabIndex), les flèches
@@ -99,6 +260,70 @@ export default function DonutChart({
     if (!onSliceClick || !entry.payload) return;
     onSliceClick(entry.payload.label);
   };
+
+  // Étiquettes externes reliées par un trait (« callout labels ») : recharts
+  // appelle cette fonction une fois par tranche avec la géométrie RÉELLE en
+  // pixels (cx, cy, outerRadius — identiques pour toutes les tranches d'un
+  // même Pie ; seul l'index varie). Elle doit rester STATELESS : recharts
+  // peut la rappeler bien plus souvent qu'« une fois par tranche à chaque
+  // rendu de DonutChart » — Pie gère en interne un état de focus (flèches du
+  // clavier entre tranches) qui déclenche SES PROPRES re-rendus, indépendants
+  // de DonutChart, et qui réinvoquent cette même closure. Une première
+  // version accumulait la géométrie de chaque tranche dans un tableau mutable
+  // et ne dessinait tous les traits qu'au dernier appel : ce tableau n'étant
+  // remis à zéro qu'au rendu SUIVANT de DonutChart (pas à chaque rappel de
+  // Pie), la navigation au clavier entre tranches le faisait grossir sans
+  // fin, dupliquant les étiquettes dans le DOM (constaté à la vérification
+  // manuelle). Ici, chaque appel recalcule la table complète des positions
+  // (calculerPositionsLabels, pure — cf. son commentaire) à partir de
+  // `tranchesGeometrieAngulaire` (stable, calculé une fois par rendu de
+  // DonutChart) et de la géométrie pixel reçue, et ne rend QUE sa propre
+  // tranche : même appelée n'importe quand, n'importe combien de fois, dans
+  // n'importe quel ordre, le résultat pour un index donné est toujours
+  // identique.
+  /* eslint-disable react/prop-types -- `renderLabelATrait` n'est pas un
+     composant React : c'est un callback de rendu passé à la prop `label` de
+     <Pie>, typé via `PieLabelRenderProps` de recharts (pas de React.FC ni de
+     props publiques à documenter par un contrat propTypes). react/prop-types
+     le détecte malgré tout comme un composant (il retourne du JSX), d'où ce
+     désactivage scopé à sa seule définition. */
+  const renderLabelATrait = (props: PieLabelRenderProps) => {
+    const { cx, cy, outerRadius, index } = props as PieLabelRenderProps & {
+      cx: number;
+      cy: number;
+      outerRadius: number;
+      index: number;
+    };
+
+    const positions = calculerPositionsLabels(tranchesGeometrieAngulaire, { cx, cy, outerRadius });
+    const tranche = positions.find((position) => position.index === index);
+    if (!tranche) return null;
+
+    const couleurTexte = estSombre ? '#e5e7eb' : '#374151';
+    const xTexte = tranche.ex + (tranche.cote === 'droite' ? 4 : -4);
+    const ancrage = tranche.cote === 'droite' ? 'start' : 'end';
+
+    return (
+      <g aria-hidden="true">
+        <path
+          d={`M${tranche.sx},${tranche.sy} L${tranche.mx},${tranche.my} L${tranche.ex},${tranche.ey}`}
+          fill="none"
+          stroke={tranche.couleur}
+          strokeWidth={1}
+        />
+        <circle cx={tranche.ex} cy={tranche.ey} r={2} fill={tranche.couleur} stroke="none" />
+        <text fontSize={10} textAnchor={ancrage} fill={couleurTexte}>
+          <tspan x={xTexte} y={tranche.ey - 3} fontWeight={600}>
+            {tronquerLabel(tranche.label)}
+          </tspan>
+          <tspan x={xTexte} y={tranche.ey + 10}>
+            {formatMd(tranche.value)}
+          </tspan>
+        </text>
+      </g>
+    );
+  };
+  /* eslint-enable react/prop-types */
 
   return (
     <div className="space-y-2">
@@ -116,49 +341,86 @@ export default function DonutChart({
 
       <div
         ref={exportRef}
-        className="h-96 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700 dark:bg-gray-900"
+        className="space-y-2 rounded-lg border border-gray-200 bg-white p-2 dark:border-gray-700
+          dark:bg-gray-900"
       >
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="value"
-              nameKey="label"
-              innerRadius="55%"
-              outerRadius="85%"
-              paddingAngle={2}
-              stroke={estSombre ? '#111827' : '#fcfcfb'}
-              strokeWidth={2}
-              // Désactivée : l'animation d'entrée démarre les tranches à un
-              // angle nul, ce qui retarde leur présence dans le DOM (gênant
-              // pour les tests, et pour un éventuel export PNG déclenché
-              // juste après le montage).
-              isAnimationActive={false}
-              className={onSliceClick ? 'cursor-pointer' : undefined}
-              onClick={onSliceClick ? declencherClic : undefined}
-              onKeyDown={
-                onSliceClick
-                  ? (entry, _index, event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        declencherClic(entry);
+        {/* donut-chart-pie : classe ciblée par src/index.css pour neutraliser
+            le contour de focus par défaut du navigateur au clic souris tout
+            en le conservant à la navigation clavier (:focus-visible). */}
+        <div className="donut-chart-pie h-[28rem]">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart margin={{ top: 28, right: 96, bottom: 28, left: 96 }}>
+              <Pie
+                data={data}
+                dataKey="value"
+                nameKey="label"
+                innerRadius="42%"
+                outerRadius="66%"
+                paddingAngle={2}
+                stroke={estSombre ? '#111827' : '#fcfcfb'}
+                strokeWidth={2}
+                label={renderLabelATrait}
+                labelLine={false}
+                // Désactivée : l'animation d'entrée démarre les tranches à un
+                // angle nul, ce qui retarde leur présence dans le DOM (gênant
+                // pour les tests, et pour un éventuel export PNG déclenché
+                // juste après le montage).
+                isAnimationActive={false}
+                className={onSliceClick ? 'cursor-pointer' : undefined}
+                onClick={onSliceClick ? declencherClic : undefined}
+                // Empêche le focus au clic souris sur la tranche (chaque
+                // secteur est un <g tabIndex="-1"> posé par recharts pour
+                // son support clavier — un tel élément reçoit normalement le
+                // focus au clic, avec le contour associé). `preventDefault`
+                // sur mousedown est la façon standard de bloquer ce focus
+                // « au clic » sans toucher au clic lui-même (mousedown
+                // précède click ; le clic et la navigation continuent de
+                // fonctionner normalement) ni à la navigation clavier
+                // (Tab/flèches, qui ne passe jamais par mousedown). Nécessaire
+                // en complément de :focus-visible (src/index.css) : les
+                // navigateurs l'appliquent aussi sur un clic pour ce type
+                // d'élément SVG non nativement interactif — retour
+                // utilisateur constaté au clic sur une tranche.
+                onMouseDown={(_entry, _index, event) => event.preventDefault()}
+                onKeyDown={
+                  onSliceClick
+                    ? (entry, _index, event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          declencherClic(entry);
+                        }
                       }
-                    }
-                  : undefined
-              }
-            >
-              {data.map((entry) => (
-                <Cell key={entry.label} fill={couleurPourLabel(entry.label)} />
-              ))}
-            </Pie>
-            <Tooltip content={<DonutTooltip total={total} estSombre={estSombre} />} />
-            <Legend
-              layout="vertical"
-              verticalAlign="middle"
-              align="right"
-              wrapperStyle={{ fontSize: 12, color: estSombre ? '#e5e7eb' : '#374151' }}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+                    : undefined
+                }
+              >
+                {data.map((entry) => (
+                  <Cell key={entry.label} fill={couleurPourLabel(entry.label)} />
+                ))}
+              </Pie>
+              <Tooltip content={<DonutTooltip total={total} estSombre={estSombre} />} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Légende de rappel simplifiée (couleur + nom, sans valeur — déjà
+            portée par les étiquettes à traits ci-dessus) : les callout labels
+            remplacent la légende recharts comme lecture principale, mais une
+            légende reste nécessaire dès 2 séries pour ne jamais faire
+            reposer l'identification d'une tranche sur la seule couleur (cf.
+            skill dataviz) — utile en particulier si deux tranches proches en
+            couleur (collision de hash, cf. couleurCategorielle.ts) ou si un
+            libellé tronqué prête à confusion. */}
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-xs text-gray-600 dark:text-gray-300">
+          {data.map((entry) => (
+            <span key={entry.label} className="inline-flex items-center gap-1.5">
+              <span
+                aria-hidden="true"
+                className="h-2.5 w-2.5 shrink-0 rounded-full"
+                style={{ backgroundColor: couleurPourLabel(entry.label) }}
+              />
+              {entry.label}
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
