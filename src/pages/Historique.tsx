@@ -16,6 +16,28 @@ export default function Historique() {
 
   const { data: historique } = useHistorique();
 
+  const annees = useMemo(
+    () => (historique ?? []).map((item) => item.annee).sort((a, b) => a - b),
+    [historique],
+  );
+  const anneeMin = annees[0];
+  const anneeMax = annees[annees.length - 1];
+
+  // Recale l'année active sur une année réellement disponible dans la série,
+  // dès que celle-ci est chargée (le store est initialisé sur l'année civile
+  // en cours, qui n'a pas forcément de données). Déclaré AVANT l'effet de
+  // lecture de l'URL ci-dessous (même ordre que Dashboard.tsx) : les deux
+  // effets s'exécutent dans le même flush et lisent le même `anneeActive`
+  // (celui du rendu courant, potentiellement obsolète l'un pour l'autre) ;
+  // que ce recalage tourne en premier garantit qu'une année valide passée
+  // dans l'URL (traitée juste après) a toujours le dernier mot, même quand
+  // `historique` est déjà en cache et disponible dès le premier rendu.
+  useEffect(() => {
+    if (annees.length > 0 && !annees.includes(anneeActive)) {
+      setAnneeActive(anneeMax);
+    }
+  }, [annees, anneeActive, anneeMax, setAnneeActive]);
+
   const [searchParams, setSearchParams] = useSearchParams();
   // `anneeActive` vit dans un store Zustand partagé avec le Dashboard : au
   // montage, on n'applique le `?annee=` de l'URL que s'il diffère de l'année
@@ -45,22 +67,6 @@ export default function Historique() {
     next.set('annee', String(anneeActive));
     setSearchParams(next, { replace: true });
   }, [anneeActive, searchParams, setSearchParams]);
-
-  const annees = useMemo(
-    () => (historique ?? []).map((item) => item.annee).sort((a, b) => a - b),
-    [historique],
-  );
-  const anneeMin = annees[0];
-  const anneeMax = annees[annees.length - 1];
-
-  // Recale l'année active sur une année réellement disponible dans la série,
-  // dès que celle-ci est chargée (le store est initialisé sur l'année civile
-  // en cours, qui n'a pas forcément de données).
-  useEffect(() => {
-    if (annees.length > 0 && !annees.includes(anneeActive)) {
-      setAnneeActive(anneeMax);
-    }
-  }, [annees, anneeActive, anneeMax, setAnneeActive]);
 
   const data = (historique ?? []).map((item) => ({
     annee: item.annee,
