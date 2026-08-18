@@ -10,6 +10,7 @@
     "lint": "eslint . --ext ts,tsx",
     "test": "NODE_OPTIONS=--no-experimental-webstorage vitest run",
     "test:coverage": "NODE_OPTIONS=--no-experimental-webstorage vitest run --coverage",
+    "test:e2e": "playwright test",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -24,8 +25,10 @@
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^16.0.0",
+    "@types/node": "^26.2.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@typescript-eslint/eslint-plugin": "^7.16.1",
