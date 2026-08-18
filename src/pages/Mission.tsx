@@ -12,6 +12,18 @@ export default function Mission() {
 
   const { data: detail, isLoading, isError } = useMissionDetail(slug);
   const { data: historique } = useMissionHistorique(slug);
+  // Ne garde que les années où le libellé change réellement par rapport à
+  // l'année précédente : sur ~7 ans, la plupart des missions gardent le même
+  // nom, lister chaque année serait redondant (retour utilisateur).
+  const changementsLibelle = (historique ?? [])
+    .slice()
+    .sort((a, b) => a.annee - b.annee)
+    .reduce<NonNullable<typeof historique>>((acc, item) => {
+      if (acc.length === 0 || acc[acc.length - 1].nomOfficiel !== item.nomOfficiel) {
+        acc.push(item);
+      }
+      return acc;
+    }, []);
   // GET /missions/{slug}/detail n'expose pas de sourceUrl propre à la
   // mission : on relie donc le chiffre total au budget de l'année, qui est
   // la source officielle des mêmes données (répartition par mission).
@@ -48,24 +60,6 @@ export default function Mission() {
           )}
         </p>
       </div>
-
-      {historique && historique.length > 1 && (
-        <div>
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-            Libellé au fil du temps
-          </h3>
-          <ul className="mt-1 space-y-0.5 text-sm text-gray-600 dark:text-gray-300">
-            {historique
-              .slice()
-              .sort((a, b) => a.annee - b.annee)
-              .map((item) => (
-                <li key={item.annee}>
-                  {item.annee} : {item.nomOfficiel}
-                </li>
-              ))}
-          </ul>
-        </div>
-      )}
 
       <div className="space-y-4">
         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
@@ -135,6 +129,21 @@ export default function Mission() {
             </div>
           ))}
       </div>
+
+      {changementsLibelle.length > 1 && (
+        <div>
+          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            Libellé au fil du temps
+          </h3>
+          <ul className="mt-1 space-y-0.5 text-sm text-gray-600 dark:text-gray-300">
+            {changementsLibelle.map((item) => (
+              <li key={item.annee}>
+                {item.annee} : {item.nomOfficiel}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </section>
   );
 }
