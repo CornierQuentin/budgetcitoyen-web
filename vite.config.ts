@@ -13,6 +13,11 @@ export default defineConfig({
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.ts',
+    // Réinitialise les compteurs d'appel (mock.calls) de tous les mocks vi.fn()
+    // avant chaque test, pour que "toHaveBeenCalledWith" / "not.toHaveBeenCalled"
+    // dans un test ne soient jamais pollués par les appels d'un test précédent
+    // du même fichier (utile notamment pour les mocks partagés d'apiClient.get).
+    clearMocks: true,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
@@ -22,6 +27,7 @@ export default defineConfig({
         'src/**/*.d.ts',
         'src/main.tsx',
         'src/setupTests.ts',
+        'src/testUtils/**',
         'src/types/**',
       ],
     },
