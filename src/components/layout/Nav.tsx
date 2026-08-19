@@ -12,6 +12,7 @@ const links: NavLink[] = [
   { to: '/comparer', label: 'Comparateur' },
   { to: '/mon-budget', label: 'Mon budget' },
   { to: '/simulateur', label: 'Simulateur' },
+  { to: '/depenses-fiscales', label: 'Niches fiscales' },
   { to: '/donnees', label: 'Données' },
 ];
 

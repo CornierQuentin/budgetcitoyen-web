@@ -171,6 +171,14 @@ export default function Home() {
             </Link>
           </li>
           <li>
+            <Link
+              to="/depenses-fiscales"
+              className="text-blue-800 hover:underline dark:text-blue-300"
+            >
+              Niches fiscales
+            </Link>
+          </li>
+          <li>
             <Link to="/donnees" className="text-blue-800 hover:underline dark:text-blue-300">
               Données
             </Link>

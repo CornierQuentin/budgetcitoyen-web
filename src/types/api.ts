@@ -135,6 +135,21 @@ export interface IndicateurMacroResponseDto {
   source_population_url: string | null;
 }
 
+export type StatutMontantDto = 'chiffre' | 'epsilon' | 'non_calculable' | 'aucun_effet';
+
+export interface DepenseFiscaleResponseDto {
+  annee: number;
+  numero: string;
+  categorie: string;
+  sous_categorie: string;
+  sous_sous_categorie: string | null;
+  libelle: string;
+  beneficiaire: string;
+  montant_millions: number | null;
+  statut_montant: StatutMontantDto;
+  methode_chiffrage: string | null;
+}
+
 // Réponse d'erreur RFC 7807 (application/problem+json), renvoyée par l'API
 // pour tout 404/422/500.
 export interface ProblemDetailsDto {

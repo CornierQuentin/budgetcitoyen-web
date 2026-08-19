@@ -30,6 +30,10 @@ describe('Nav', () => {
       'href',
       '/simulateur',
     );
+    expect(screen.getByRole('link', { name: 'Niches fiscales' })).toHaveAttribute(
+      'href',
+      '/depenses-fiscales',
+    );
     expect(screen.getByRole('link', { name: 'Données' })).toHaveAttribute('href', '/donnees');
   });
 });
