@@ -121,6 +121,14 @@ export default function LineChart({ data, series, nomFichierExport = 'graphique.
                 strokeWidth={2}
                 dot={{ r: 4, strokeWidth: 2, fill: serie.color, stroke: estSombre ? '#111827' : '#fcfcfb' }}
                 activeDot={{ r: 5 }}
+                // Sans ceci, l'animation de tracé de recharts (stroke-dasharray
+                // anime de 0 -> longueur totale) reste bloquee a l'etat initial
+                // invisible : React.StrictMode double-invoque l'effet qui pilote
+                // la boucle RAF de react-smooth, et la boucle annulee au premier
+                // demontage synthetique ne redemarre jamais correctement au
+                // veritable montage. Meme piege deja evite sur <Pie> dans
+                // DonutChart.tsx (isAnimationActive={false} y est deja present).
+                isAnimationActive={false}
               />
             ))}
           </RechartsLineChart>
