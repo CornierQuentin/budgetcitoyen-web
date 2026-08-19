@@ -34,6 +34,10 @@ describe('Nav', () => {
       'href',
       '/depenses-fiscales',
     );
+    expect(screen.getByRole('link', { name: 'Marchés publics' })).toHaveAttribute(
+      'href',
+      '/marches-publics',
+    );
     expect(screen.getByRole('link', { name: 'Données' })).toHaveAttribute('href', '/donnees');
   });
 });

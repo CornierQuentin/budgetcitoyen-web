@@ -147,3 +147,45 @@ export interface DepenseFiscale {
   statutMontant: StatutMontant;
   methodeChiffrage: string | null;
 }
+
+export interface MarchePublic {
+  id: number;
+  marcheIdSource: string;
+  nature: string | null;
+  objet: string;
+  codecpv: string;
+  codecpvDivision: string;
+  procedure: string | null;
+  acheteurSiret: string;
+  titulaireSiret: string;
+  titulaireIdType: string | null;
+  dureemois: number | null;
+  datenotification: string;
+  datepublicationdonnees: string | null;
+  montant: number;
+  formeprix: string | null;
+  offresrecues: number | null;
+  marcheinnovant: boolean | null;
+}
+
+export interface MarchesPage {
+  items: MarchePublic[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+
+export interface MarchesCpvRepartitionItem {
+  cpvDivision: string;
+  label: string;
+  montantTotal: number;
+  nombre: number;
+}
+
+export interface MarchesBornes {
+  dateMin: string | null;
+  dateMax: string | null;
+  montantMin: number | null;
+  montantMax: number | null;
+}

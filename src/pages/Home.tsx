@@ -179,6 +179,14 @@ export default function Home() {
             </Link>
           </li>
           <li>
+            <Link
+              to="/marches-publics"
+              className="text-blue-800 hover:underline dark:text-blue-300"
+            >
+              Marchés publics
+            </Link>
+          </li>
+          <li>
             <Link to="/donnees" className="text-blue-800 hover:underline dark:text-blue-300">
               Données
             </Link>
