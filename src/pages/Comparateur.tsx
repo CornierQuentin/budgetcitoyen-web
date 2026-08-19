@@ -236,7 +236,9 @@ export default function Comparateur() {
               </div>
               <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                 Triées par écart absolu décroissant : les plus fortes hausses en tête, les plus
-                fortes baisses en bas.
+                fortes baisses en bas. En <span className="text-red-700 dark:text-red-400">rouge</span>,
+                une hausse de dépenses ; en <span className="text-green-700 dark:text-green-400">vert</span>,
+                une baisse.
               </p>
               <div className="mt-3 max-w-sm">
                 <label
@@ -351,6 +353,11 @@ export default function Comparateur() {
                   Exporter CSV
                 </Button>
               </div>
+              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                En <span className="text-green-700 dark:text-green-400">vert</span>, une hausse de
+                recettes ; en <span className="text-red-700 dark:text-red-400">rouge</span>, une
+                baisse.
+              </p>
               <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                 <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
                   <thead className="bg-gray-50 dark:bg-gray-800">

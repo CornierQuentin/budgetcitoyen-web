@@ -269,10 +269,7 @@ export default function Dashboard() {
                           text-sm hover:bg-gray-50 dark:hover:bg-gray-800"
                         aria-label={`Voir le détail de la mission ${mission.nomOfficiel} : ${formatMd(mission.montantTotal)}`}
                       >
-                        <span
-                          className="w-56 flex-none truncate text-gray-700 dark:text-gray-300"
-                          title={mission.nomOfficiel}
-                        >
+                        <span className="w-56 flex-none text-gray-700 dark:text-gray-300">
                           {mission.nomOfficiel}
                         </span>
                         <span className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-gray-800">

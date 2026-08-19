@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -57,9 +57,9 @@ const mockedUseMarchesBornes = vi.mocked(useMarchesBornes);
 // eslint-disable-next-line import/first
 import Marches from './Marches';
 
-function renderPage() {
+function renderPage(initialEntries: string[] = ['/']) {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={initialEntries}>
       <Marches />
     </MemoryRouter>,
   );
@@ -140,7 +140,7 @@ describe('Marches', () => {
     expect(screen.queryByRole('link', { name: 'FR59000017896' })).not.toBeInTheDocument();
   });
 
-  it('affiche un message clair quand aucun marché ne correspond', () => {
+  it("affiche un message neutre quand la base est vide (aucun filtre actif)", () => {
     mockedUseMarches.mockReturnValue({
       data: creerPage([]),
       isFetching: false,
@@ -148,7 +148,25 @@ describe('Marches', () => {
 
     renderPage();
 
-    expect(screen.getByText('Aucun marché ne correspond aux filtres actuels.')).toBeInTheDocument();
+    expect(screen.getByText('Aucun marché disponible.')).toBeInTheDocument();
+  });
+
+  it('propose de réinitialiser les filtres quand ils excluent tous les résultats', () => {
+    mockedUseMarches.mockReturnValue({
+      data: creerPage([]),
+      isFetching: false,
+    } as ReturnType<typeof useMarches>);
+
+    renderPage(['/?q=introuvable']);
+
+    expect(screen.getByText(/aucun marché ne correspond aux filtres actuels/i)).toBeInTheDocument();
+
+    const boutonReset = within(screen.getByRole('table')).getByRole('button', {
+      name: /réinitialiser les filtres/i,
+    });
+    fireEvent.click(boutonReset);
+
+    expect(screen.getByLabelText(/rechercher \(objet\)/i)).toHaveValue('');
   });
 
   it('affiche le camembert des catégories CPV et filtre au clic sur une tranche', () => {

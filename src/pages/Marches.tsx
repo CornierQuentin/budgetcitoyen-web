@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import DonutChart from '../components/charts/DonutChart';
@@ -175,6 +175,28 @@ export default function Marches() {
     setCpvDivision(undefined);
   };
 
+  const filtresActifs = Boolean(
+    qDebounced || dateDebut || dateFin || montantMin || montantMax || cpvDivision,
+  );
+
+  function messageVideCourant(): ReactNode {
+    if (isFetching) return <span role="status">Chargement…</span>;
+    if (!filtresActifs) return 'Aucun marché disponible.';
+    return (
+      <span>
+        Aucun marché ne correspond aux filtres actuels.{' '}
+        <button
+          type="button"
+          onClick={resetFiltres}
+          className="font-medium text-blue-800 hover:underline dark:text-blue-300"
+        >
+          Réinitialiser les filtres
+        </button>
+      </span>
+    );
+  }
+  const messageVide = messageVideCourant();
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -327,9 +349,7 @@ export default function Marches() {
             columns={columns}
             rows={pageData?.items ?? []}
             getRowKey={(m) => String(m.id)}
-            emptyMessage={
-              isFetching ? 'Chargement…' : 'Aucun marché ne correspond aux filtres actuels.'
-            }
+            emptyMessage={messageVide}
           />
         </div>
 
