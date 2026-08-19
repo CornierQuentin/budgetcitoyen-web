@@ -132,3 +132,18 @@ export interface IndicateurMacro {
   sourcePibUrl: string | null;
   sourcePopulationUrl: string | null;
 }
+
+export type StatutMontant = 'chiffre' | 'epsilon' | 'non_calculable' | 'aucun_effet';
+
+export interface DepenseFiscale {
+  annee: number;
+  numero: string;
+  categorie: string;
+  sousCategorie: string;
+  sousSousCategorie: string | null;
+  libelle: string;
+  beneficiaire: string;
+  montantMillions: number | null;
+  statutMontant: StatutMontant;
+  methodeChiffrage: string | null;
+}

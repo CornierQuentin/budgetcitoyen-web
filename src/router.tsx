@@ -7,6 +7,7 @@ import { PageLoader } from './components/layout/PageLoader';
 
 const Comparateur = lazy(() => import('./pages/Comparateur'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
+const DepensesFiscales = lazy(() => import('./pages/DepensesFiscales'));
 const Donnees = lazy(() => import('./pages/Donnees'));
 const Historique = lazy(() => import('./pages/Historique'));
 const Home = lazy(() => import('./pages/Home'));
@@ -43,6 +44,7 @@ export const router = createBrowserRouter([
       { path: 'comparer', element: <Comparateur /> },
       { path: 'mon-budget', element: <MonBudget /> },
       { path: 'simulateur', element: <Simulateur /> },
+      { path: 'depenses-fiscales', element: <DepensesFiscales /> },
       { path: 'donnees', element: <Donnees /> },
     ],
   },
