@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { parseIntSearchParam } from './searchParams';
+import { parseIntSearchParam, parseStringSearchParam } from './searchParams';
 
 describe('parseIntSearchParam', () => {
   it('retourne `undefined` quand le paramètre est absent (`null`)', () => {
@@ -17,5 +17,19 @@ describe('parseIntSearchParam', () => {
   it('retourne le nombre pour une valeur numérique valide, y compris 0', () => {
     expect(parseIntSearchParam('2024')).toBe(2024);
     expect(parseIntSearchParam('0')).toBe(0);
+  });
+});
+
+describe('parseStringSearchParam', () => {
+  it('retourne `undefined` quand le paramètre est absent (`null`)', () => {
+    expect(parseStringSearchParam(null)).toBeUndefined();
+  });
+
+  it('retourne `undefined` pour une chaîne vide', () => {
+    expect(parseStringSearchParam('')).toBeUndefined();
+  });
+
+  it('retourne la chaîne telle quelle sinon', () => {
+    expect(parseStringSearchParam('hopital')).toBe('hopital');
   });
 });

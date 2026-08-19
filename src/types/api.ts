@@ -150,6 +150,48 @@ export interface DepenseFiscaleResponseDto {
   methode_chiffrage: string | null;
 }
 
+export interface MarchePublicResponseDto {
+  id: number;
+  marche_id_source: string;
+  nature: string | null;
+  objet: string;
+  codecpv: string;
+  codecpv_division: string;
+  procedure: string | null;
+  acheteur_siret: string;
+  titulaire_siret: string;
+  titulaire_id_type: string | null;
+  dureemois: number | null;
+  datenotification: string;
+  datepublicationdonnees: string | null;
+  montant: number;
+  formeprix: string | null;
+  offresrecues: number | null;
+  marcheinnovant: boolean | null;
+}
+
+export interface MarchesPageResponseDto {
+  items: MarchePublicResponseDto[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface MarchesCpvRepartitionItemDto {
+  cpv_division: string;
+  label: string;
+  montant_total: number;
+  nombre: number;
+}
+
+export interface MarchesBornesResponseDto {
+  date_min: string | null;
+  date_max: string | null;
+  montant_min: number | null;
+  montant_max: number | null;
+}
+
 // Réponse d'erreur RFC 7807 (application/problem+json), renvoyée par l'API
 // pour tout 404/422/500.
 export interface ProblemDetailsDto {

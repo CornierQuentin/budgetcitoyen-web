@@ -13,6 +13,7 @@ const links: NavLink[] = [
   { to: '/mon-budget', label: 'Mon budget' },
   { to: '/simulateur', label: 'Simulateur' },
   { to: '/depenses-fiscales', label: 'Niches fiscales' },
+  { to: '/marches-publics', label: 'Marchés publics' },
   { to: '/donnees', label: 'Données' },
 ];
 
