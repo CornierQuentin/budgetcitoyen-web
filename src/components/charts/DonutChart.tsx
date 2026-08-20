@@ -24,6 +24,15 @@ interface DonutChartProps {
   /** Nom de fichier proposé pour l'export PNG (CDC 6.2). */
   nomFichierExport?: string;
   /**
+   * Palette imposée, appliquée dans l'ordre des tranches. Sert aux séries
+   * courtes et ordonnées (les 5 types de recettes), où une rampe d'une seule
+   * teinte fait lire la quantité à la valeur. Sans cette prop, on retombe sur
+   * la palette catégorielle par hash du libellé — seule tenable quand les
+   * catégories sont nombreuses et non ordonnées (les 46 divisions CPV des
+   * marchés publics, par exemple).
+   */
+  palette?: string[];
+  /**
    * Appelé avec le `label` de la tranche cliquée (souris ou clavier —
    * Entrée/Espace sur une tranche mise en focus par les flèches, navigation
    * clavier native de recharts). Laisser vide pour un graphique non cliquable.
@@ -265,16 +274,20 @@ function calculerPositionsLabels(
 export default function DonutChart({
   data,
   nomFichierExport = 'recettes-par-type.png',
+  palette,
   onSliceClick,
 }: DonutChartProps) {
   const estSombre = useThemeStore((state) => state.theme === 'dark');
   const { ref: exportRef, exporterPng, enCours: exportEnCours } = useExportPng<HTMLDivElement>();
 
+  const couleurTranche = (label: string, index: number) =>
+    palette && palette.length > 0 ? palette[index % palette.length] : couleurPourLabel(label);
+
   if (data.length === 0) {
     return (
       <div
         className="flex h-64 items-center justify-center rounded-lg border border-dashed
-          border-gray-300 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400"
+          border-line-strong text-sm text-ink-muted"
       >
         Aucune donnée à afficher pour cette année.
       </div>
@@ -293,7 +306,7 @@ export default function DonutChart({
     label: entry.label,
     lignesLabel: envelopperLabel(entry.label, MAX_CARACTERES_PAR_LIGNE_LABEL),
     value: entry.value,
-    couleur: couleurPourLabel(entry.label),
+    couleur: couleurTranche(entry.label, index),
     midAngle: angleMedianParIndex[index],
   }));
 
@@ -406,7 +419,7 @@ export default function DonutChart({
         </Button>
       </div>
 
-      <div ref={exportRef} className="space-y-2 bg-white dark:bg-gray-900">
+      <div ref={exportRef} className="space-y-2 bg-surface">
         {/* donut-chart-pie : classe ciblée par src/index.css pour neutraliser
             le contour de focus par défaut du navigateur au clic souris tout
             en le conservant à la navigation clavier (:focus-visible).
@@ -463,8 +476,8 @@ export default function DonutChart({
                     : undefined
                 }
               >
-                {data.map((entry) => (
-                  <Cell key={entry.label} fill={couleurPourLabel(entry.label)} />
+                {data.map((entry, index) => (
+                  <Cell key={entry.label} fill={couleurTranche(entry.label, index)} />
                 ))}
               </Pie>
               <Tooltip content={<DonutTooltip total={total} estSombre={estSombre} />} />
@@ -481,13 +494,13 @@ export default function DonutChart({
             couleur (collision de hash, cf. couleurCategorielle.ts) ou si le
             libellé d'une tranche est difficile à repérer visuellement parmi
             les autres. */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-xs text-gray-600 dark:text-gray-300">
-          {data.map((entry) => (
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-xs text-ink-muted">
+          {data.map((entry, index) => (
             <span key={entry.label} className="inline-flex items-center gap-1.5">
               <span
                 aria-hidden="true"
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: couleurPourLabel(entry.label) }}
+                style={{ backgroundColor: couleurTranche(entry.label, index) }}
               />
               {entry.label}
             </span>

@@ -28,41 +28,39 @@ interface TableProps<T> {
 // responsabilite de l'appelant (cf. Pagination.tsx, SearchInput.tsx).
 export function Table<T>({ columns, rows, getRowKey, emptyMessage }: TableProps<T>) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-      <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-        <thead className="bg-gray-50 dark:bg-gray-800">
+    <div className="overflow-x-auto rounded-lg border border-line">
+      <table className="min-w-full text-[13px]">
+        <thead>
           <tr>
             {columns.map((column) => (
               <th
                 key={column.key}
                 scope="col"
-                className={`px-3 py-2 font-medium text-gray-700 dark:text-gray-300 ${
-                  column.align === 'right' ? 'text-right' : 'text-left'
-                }`}
+                className={`whitespace-nowrap border-b border-line bg-surface px-4 py-2.5
+                  text-[11.5px] font-semibold uppercase tracking-[0.04em] text-ink-faint ${
+                    column.align === 'right' ? 'text-right' : 'text-left'
+                  }`}
               >
                 {column.header}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+        <tbody>
           {rows.length === 0 ? (
             <tr>
-              <td
-                colSpan={columns.length}
-                className="px-3 py-4 text-center text-gray-500 dark:text-gray-400"
-              >
+              <td colSpan={columns.length} className="px-4 py-6 text-center text-ink-muted">
                 {emptyMessage}
               </td>
             </tr>
           ) : (
             rows.map((row) => (
-              <tr key={getRowKey(row)}>
+              <tr key={getRowKey(row)} className="border-b border-line last:border-b-0 hover:bg-surface-hover">
                 {columns.map((column) => (
                   <td
                     key={column.key}
-                    className={`px-3 py-2 text-gray-600 dark:text-gray-300 ${
-                      column.align === 'right' ? 'text-right' : 'text-left'
+                    className={`px-4 py-2.5 text-ink-muted ${
+                      column.align === 'right' ? 'whitespace-nowrap text-right tabular-nums' : 'text-left'
                     }`}
                   >
                     {column.render(row)}

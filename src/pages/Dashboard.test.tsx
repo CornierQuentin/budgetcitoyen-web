@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -38,7 +38,10 @@ const budgetAnneeMock: AnneeBudgetDetail = {
   annee: 2023,
   depensesNettes: 60_000_000_000,
   recettesNettes: 190,
-  deficit: -1,
+  // `deficit` est une magnitude POSITIVE côté API (le solde budgétaire en est
+  // l'opposé) : le jeu d'essai doit respecter cette convention, sous peine de
+  // valider un affichage inversé.
+  deficit: 1_000_000_000,
   dettePib: 111,
   sourceUrl: 'https://example.org/budget-2023',
 };
@@ -80,11 +83,9 @@ function renderDashboard(initialPath = '/tableau-de-bord') {
 }
 
 describe('Dashboard', () => {
-  // jsdom ne calcule pas de vraie mise en page : getBoundingClientRect
-  // renvoie 0x0 par défaut, ce qui fait que le ResponsiveContainer de
-  // recharts (utilisé par les deux camemberts) refuse de rendre ses enfants
-  // (Pie, Legend...). On simule un conteneur non vide, comme dans un vrai
-  // navigateur (même pattern que DonutChart.test.tsx).
+  // jsdom ne calcule pas de vraie mise en page : sans cette simulation, le
+  // ResponsiveContainer de recharts refuse de rendre ses enfants (même pattern
+  // que DonutChart.test.tsx).
   beforeEach(() => {
     useFiltersStore.setState({ anneeActive: new Date().getFullYear() });
     vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockReturnValue({
@@ -104,15 +105,53 @@ describe('Dashboard', () => {
     vi.restoreAllMocks();
   });
 
-  it('affiche le titre, les missions par dépense et se recale sur la dernière année disponible', () => {
+  it("affiche le titre de l'exercice et se recale sur la dernière année disponible", () => {
     renderDashboard();
 
-    expect(screen.getByRole('heading', { name: 'Tableau de bord' })).toBeInTheDocument();
-    // "Défense"/"Justice" apparaissent dans la légende du camembert des
-    // missions (recharts <Legend>).
-    expect(screen.getAllByText('Défense').length).toBeGreaterThan(0);
-    expect(screen.getAllByText('Justice').length).toBeGreaterThan(0);
+    expect(screen.getByRole('heading', { name: /exercice 2023/i })).toBeInTheDocument();
     expect(screen.getByTestId('url-actuelle')).toHaveTextContent('/tableau-de-bord?annee=2023');
+  });
+
+  it('affiche les trois chiffres clés avec leur écart sur l’année précédente', () => {
+    renderDashboard();
+
+    expect(screen.getByText('Dépenses totales')).toBeInTheDocument();
+    expect(screen.getByText('Recettes totales')).toBeInTheDocument();
+    expect(screen.getByText('Solde budgétaire')).toBeInTheDocument();
+    // Déficit négatif dans le jeu d'essai : l'état est nommé, pas seulement
+    // suggéré par une couleur.
+    expect(screen.getByText('Déficit')).toBeInTheDocument();
+    expect(screen.getAllByText(/vs 2022/).length).toBeGreaterThan(0);
+  });
+
+  it('liste toutes les missions dans un tableau, triées par montant décroissant', () => {
+    renderDashboard();
+
+    const lignes = within(screen.getByRole('table')).getAllByRole('row').slice(1);
+    expect(lignes).toHaveLength(missionsMock.length);
+
+    expect(lignes[0]).toHaveTextContent('Défense');
+    expect(lignes[0]).toHaveTextContent('50 Md€');
+    expect(lignes[1]).toHaveTextContent('Justice');
+    expect(lignes[1]).toHaveTextContent('10 Md€');
+  });
+
+  it('inverse le tri des missions au clic sur l’en-tête Montant', () => {
+    renderDashboard();
+
+    fireEvent.click(screen.getByRole('button', { name: /montant/i }));
+
+    const lignes = within(screen.getByRole('table')).getAllByRole('row').slice(1);
+    expect(lignes[0]).toHaveTextContent('Justice');
+    expect(lignes[1]).toHaveTextContent('Défense');
+  });
+
+  it('navigue vers la page de la mission cliquée dans le tableau', () => {
+    renderDashboard();
+
+    fireEvent.click(screen.getByRole('link', { name: 'Défense' }));
+
+    expect(screen.getByText('Page mission')).toBeInTheDocument();
   });
 
   it('met à jour l’année sélectionnée (et l’URL) quand l’utilisateur change le sélecteur', () => {
@@ -129,10 +168,17 @@ describe('Dashboard', () => {
     expect(screen.getAllByRole('button', { name: /exporter csv/i }).length).toBeGreaterThan(0);
   });
 
-  it('navigue vers la page de la mission cliquée dans le camembert des missions', () => {
+  it('affiche le camembert des missions à la demande, et navigue au clic sur une tranche', () => {
     const { container } = renderDashboard();
 
-    const secteurs = container.querySelectorAll('.recharts-pie-sector path');
+    // Masqué par défaut : le tableau dense est devenu la lecture principale.
+    expect(container.querySelector('#camembert-missions')).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Voir en camembert' }));
+
+    expect(container.querySelector('#camembert-missions')).toBeInTheDocument();
+
+    const secteurs = container.querySelectorAll('#camembert-missions .recharts-pie-sector path');
     expect(secteurs.length).toBeGreaterThan(0);
 
     fireEvent.click(secteurs[0]);
@@ -140,45 +186,9 @@ describe('Dashboard', () => {
     expect(screen.getByText('Page mission')).toBeInTheDocument();
   });
 
-  it('affiche, dépliable, le détail complet de toutes les missions triées par montant décroissant', () => {
-    const { container } = renderDashboard();
-
-    // Repliée par défaut : une trentaine de lignes d'un coup surchargerait la
-    // page à l'arrivée sur le Dashboard (cf. commentaire dans Dashboard.tsx).
-    expect(container.querySelector('#detail-complet-missions')).not.toBeInTheDocument();
-
-    const boutonDetail = screen.getByRole('button', {
-      name: `Voir le détail complet des ${missionsMock.length} missions`,
-    });
-    fireEvent.click(boutonDetail);
-
-    const liste = container.querySelector('#detail-complet-missions');
-    expect(liste).toBeInTheDocument();
-
-    // Toutes les missions apparaissent, y compris celles qui seraient
-    // regroupées dans « Autres » sur le camembert (avec seulement 2 missions
-    // ici, aucune ne l'est réellement, mais la liste doit rester exhaustive
-    // quel que soit le nombre de missions).
-    const lignes = liste?.querySelectorAll('li') ?? [];
-    expect(lignes).toHaveLength(missionsMock.length);
-
-    // Triée par montant décroissant : Défense (50 Md€) avant Justice
-    // (10 Md€), avec le montant de chacune.
-    expect(lignes[0]).toHaveTextContent('Défense');
-    expect(lignes[0]).toHaveTextContent('50 Md€');
-    expect(lignes[1]).toHaveTextContent('Justice');
-    expect(lignes[1]).toHaveTextContent('10 Md€');
-
-    // Le bouton bascule vers une action de repli une fois la liste dépliée.
-    expect(screen.getByRole('button', { name: 'Masquer le détail complet' })).toBeInTheDocument();
-  });
-
-  it('affiche un rappel des sigles de recettes (IR, TVA, IS, TICPE, AUTRES) avec leur définition', () => {
+  it('affiche un rappel des sigles de recettes (IR, TVA, IS, TICPE, AUTRES)', () => {
     renderDashboard();
 
-    // Un seul <GlossaryTerm> par sigle est affiché en rappel au-dessus du
-    // camembert des recettes (la légende recharts en affiche aussi, d'où le
-    // `getAllByText`).
     expect(screen.getAllByText('IR').length).toBeGreaterThan(0);
     expect(screen.getAllByText('TVA').length).toBeGreaterThan(0);
     expect(screen.getByText('IS')).toBeInTheDocument();

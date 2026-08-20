@@ -1,0 +1,729 @@
+<title>BudgetCitoyen.fr — Tableau de bord (maquette)</title>
+
+<style>
+  /* ---------- Tokens : palette claire complète sur :root nu ---------- */
+  :root {
+    --ground: #f6f7f9;
+    --surface: #ffffff;
+    --surface-sunken: #f1f3f6;
+    --surface-hover: #f7f9fc;
+    --border: #e3e6eb;
+    --border-strong: #d2d7de;
+    --ink: #1a1f29;
+    --ink-muted: #5b6472;
+    --ink-faint: #838d9c;
+    --accent: #1a56db;
+    --accent-hover: #1546b4;
+    --accent-soft: #eaf0fe;
+    --accent-border: #c3d5fb;
+    --focus: #1a56db;
+    --pos: #0f7b4f;
+    --pos-soft: #e6f4ed;
+    --neg: #b4241c;
+    --neg-soft: #fdeceb;
+    --warn: #9a6700;
+    --warn-soft: #fdf5e3;
+    /* rampe de valeurs, une seule teinte : la quantité se lit à la valeur, jamais à une couleur connotée */
+    --d1: #16326b;
+    --d2: #244d99;
+    --d3: #3d6ec4;
+    --d4: #7b9ad9;
+    --d5: #b9caea;
+    --bar: #3d6ec4;
+    --bar-track: #eceff4;
+    --shadow-sm: 0 1px 2px rgba(21, 31, 48, .06), 0 1px 1px rgba(21, 31, 48, .04);
+    --shadow-md: 0 2px 6px rgba(21, 31, 48, .07), 0 4px 14px rgba(21, 31, 48, .05);
+    --radius: 8px;
+    --radius-sm: 6px;
+    --rail: 244px;
+    --topbar: 56px;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  /* Thème sombre par préférence système, sauf choix explicite « clair » */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1319;
+      --surface: #161b23;
+      --surface-sunken: #1b212b;
+      --surface-hover: #1e252f;
+      --border: #262d38;
+      --border-strong: #333c49;
+      --ink: #e8ecf2;
+      --ink-muted: #a0a9b8;
+      --ink-faint: #7d8797;
+      --accent: #7ba4f7;
+      --accent-hover: #9bbaf9;
+      --accent-soft: #16233d;
+      --accent-border: #2b4477;
+      --focus: #7ba4f7;
+      --pos: #4ec08b;
+      --pos-soft: #12281f;
+      --neg: #f08279;
+      --neg-soft: #2c1614;
+      --warn: #d9a441;
+      --warn-soft: #2a2213;
+      --d1: #b9caea;
+      --d2: #7b9ad9;
+      --d3: #4f7fd0;
+      --d4: #35589c;
+      --d5: #253c6b;
+      --bar: #4f7fd0;
+      --bar-track: #222a35;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+      --shadow-md: 0 2px 6px rgba(0, 0, 0, .45), 0 8px 20px rgba(0, 0, 0, .35);
+    }
+  }
+
+  /* Choix explicite « sombre » : gagne aussi sur un OS clair */
+  :root[data-theme="dark"] {
+    --ground: #0f1319;
+    --surface: #161b23;
+    --surface-sunken: #1b212b;
+    --surface-hover: #1e252f;
+    --border: #262d38;
+    --border-strong: #333c49;
+    --ink: #e8ecf2;
+    --ink-muted: #a0a9b8;
+    --ink-faint: #7d8797;
+    --accent: #7ba4f7;
+    --accent-hover: #9bbaf9;
+    --accent-soft: #16233d;
+    --accent-border: #2b4477;
+    --focus: #7ba4f7;
+    --pos: #4ec08b;
+    --pos-soft: #12281f;
+    --neg: #f08279;
+    --neg-soft: #2c1614;
+    --warn: #d9a441;
+    --warn-soft: #2a2213;
+    --d1: #b9caea;
+    --d2: #7b9ad9;
+    --d3: #4f7fd0;
+    --d4: #35589c;
+    --d5: #253c6b;
+    --bar: #4f7fd0;
+    --bar-track: #222a35;
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, .4);
+    --shadow-md: 0 2px 6px rgba(0, 0, 0, .45), 0 8px 20px rgba(0, 0, 0, .35);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Surfaces navigateur : elles font partie du design */
+  ::selection { background: var(--accent-soft); color: var(--ink); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 3px; }
+  .scroll-y { scrollbar-width: thin; scrollbar-color: var(--border-strong) transparent; }
+  .scroll-y::-webkit-scrollbar { width: 10px; height: 10px; }
+  .scroll-y::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 6px; border: 3px solid var(--surface); }
+  .scroll-y::-webkit-scrollbar-track { background: transparent; }
+
+  .num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum" 1; white-space: nowrap; }
+
+  /* ---------- Coque applicative ---------- */
+  .app { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); min-height: 100vh; }
+
+  .rail {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .brand {
+    display: flex; align-items: center; gap: 9px;
+    height: var(--topbar); padding: 0 16px;
+    border-bottom: 1px solid var(--border);
+    font-weight: 650; letter-spacing: -.012em; font-size: 14.5px;
+  }
+  .brand-mark { color: var(--accent); display: block; }
+
+  .rail-nav { padding: 12px 8px 20px; display: flex; flex-direction: column; gap: 16px; }
+  .nav-group { display: flex; flex-direction: column; gap: 1px; }
+  .nav-label {
+    font-size: 10.5px; font-weight: 650; letter-spacing: .07em; text-transform: uppercase;
+    color: var(--ink-faint); padding: 4px 10px 6px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 10px; border-radius: var(--radius-sm);
+    color: var(--ink-muted); text-decoration: none; font-size: 13.5px; font-weight: 500;
+  }
+  .nav-item svg { flex: none; color: var(--ink-faint); }
+  .nav-item:hover { background: var(--surface-hover); color: var(--ink); }
+  .nav-item:hover svg { color: var(--ink-muted); }
+  .nav-item[aria-current="page"] { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .nav-item[aria-current="page"] svg { color: var(--accent); }
+
+  /* ---------- Barre supérieure ---------- */
+  .main { display: flex; flex-direction: column; min-width: 0; }
+
+  .topbar {
+    height: var(--topbar);
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 12px;
+    padding: 0 20px;
+    position: sticky; top: 0; z-index: 20;
+  }
+  .crumb { display: flex; align-items: center; gap: 7px; color: var(--ink-muted); font-size: 13px; min-width: 0; }
+  .crumb strong { color: var(--ink); font-weight: 600; }
+  .crumb-sep { color: var(--ink-faint); }
+  .topbar-spacer { flex: 1 1 auto; }
+
+  .search {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface-sunken);
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    padding: 0 10px; height: 32px; width: 260px;
+    color: var(--ink-faint);
+  }
+  .search:focus-within { border-color: var(--accent-border); background: var(--surface); }
+  .search input {
+    border: 0; background: transparent; outline: none; font: inherit; font-size: 13px;
+    color: var(--ink); width: 100%; padding: 0;
+  }
+  .search input::placeholder { color: var(--ink-faint); }
+  .kbd {
+    font-size: 10.5px; font-weight: 600; color: var(--ink-faint);
+    border: 1px solid var(--border); border-radius: 4px; padding: 1px 5px; background: var(--surface);
+  }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 32px; padding: 0 11px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-strong);
+    background: var(--surface); color: var(--ink);
+    font: inherit; font-size: 13px; font-weight: 550;
+    cursor: pointer;
+  }
+  .btn:hover { background: var(--surface-hover); border-color: var(--ink-faint); }
+  .btn svg { color: var(--ink-muted); }
+  .btn-icon { padding: 0; width: 32px; justify-content: center; }
+  .btn-primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+  .btn-primary svg { color: #fff; }
+
+  /* ---------- Zone de contenu ---------- */
+  .content { padding: 20px; display: flex; flex-direction: column; gap: 16px; max-width: 1400px; width: 100%; }
+
+  .page-head { display: flex; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+  h1 { font-size: 20px; font-weight: 650; letter-spacing: -.02em; margin: 0; text-wrap: balance; }
+  .page-sub { color: var(--ink-muted); font-size: 13px; margin: 3px 0 0; }
+  .page-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+
+  .year-picker { display: flex; align-items: center; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); overflow: hidden; height: 32px; }
+  .year-picker button {
+    border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: 550;
+    color: var(--ink-muted); padding: 0 11px; height: 100%; cursor: pointer; border-right: 1px solid var(--border);
+  }
+  .year-picker button:last-child { border-right: 0; }
+  .year-picker button:hover { background: var(--surface-hover); color: var(--ink); }
+  .year-picker button[aria-pressed="true"] { background: var(--accent-soft); color: var(--accent); font-weight: 650; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+  }
+  .card-head {
+    display: flex; align-items: center; gap: 10px;
+    padding: 13px 16px; border-bottom: 1px solid var(--border);
+  }
+  .card-title { font-size: 13.5px; font-weight: 650; letter-spacing: -.008em; margin: 0; }
+  .card-note { font-size: 12px; color: var(--ink-muted); }
+  .card-head .spacer { flex: 1 1 auto; }
+  .card-body { padding: 16px; }
+
+  /* ---------- Rangée de chiffres clés ---------- */
+  .kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .kpi { padding: 15px 16px 16px; display: flex; flex-direction: column; gap: 9px; }
+  .kpi-label { display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--ink-muted); font-weight: 550; }
+  .kpi-value { font-size: 30px; font-weight: 650; letter-spacing: -.028em; line-height: 1.05; }
+  .kpi-foot { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 11.5px; font-weight: 600; padding: 2px 7px; border-radius: 100px;
+    border: 1px solid transparent;
+  }
+  .chip-pos { background: var(--pos-soft); color: var(--pos); border-color: color-mix(in srgb, var(--pos) 22%, transparent); }
+  .chip-neg { background: var(--neg-soft); color: var(--neg); border-color: color-mix(in srgb, var(--neg) 22%, transparent); }
+  .chip-warn { background: var(--warn-soft); color: var(--warn); border-color: color-mix(in srgb, var(--warn) 25%, transparent); }
+  .chip-quiet { background: var(--surface-sunken); color: var(--ink-muted); border-color: var(--border); }
+  .kpi-vs { font-size: 12px; color: var(--ink-faint); }
+
+  .src {
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--ink-faint); text-decoration: none; border-radius: 4px;
+  }
+  .src:hover { color: var(--accent); }
+
+  /* ---------- Grille principale ---------- */
+  .grid-main { display: grid; grid-template-columns: minmax(0, 1.62fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+
+  /* Tableau des missions */
+  .tbl-wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  thead th {
+    text-align: left; font-weight: 600; font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--ink-faint); padding: 9px 16px; border-bottom: 1px solid var(--border);
+    background: var(--surface); position: sticky; top: 0; white-space: nowrap;
+  }
+  thead th.right { text-align: right; }
+  th.sortable { cursor: pointer; user-select: none; }
+  th.sortable:hover { color: var(--ink-muted); }
+  th .sort-caret { opacity: 0; margin-left: 4px; vertical-align: -1px; }
+  th[aria-sort] { color: var(--ink); }
+  th[aria-sort] .sort-caret { opacity: 1; color: var(--accent); }
+  tbody td { padding: 0 16px; border-bottom: 1px solid var(--border); height: 40px; vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: var(--surface-hover); }
+  td.right { text-align: right; white-space: nowrap; }
+  thead th.right:last-child, tbody td.right:last-child { width: 62px; }
+  .m-name { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .m-name a { color: var(--ink); text-decoration: none; font-weight: 500; }
+  .m-name a:hover { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+  .m-rank { color: var(--ink-faint); font-size: 11.5px; width: 16px; flex: none; }
+  .bar-cell { width: 132px; }
+  .bar-track { display: block; background: var(--bar-track); border-radius: 3px; height: 6px; width: 100%; overflow: hidden; }
+  .bar-fill { display: block; background: var(--bar); height: 100%; border-radius: 3px; }
+  .pct { color: var(--ink-muted); width: 46px; display: inline-block; }
+  .tbl-foot {
+    display: flex; align-items: center; gap: 10px; padding: 11px 16px;
+    border-top: 1px solid var(--border); font-size: 12.5px; color: var(--ink-muted);
+  }
+  .link { color: var(--accent); text-decoration: none; font-weight: 550; }
+  .link:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+  /* Donut recettes */
+  .donut-row { display: flex; align-items: center; gap: 18px; }
+  .donut { flex: none; position: relative; }
+  .donut-center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+  .donut-center .dc-val { font-size: 17px; font-weight: 650; letter-spacing: -.02em; display: block; }
+  .donut-center .dc-lbl { font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
+  .donut circle { transition: opacity .12s ease; }
+  .legend { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1 1 auto; }
+  .leg-row { display: flex; align-items: center; gap: 9px; padding: 5px 6px; border-radius: var(--radius-sm); }
+  .leg-row:hover { background: var(--surface-hover); }
+  .swatch { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .leg-name { font-weight: 500; }
+  .leg-name abbr { text-decoration: none; border-bottom: 1px dotted var(--border-strong); cursor: help; }
+  .leg-val { margin-left: auto; font-weight: 600; }
+  .leg-pct { color: var(--ink-faint); width: 44px; text-align: right; font-size: 12px; }
+
+  /* État vide réel : la donnée de population 2026 n'existe pas */
+  .empty {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 15px 16px;
+  }
+  .empty-icon {
+    flex: none; width: 32px; height: 32px; border-radius: var(--radius-sm);
+    background: var(--warn-soft); color: var(--warn);
+    display: grid; place-content: center;
+  }
+  .empty h3 { margin: 0 0 2px; font-size: 13.5px; font-weight: 600; }
+  .empty p { margin: 0; font-size: 12.5px; color: var(--ink-muted); max-width: 68ch; }
+
+  .sources { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 12px 16px; font-size: 12px; color: var(--ink-muted); }
+  .sources a { color: var(--accent); text-decoration: none; }
+  .sources a:hover { text-decoration: underline; text-underline-offset: 2px; }
+
+  .banner {
+    display: flex; align-items: center; gap: 9px; padding: 9px 14px;
+    background: var(--accent-soft); border: 1px solid var(--accent-border);
+    border-radius: var(--radius); color: var(--ink); font-size: 12.5px;
+  }
+  .banner svg { color: var(--accent); flex: none; }
+
+  @media (max-width: 1080px) {
+    .grid-main { grid-template-columns: minmax(0, 1fr); }
+  }
+  /* Tiroir de navigation : masqué au-dessus du seuil mobile */
+  .menu-btn { display: none; }
+  .scrim { display: none; }
+
+  @media (max-width: 880px) {
+    .app { grid-template-columns: minmax(0, 1fr); }
+    .menu-btn { display: inline-flex; }
+    .kpis { grid-template-columns: minmax(0, 1fr); }
+    .search { width: 100%; max-width: 200px; }
+    .donut-row { flex-direction: column; align-items: stretch; }
+    .donut { align-self: center; }
+    .content { padding: 14px; }
+    .page-actions { margin-left: 0; width: 100%; }
+    .year-picker { flex: 1 1 auto; }
+    .year-picker button { flex: 1 1 auto; }
+
+    /* Le rail devient un tiroir : la navigation reste atteignable, jamais supprimée */
+    .rail {
+      position: fixed; top: 0; left: 0; bottom: 0; height: 100%;
+      width: 264px; z-index: 60;
+      transform: translateX(-100%);
+      transition: transform .18s cubic-bezier(.2, .7, .3, 1);
+      box-shadow: var(--shadow-md);
+    }
+    .rail[data-open="true"] { transform: none; }
+    .scrim {
+      display: block; position: fixed; inset: 0; z-index: 50;
+      background: rgba(10, 14, 20, .5);
+      opacity: 0; pointer-events: none; transition: opacity .18s ease;
+      border: 0; padding: 0;
+    }
+    .scrim[data-open="true"] { opacity: 1; pointer-events: auto; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="app">
+  <!-- ---------------- Rail latéral ---------------- -->
+  <button class="scrim" id="scrim" type="button" tabindex="-1" aria-label="Fermer la navigation"></button>
+  <aside class="rail scroll-y" id="rail">
+    <div class="brand">
+      <svg class="brand-mark" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M3 16.5h14" /><path d="M5.5 16.5V9" /><path d="M10 16.5V4.5" /><path d="M14.5 16.5v-5" />
+      </svg>
+      BudgetCitoyen.fr
+    </div>
+
+    <nav class="rail-nav" aria-label="Navigation principale">
+      <div class="nav-group">
+        <span class="nav-label">Vue d'ensemble</span>
+        <a class="nav-item" href="#">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5 10 3l7 5.5" /><path d="M4.5 8v9h11V8" /></svg>
+          Accueil
+        </a>
+        <a class="nav-item" href="#" aria-current="page">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="6.5" height="8" rx="1.2" /><rect x="3" y="13" width="6.5" height="4" rx="1.2" /><rect x="11.5" y="3" width="5.5" height="4" rx="1.2" /><rect x="11.5" y="9" width="5.5" height="8" rx="1.2" /></svg>
+          Tableau de bord
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 16.5h14" /><path d="M4 13l4-4.5 3.5 3L16 5.5" /></svg>
+          Historique
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-label">Analyser</span>
+        <a class="nav-item" href="#">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4v12" /><path d="M13 4v12" /><path d="M4 7h6" /><path d="M10 13h6" /></svg>
+          Comparateur
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M10 6.5v3.5l2.5 2" /></svg>
+          Simulateur
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="6.5" r="3" /><path d="M4 17c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5" /></svg>
+          Mon budget
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-label">Explorer</span>
+        <a class="nav-item" href="#">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h12" /><path d="M4 10h8" /><path d="M4 15h5" /></svg>
+          Niches fiscales
+        </a>
+        <a class="nav-item" href="#">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5" /><path d="M13.5 13.5 17 17" /></svg>
+          Marchés publics
+        </a>
+      </div>
+
+      <div class="nav-group">
+        <span class="nav-label">Référence</span>
+        <a class="nav-item" href="#">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="10" cy="5.5" rx="6" ry="2.5" /><path d="M4 5.5v9c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-9" /><path d="M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5" /></svg>
+          Données &amp; sources
+        </a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ---------------- Colonne principale ---------------- -->
+  <div class="main">
+    <header class="topbar">
+      <button class="btn btn-icon menu-btn" type="button" id="menu-btn" aria-label="Ouvrir la navigation" aria-expanded="false" aria-controls="rail">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="M3.5 6h13" /><path d="M3.5 10h13" /><path d="M3.5 14h13" /></svg>
+      </button>
+      <div class="crumb">
+        <span>Budget de l'État</span>
+        <span class="crumb-sep">/</span>
+        <strong>Tableau de bord</strong>
+      </div>
+
+      <div class="topbar-spacer"></div>
+
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="9" r="5.5" /><path d="M13.5 13.5 17 17" /></svg>
+        <label for="q" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap">Rechercher une mission, un programme</label>
+        <input id="q" type="search" placeholder="Rechercher une mission…" />
+        <span class="kbd">/</span>
+      </div>
+
+      <button class="btn btn-icon" type="button" id="theme-toggle" aria-label="Basculer le thème" title="Basculer le thème">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15.5 11.5A6 6 0 0 1 8.5 4.5a6 6 0 1 0 7 7Z" /></svg>
+      </button>
+    </header>
+
+    <div class="content">
+
+      <div class="page-head">
+        <div>
+          <h1>Budget de l'État — exercice 2026</h1>
+          <p class="page-sub">Loi de finances initiale. Chaque montant renvoie au texte officiel qui l'établit.</p>
+        </div>
+        <div class="page-actions">
+          <div class="year-picker" role="group" aria-label="Année budgétaire">
+            <button type="button">2023</button>
+            <button type="button">2024</button>
+            <button type="button">2025</button>
+            <button type="button" aria-pressed="true">2026</button>
+          </div>
+          <button class="btn" type="button">
+            <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v9" /><path d="M6.5 8.5 10 12l3.5-3.5" /><path d="M4 15.5h12" /></svg>
+            Exporter
+          </button>
+        </div>
+      </div>
+
+      <!-- Chiffres clés : résumé avant détail -->
+      <section class="kpis" aria-label="Chiffres clés 2026">
+        <div class="card kpi">
+          <span class="kpi-label">
+            Dépenses totales
+            <a class="src" href="#" title="Voir la source officielle : dépenses 2026" aria-label="Voir la source officielle : dépenses 2026">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1" /><path d="M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1" /></svg>
+            </a>
+          </span>
+          <span class="kpi-value num">593,9 Md€</span>
+          <span class="kpi-foot">
+            <span class="chip chip-quiet num">−0,1 Md€</span>
+            <span class="kpi-vs">vs 2025</span>
+          </span>
+        </div>
+
+        <div class="card kpi">
+          <span class="kpi-label">
+            Recettes totales
+            <a class="src" href="#" title="Voir la source officielle : recettes 2026" aria-label="Voir la source officielle : recettes 2026">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1" /><path d="M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1" /></svg>
+            </a>
+          </span>
+          <span class="kpi-value num">460,4 Md€</span>
+          <span class="kpi-foot">
+            <span class="chip chip-pos num">
+              <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 15.5v-11" /><path d="M5.5 9 10 4.5 14.5 9" /></svg>
+              +7,0 Md€
+            </span>
+            <span class="kpi-vs">vs 2025</span>
+          </span>
+        </div>
+
+        <div class="card kpi">
+          <span class="kpi-label">
+            Solde budgétaire
+            <a class="src" href="#" title="Voir la source officielle : déficit 2026" aria-label="Voir la source officielle : déficit 2026">
+              <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1" /><path d="M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1" /></svg>
+            </a>
+          </span>
+          <span class="kpi-value num">−133,5 Md€</span>
+          <span class="kpi-foot">
+            <span class="chip chip-quiet">Déficit</span>
+            <span class="kpi-vs">Écart de déficit −7,2 Md€ vs 2025</span>
+          </span>
+        </div>
+      </section>
+
+      <!-- Détail -->
+      <section class="grid-main">
+        <!-- Missions -->
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title">Dépenses par mission</h2>
+            <span class="card-note num">32 missions · 593,9 Md€</span>
+            <span class="spacer"></span>
+            <button class="btn" type="button" style="height:28px;font-size:12.5px">
+              <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 3v9" /><path d="M6.5 8.5 10 12l3.5-3.5" /><path d="M4 15.5h12" /></svg>
+              CSV
+            </button>
+          </div>
+
+          <div class="tbl-wrap scroll-y">
+            <table id="missions">
+              <thead>
+                <tr>
+                  <th scope="col">Mission</th>
+                  <th scope="col" class="right sortable" data-key="amount" aria-sort="descending">
+                    Montant
+                    <svg class="sort-caret" width="10" height="10" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8l5 5 5-5" /></svg>
+                  </th>
+                  <th scope="col">Part</th>
+                  <th scope="col" class="right">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- rangs et barres calculés à partir des montants réels 2026 -->
+                <tr><td><span class="m-name"><span class="m-rank num">1</span><a href="#">Remboursements et dégrèvements</a></span></td><td class="right num">145,6 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></td><td class="right num">24,5 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">2</span><a href="#">Enseignement scolaire</a></span></td><td class="right num">89,6 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:61.5%"></span></span></td><td class="right num">15,1 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">3</span><a href="#">Défense</a></span></td><td class="right num">66,5 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:45.7%"></span></span></td><td class="right num">11,2 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">4</span><a href="#">Engagements financiers de l'État</a></span></td><td class="right num">60,3 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:41.4%"></span></span></td><td class="right num">10,2 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">5</span><a href="#">Recherche et enseignement supérieur</a></span></td><td class="right num">31,6 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:21.7%"></span></span></td><td class="right num">5,3 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">6</span><a href="#">Solidarité, insertion et égalité des chances</a></span></td><td class="right num">31,3 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:21.5%"></span></span></td><td class="right num">5,3 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">7</span><a href="#">Sécurités</a></span></td><td class="right num">25,8 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:17.7%"></span></span></td><td class="right num">4,4 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">8</span><a href="#">Écologie, développement et mobilité durables</a></span></td><td class="right num">22,8 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:15.7%"></span></span></td><td class="right num">3,8 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">9</span><a href="#">Cohésion des territoires</a></span></td><td class="right num">22,6 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:15.5%"></span></span></td><td class="right num">3,8 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">10</span><a href="#">Travail, emploi et administration des ministères sociaux</a></span></td><td class="right num">20,8 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:14.3%"></span></span></td><td class="right num">3,5 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">11</span><a href="#">Justice</a></span></td><td class="right num">13,0 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:8.9%"></span></span></td><td class="right num">2,2 %</td></tr>
+                <tr><td><span class="m-name"><span class="m-rank num">12</span><a href="#">Gestion des finances publiques</a></span></td><td class="right num">11,0 Md€</td><td class="bar-cell"><span class="bar-track"><span class="bar-fill" style="width:7.6%"></span></span></td><td class="right num">1,9 %</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="tbl-foot">
+            <span>12 des 32 missions affichées</span>
+            <span class="spacer" style="flex:1 1 auto"></span>
+            <a class="link" href="#">Voir les 32 missions →</a>
+          </div>
+        </div>
+
+        <!-- Colonne de droite -->
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div class="card">
+            <div class="card-head">
+              <h2 class="card-title">Recettes par type</h2>
+              <span class="spacer"></span>
+              <a class="src" href="#" title="Voir la source officielle : recettes 2026" aria-label="Voir la source officielle : recettes 2026">
+                <svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8.5 11.5a3 3 0 0 0 4.2 0l2.3-2.3a3 3 0 0 0-4.2-4.2l-1 1" /><path d="M11.5 8.5a3 3 0 0 0-4.2 0L5 10.8a3 3 0 0 0 4.2 4.2l1-1" /></svg>
+              </a>
+            </div>
+            <div class="card-body">
+              <div class="donut-row">
+                <div class="donut" style="width:148px;height:148px">
+                  <svg width="148" height="148" viewBox="0 0 148 148" role="img" aria-label="Répartition des recettes 2026 par type d'impôt">
+                    <g transform="rotate(-90 74 74)" fill="none" stroke-width="19">
+                      <circle cx="74" cy="74" r="60" stroke="var(--d1)" stroke-dasharray="174.59 376.99" stroke-dashoffset="0" />
+                      <circle cx="74" cy="74" r="60" stroke="var(--d2)" stroke-dasharray="70.50 376.99" stroke-dashoffset="-174.59" />
+                      <circle cx="74" cy="74" r="60" stroke="var(--d3)" stroke-dasharray="70.50 376.99" stroke-dashoffset="-245.09" />
+                      <circle cx="74" cy="74" r="60" stroke="var(--d4)" stroke-dasharray="43.51 376.99" stroke-dashoffset="-315.59" />
+                      <circle cx="74" cy="74" r="60" stroke="var(--d5)" stroke-dasharray="17.87 376.99" stroke-dashoffset="-359.10" />
+                    </g>
+                  </svg>
+                  <span class="donut-center">
+                    <span class="dc-val num">533,6</span>
+                    <span class="dc-lbl">Md€ bruts</span>
+                  </span>
+                </div>
+
+                <div class="legend">
+                  <span class="leg-row"><span class="swatch" style="background:var(--d1)"></span><span class="leg-name">Autres recettes</span><span class="leg-val num">247,1</span><span class="leg-pct num">46,3 %</span></span>
+                  <span class="leg-row"><span class="swatch" style="background:var(--d2)"></span><span class="leg-name"><abbr title="Impôt sur le revenu">IR</abbr></span><span class="leg-val num">99,8</span><span class="leg-pct num">18,7 %</span></span>
+                  <span class="leg-row"><span class="swatch" style="background:var(--d3)"></span><span class="leg-name"><abbr title="Taxe sur la valeur ajoutée">TVA</abbr></span><span class="leg-val num">99,8</span><span class="leg-pct num">18,7 %</span></span>
+                  <span class="leg-row"><span class="swatch" style="background:var(--d4)"></span><span class="leg-name"><abbr title="Impôt sur les sociétés">IS</abbr></span><span class="leg-val num">61,6</span><span class="leg-pct num">11,5 %</span></span>
+                  <span class="leg-row"><span class="swatch" style="background:var(--d5)"></span><span class="leg-name"><abbr title="Taxe intérieure de consommation sur les produits énergétiques">TICPE</abbr></span><span class="leg-val num">25,3</span><span class="leg-pct num">4,7 %</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="sources">
+              Recettes brutes, avant les 145,6 Md€ de remboursements et dégrèvements — d'où l'écart avec les 460,4 Md€ nets.
+            </div>
+          </div>
+
+          <!-- État vide authentique : la donnée n'existe pas pour 2026 -->
+          <div class="card empty">
+            <span class="empty-icon">
+              <svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M10 6.5v4" /><path d="M10 13.5h.01" /></svg>
+            </span>
+            <div>
+              <h3>Dépense par Français, chaque seconde</h3>
+              <p>L'INSEE n'a pas encore publié la population 2026 : cet indicateur ne peut pas être calculé. Il réapparaîtra automatiquement dès la publication.</p>
+            </div>
+          </div>
+
+          <div class="card sources">
+            <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="color:var(--ink-faint)"><path d="M6 3h6l3 3v11H6z" /><path d="M11.5 3v3.5H15" /></svg>
+            Source : <a href="#">LFI 2026, Légifrance</a> · Données sous Licence Ouverte 2.0
+          </div>
+        </div>
+      </section>
+
+      <div class="banner">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="10" cy="10" r="7" /><path d="M10 13.5v-4" /><path d="M10 6.5h.01" /></svg>
+        Maquette — structure et habillage proposés. Les montants affichés sont les données réelles de l'exercice 2026 déjà servies par l'API.
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  (function () {
+    // Bascule de thème : écrit le stamp explicite qui l'emporte dans les deux sens
+    var root = document.documentElement;
+    document.getElementById('theme-toggle').addEventListener('click', function () {
+      var explicit = root.getAttribute('data-theme');
+      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var currentlyDark = explicit ? explicit === 'dark' : systemDark;
+      root.setAttribute('data-theme', currentlyDark ? 'light' : 'dark');
+    });
+
+    // Tiroir de navigation mobile
+    var rail = document.getElementById('rail');
+    var scrim = document.getElementById('scrim');
+    var menuBtn = document.getElementById('menu-btn');
+    function setDrawer(open) {
+      rail.setAttribute('data-open', open ? 'true' : 'false');
+      scrim.setAttribute('data-open', open ? 'true' : 'false');
+      menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      menuBtn.setAttribute('aria-label', open ? 'Fermer la navigation' : 'Ouvrir la navigation');
+    }
+    menuBtn.addEventListener('click', function () {
+      setDrawer(rail.getAttribute('data-open') !== 'true');
+    });
+    scrim.addEventListener('click', function () { setDrawer(false); });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') setDrawer(false);
+    });
+    rail.addEventListener('click', function (e) {
+      if (e.target.closest('.nav-item')) setDrawer(false);
+    });
+
+    // Tri réel du tableau des missions
+    var table = document.getElementById('missions');
+    var head = table.querySelector('th.sortable');
+    head.addEventListener('click', function () {
+      var body = table.tBodies[0];
+      var rows = Array.prototype.slice.call(body.rows);
+      var asc = head.getAttribute('aria-sort') === 'ascending';
+      head.setAttribute('aria-sort', asc ? 'descending' : 'ascending');
+      head.querySelector('.sort-caret').style.transform = asc ? '' : 'rotate(180deg)';
+      rows.sort(function (a, b) {
+        var pa = parseFloat(a.cells[1].textContent.replace(/[^\d,]/g, '').replace(',', '.'));
+        var pb = parseFloat(b.cells[1].textContent.replace(/[^\d,]/g, '').replace(',', '.'));
+        return asc ? pb - pa : pa - pb;
+      });
+      rows.forEach(function (r) { body.appendChild(r); });
+    });
+  })();
+</script>

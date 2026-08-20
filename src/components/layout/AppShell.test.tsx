@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import Header from './Header';
+import AppShell from './AppShell';
 
 interface MatchMediaMock {
   declencherChangement: (matches: boolean) => void;
@@ -14,7 +14,7 @@ function mockMatchMedia(matches: boolean): MatchMediaMock {
   const listeners = new Set<(event: MediaQueryListEvent) => void>();
   const mql = {
     matches,
-    media: '(min-width: 768px)',
+    media: '(min-width: 1024px)',
     onchange: null,
     addEventListener: (type: string, listener: (event: MediaQueryListEvent) => void) => {
       if (type === 'change') listeners.add(listener);
@@ -37,7 +37,17 @@ function mockMatchMedia(matches: boolean): MatchMediaMock {
   };
 }
 
-describe('Header', () => {
+function renderShell() {
+  return render(
+    <MemoryRouter>
+      <AppShell>
+        <p>Contenu de page</p>
+      </AppShell>
+    </MemoryRouter>,
+  );
+}
+
+describe('AppShell', () => {
   beforeEach(() => {
     window.localStorage.clear();
     document.documentElement.classList.remove('dark');
@@ -48,23 +58,16 @@ describe('Header', () => {
     document.documentElement.classList.remove('dark');
   });
 
-  it("affiche le lien vers l'accueil et la navigation principale", () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>,
-    );
+  it("affiche le lien vers l'accueil, la navigation principale et le contenu de page", () => {
+    renderShell();
 
-    expect(screen.getByRole('link', { name: 'BudgetCitoyen.fr' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /BudgetCitoyen\.fr/ })).toHaveAttribute('href', '/');
     expect(screen.getByRole('navigation', { name: 'Navigation principale' })).toBeInTheDocument();
+    expect(screen.getByText('Contenu de page')).toBeInTheDocument();
   });
 
   it('bascule le thème sombre/clair au clic sur le bouton dédié', () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>,
-    );
+    renderShell();
 
     const toggle = screen.getByRole('button', { name: /passer en mode sombre/i });
     expect(document.documentElement.classList.contains('dark')).toBe(false);
@@ -79,24 +82,22 @@ describe('Header', () => {
     expect(document.documentElement.classList.contains('dark')).toBe(false);
   });
 
-  it('ouvre/ferme le menu mobile au clic sur le bouton hamburger', () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>,
-    );
+  it('ouvre/ferme le tiroir de navigation au clic sur le bouton hamburger', () => {
+    renderShell();
 
     const bouton = screen.getByRole('button', { name: 'Ouvrir le menu' });
     expect(bouton).toHaveAttribute('aria-expanded', 'false');
 
     fireEvent.click(bouton);
 
-    expect(screen.getByRole('button', { name: 'Fermer le menu' })).toHaveAttribute(
-      'aria-expanded',
-      'true',
-    );
+    // Le voile porte le même nom accessible que le bouton une fois ouvert :
+    // on cible donc explicitement celui qui pilote la navigation.
+    const boutonFermer = screen
+      .getAllByRole('button', { name: 'Fermer le menu' })
+      .find((element) => element.hasAttribute('aria-expanded'));
+    expect(boutonFermer).toHaveAttribute('aria-expanded', 'true');
 
-    fireEvent.click(screen.getByRole('button', { name: 'Fermer le menu' }));
+    fireEvent.click(boutonFermer as HTMLElement);
 
     expect(screen.getByRole('button', { name: 'Ouvrir le menu' })).toHaveAttribute(
       'aria-expanded',
@@ -104,32 +105,30 @@ describe('Header', () => {
     );
   });
 
-  it('referme le menu mobile après un clic sur un lien de navigation', () => {
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>,
-    );
+  it('referme le tiroir après un clic sur un lien de navigation', () => {
+    renderShell();
 
     fireEvent.click(screen.getByRole('button', { name: 'Ouvrir le menu' }));
-    expect(screen.getByRole('button', { name: 'Fermer le menu' })).toBeInTheDocument();
-
     fireEvent.click(screen.getByRole('link', { name: 'Historique' }));
 
     expect(screen.getByRole('button', { name: 'Ouvrir le menu' })).toBeInTheDocument();
   });
 
-  it('referme automatiquement le menu mobile si la fenêtre repasse en largeur desktop', () => {
-    const { declencherChangement } = mockMatchMedia(false);
-
-    render(
-      <MemoryRouter>
-        <Header />
-      </MemoryRouter>,
-    );
+  it('referme le tiroir avec la touche Échap', () => {
+    renderShell();
 
     fireEvent.click(screen.getByRole('button', { name: 'Ouvrir le menu' }));
-    expect(screen.getByRole('button', { name: 'Fermer le menu' })).toBeInTheDocument();
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(screen.getByRole('button', { name: 'Ouvrir le menu' })).toBeInTheDocument();
+  });
+
+  it('referme automatiquement le tiroir si la fenêtre repasse en largeur desktop', () => {
+    const { declencherChangement } = mockMatchMedia(false);
+
+    renderShell();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Ouvrir le menu' }));
 
     act(() => {
       declencherChangement(true);
