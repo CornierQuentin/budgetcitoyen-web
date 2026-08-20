@@ -31,9 +31,14 @@ const SIGLES_RECETTES: TypeRecette[] = ['IR', 'TVA', 'IS', 'TICPE', 'AUTRES'];
 const RAMPE_RECETTES_CLAIR = ['#16326b', '#244d99', '#3d6ec4', '#7b9ad9', '#b9caea'];
 const RAMPE_RECETTES_SOMBRE = ['#b9caea', '#7b9ad9', '#4f7fd0', '#35589c', '#253c6b'];
 
-/** Écart signé en Md€, pour une variation d'une année sur l'autre. */
+/**
+ * Écart signé en Md€, pour une variation d'une année sur l'autre. Le signe
+ * négatif est laissé à `formatMd` (donc à Intl) plutôt qu'ajouté à la main :
+ * un signe moins typographique écrit ici jurerait avec le trait d'union que
+ * produit Intl partout ailleurs sur la page.
+ */
 function formatEcart(valeur: number): string {
-  return `${valeur >= 0 ? '+' : '−'}${formatMd(Math.abs(valeur))}`;
+  return valeur >= 0 ? `+${formatMd(valeur)}` : formatMd(valeur);
 }
 
 export default function Dashboard() {

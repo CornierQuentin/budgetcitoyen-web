@@ -102,7 +102,10 @@ describe('Marches', () => {
 
     renderPage();
 
-    expect(screen.getByText(/02\/06\/2010 à 17\/08\/2026/)).toBeInTheDocument();
+    // La plage figure désormais dans les repères de tête : l'année en gros,
+    // la date exacte en légende.
+    expect(screen.getByText('2010 → 2026')).toBeInTheDocument();
+    expect(screen.getByText(/du 02\/06\/2010 au 17\/08\/2026/)).toBeInTheDocument();
     expect(screen.getByText('Liste des marchés (1)')).toBeInTheDocument();
     expect(screen.getByRole('cell', { name: /rénovation d'une école/i })).toBeInTheDocument();
   });

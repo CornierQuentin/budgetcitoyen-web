@@ -104,15 +104,15 @@ describe('Comparateur — URLs paramétrées (CDC 6.2)', () => {
   it("pré-sélectionne les années passées dans l'URL au montage", () => {
     renderAvecRouter('/comparer?annee_a=2022&annee_b=2023');
 
-    expect(screen.getByLabelText(/^Année A$/)).toHaveValue('2022');
-    expect(screen.getByLabelText(/^Année B$/)).toHaveValue('2023');
+    expect(screen.getByLabelText(/première année comparée/i)).toHaveValue('2022');
+    expect(screen.getByLabelText(/seconde année comparée/i)).toHaveValue('2023');
   });
 
   it("sans paramètres dans l'URL, sélectionne les deux dernières années disponibles et les inscrit dans l'URL", () => {
     renderAvecRouter('/comparer');
 
-    expect(screen.getByLabelText(/^Année A$/)).toHaveValue('2023');
-    expect(screen.getByLabelText(/^Année B$/)).toHaveValue('2024');
+    expect(screen.getByLabelText(/première année comparée/i)).toHaveValue('2023');
+    expect(screen.getByLabelText(/seconde année comparée/i)).toHaveValue('2024');
     expect(screen.getByTestId('url-actuelle')).toHaveTextContent(
       '/comparer?annee_a=2023&annee_b=2024',
     );
@@ -121,12 +121,12 @@ describe('Comparateur — URLs paramétrées (CDC 6.2)', () => {
   it("met à jour l'URL quand l'utilisateur change une année sélectionnée", () => {
     renderAvecRouter('/comparer?annee_a=2021&annee_b=2024');
 
-    fireEvent.change(screen.getByLabelText(/^Année A$/), { target: { value: '2022' } });
+    fireEvent.change(screen.getByLabelText(/première année comparée/i), { target: { value: '2022' } });
 
     expect(screen.getByTestId('url-actuelle')).toHaveTextContent(
       '/comparer?annee_a=2022&annee_b=2024',
     );
-    expect(screen.getByLabelText(/^Année A$/)).toHaveValue('2022');
+    expect(screen.getByLabelText(/première année comparée/i)).toHaveValue('2022');
   });
 
   it('une URL partagée restitue le même état après un nouveau montage (rechargement simulé)', () => {
@@ -136,8 +136,8 @@ describe('Comparateur — URLs paramétrées (CDC 6.2)', () => {
 
     renderAvecRouter(urlPartagee);
 
-    expect(screen.getByLabelText(/^Année A$/)).toHaveValue('2021');
-    expect(screen.getByLabelText(/^Année B$/)).toHaveValue('2023');
+    expect(screen.getByLabelText(/première année comparée/i)).toHaveValue('2021');
+    expect(screen.getByLabelText(/seconde année comparée/i)).toHaveValue('2023');
     expect(screen.getByTestId('url-actuelle')).toHaveTextContent(urlPartagee);
   });
 });
@@ -164,7 +164,7 @@ describe('Comparateur — affichage du résultat', () => {
     // pas dans le nom accessible de la cellule : on vérifie son libellé.
     expect(screen.getByRole('button', { name: 'TVA' })).toBeInTheDocument();
     expect(screen.getAllByRole('button', { name: /exporter csv/i })).toHaveLength(2);
-    expect(screen.getByRole('button', { name: /exporter png du comparatif/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /exporter png/i })).toBeInTheDocument();
   });
 });
 

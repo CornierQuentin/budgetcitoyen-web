@@ -67,7 +67,14 @@ export default function Marches() {
   // le second reinitialiser la page a tort, perdant le `?page=3` d'un lien
   // partage des le chargement. Comparer contre la valeur precedente reste
   // correct face a ce double-appel (la valeur n'a pas change entre les deux).
-  const filtresKey = JSON.stringify([qDebounced, dateDebut, dateFin, montantMin, montantMax, cpvDivision]);
+  const filtresKey = JSON.stringify([
+    qDebounced,
+    dateDebut,
+    dateFin,
+    montantMin,
+    montantMax,
+    cpvDivision,
+  ]);
   const filtresKeyPrecedente = useRef(filtresKey);
   useEffect(() => {
     if (filtresKeyPrecedente.current === filtresKey) return;
@@ -198,26 +205,76 @@ export default function Marches() {
   const messageVide = messageVideCourant();
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
+    <div className="space-y-4">
+      <div>
         <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">Marchés publics</h1>
-      </div>
-
-      <Card className="border-accent-line bg-accent-soft ">
-        <p className="text-sm text-accent">
-          Données Essentielles de la Commande Publique (DECP)
-          {bornes?.dateMin && bornes?.dateMax && (
-            <>
-              {' '}
-              — {formatDate(bornes.dateMin)} à {formatDate(bornes.dateMax)}, mises à jour
-              quotidiennement.
-            </>
-          )}{' '}
-          Seuls des identifiants (SIRET) sont disponibles pour les entreprises et
-          administrations : aucun nom n&apos;est fourni par cette source.
+        <p className="mt-0.5 max-w-prose text-[13px] text-ink-muted">
+          Les contrats passés par l&apos;État et les collectivités, tels que déclarés dans les
+          Données Essentielles de la Commande Publique.
           <SourceIcon url={SOURCE_URL} label="marchés publics" />
         </p>
-      </Card>
+      </div>
+
+      <section aria-label="Repères de la source" className="grid gap-4 sm:grid-cols-3">
+        <Card className="flex flex-col gap-1.5">
+          <span className="text-[12.5px] font-medium text-ink-muted">Marchés recensés</span>
+          <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
+            {pageData ? pageData.total.toLocaleString('fr-FR') : '—'}
+          </span>
+          <span className="text-xs text-ink-faint">
+            {filtresActifs ? 'correspondant aux filtres actifs' : 'mise à jour quotidienne'}
+          </span>
+        </Card>
+        <Card className="flex flex-col gap-1.5">
+          <span className="text-[12.5px] font-medium text-ink-muted">Montant cumulé</span>
+          <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
+            {totalChiffreLabel ?? '—'}
+          </span>
+          {/* Précision indispensable : cumuler seize ans de marchés ne produit
+              pas un total annuel, et le laisser croire serait trompeur. */}
+          <span className="text-xs text-ink-faint">
+            sur toute la période — jamais un total annuel
+          </span>
+        </Card>
+        <Card className="flex flex-col gap-1.5">
+          <span className="text-[12.5px] font-medium text-ink-muted">Période couverte</span>
+          <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
+            {bornes?.dateMin && bornes?.dateMax
+              ? `${new Date(bornes.dateMin).getFullYear()} → ${new Date(bornes.dateMax).getFullYear()}`
+              : '—'}
+          </span>
+          <span className="text-xs tabular-nums text-ink-faint">
+            {bornes?.dateMin && bornes?.dateMax
+              ? `du ${formatDate(bornes.dateMin)} au ${formatDate(bornes.dateMax)}`
+              : 'période inconnue'}
+          </span>
+        </Card>
+      </section>
+
+      {/* La limite de la source est dite une fois, à sa place, plutôt que
+          répétée à côté de chaque colonne « titulaire ». */}
+      <div
+        className="flex items-start gap-2.5 rounded-lg border border-accent-line bg-accent-soft
+          px-3.5 py-2.5 text-[12.5px] text-ink"
+      >
+        <svg
+          className="mt-px h-4 w-4 flex-none text-accent"
+          viewBox="0 0 20 20"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          aria-hidden="true"
+        >
+          <circle cx="10" cy="10" r="7" />
+          <path d="M10 13.5v-4M10 6.5h.01" />
+        </svg>
+        <span>
+          Cette source ne fournit aucun nom d&apos;entreprise ni d&apos;administration, seulement
+          des identifiants. Quand il s&apos;agit d&apos;un SIRET, le numéro renvoie vers
+          l&apos;annuaire public des entreprises.
+        </span>
+      </div>
 
       {donutData.length > 0 && (
         <section>
@@ -275,10 +332,7 @@ export default function Marches() {
             onChange={setQ}
             placeholder="Ex. hôpital, école, voirie…"
           />
-          <label
-            htmlFor="date-debut-marche"
-            className="block text-sm font-medium text-ink-muted"
-          >
+          <label htmlFor="date-debut-marche" className="block text-sm font-medium text-ink-muted">
             Notifié à partir du
             <input
               id="date-debut-marche"
@@ -291,10 +345,7 @@ export default function Marches() {
                 "
             />
           </label>
-          <label
-            htmlFor="date-fin-marche"
-            className="block text-sm font-medium text-ink-muted"
-          >
+          <label htmlFor="date-fin-marche" className="block text-sm font-medium text-ink-muted">
             Notifié jusqu&apos;au
             <input
               id="date-fin-marche"
@@ -307,10 +358,7 @@ export default function Marches() {
                 "
             />
           </label>
-          <label
-            htmlFor="montant-min-marche"
-            className="block text-sm font-medium text-ink-muted"
-          >
+          <label htmlFor="montant-min-marche" className="block text-sm font-medium text-ink-muted">
             Montant minimum (€)
             <input
               id="montant-min-marche"
@@ -322,10 +370,7 @@ export default function Marches() {
                 "
             />
           </label>
-          <label
-            htmlFor="montant-max-marche"
-            className="block text-sm font-medium text-ink-muted"
-          >
+          <label htmlFor="montant-max-marche" className="block text-sm font-medium text-ink-muted">
             Montant maximum (€)
             <input
               id="montant-max-marche"

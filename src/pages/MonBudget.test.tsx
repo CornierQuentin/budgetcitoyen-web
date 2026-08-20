@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { useBudgetPerso } from '../hooks/useBudgetPerso';
 import type { BudgetPerso } from '../types/domain';
@@ -59,6 +59,10 @@ function renderMonBudget(initialPath = '/mon-budget') {
 }
 
 describe('MonBudget', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
   it("n'affiche aucun résultat avant soumission du formulaire", () => {
     mockedUseBudgetPerso.mockReturnValue({
       data: undefined,
@@ -95,7 +99,7 @@ describe('MonBudget', () => {
     expect(screen.getByText(/une erreur est survenue/i)).toBeInTheDocument();
   });
 
-  it("soumet le revenu saisi, met à jour l'URL et affiche le résultat (dont la méthodologie)", () => {
+  it("affiche le résultat et l'URL partageable dès l'arrivée sur la page (dont la méthodologie)", () => {
     mockedUseBudgetPerso.mockImplementation(
       (revenuNet) =>
         ({
@@ -107,9 +111,8 @@ describe('MonBudget', () => {
 
     renderMonBudget();
 
-    fireEvent.change(screen.getByLabelText(/revenu net mensuel/i), { target: { value: '2000' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Calculer' }));
-
+    // Le revenu par défaut (2000 €) est calculé sans action de l'utilisateur,
+    // et l'URL le reflète immédiatement pour rester partageable.
     expect(screen.getByTestId('url-actuelle')).toHaveTextContent('/mon-budget?revenu_net=2000');
 
     expect(
@@ -138,6 +141,34 @@ describe('MonBudget', () => {
       'href',
       'https://dgfip.example.org',
     );
+  });
+
+  it('recalcule au fil de la saisie, sans bouton à cliquer', () => {
+    vi.useFakeTimers();
+    mockedUseBudgetPerso.mockImplementation(
+      (revenuNet) =>
+        ({
+          data: revenuNet === undefined ? undefined : { ...budgetPersoMock, revenuNetMensuel: revenuNet },
+          isLoading: false,
+          isError: false,
+        }) as ReturnType<typeof useBudgetPerso>,
+    );
+
+    renderMonBudget();
+
+    // Aucun bouton « Calculer » : le champ pilote directement le calcul.
+    expect(screen.queryByRole('button', { name: /calculer/i })).not.toBeInTheDocument();
+
+    fireEvent.change(screen.getByLabelText(/revenu net mensuel/i), { target: { value: '3500' } });
+
+    // Avant expiration du délai anti-rebond, l'URL porte encore l'ancien revenu.
+    expect(screen.getByTestId('url-actuelle')).toHaveTextContent('revenu_net=2000');
+
+    act(() => {
+      vi.advanceTimersByTime(400);
+    });
+
+    expect(screen.getByTestId('url-actuelle')).toHaveTextContent('revenu_net=3500');
   });
 
   it("pré-remplit et déclenche le calcul depuis l'URL (?revenu_net=)", () => {

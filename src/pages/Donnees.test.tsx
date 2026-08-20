@@ -48,13 +48,13 @@ describe('Donnees', () => {
       'https://www.data.gouv.fr/',
     );
 
-    const lienBudget = screen.getByRole('link', { name: 'Dépenses et recettes 2023' });
+    const lienBudget = screen.getByRole('link', { name: /loi de finances 2023/i });
     expect(lienBudget).toHaveAttribute('href', 'https://example.org/budget-2023');
 
-    const lienPib = screen.getByRole('link', { name: 'PIB 2023' });
+    const lienPib = screen.getByRole('link', { name: /PIB 2023/i });
     expect(lienPib).toHaveAttribute('href', 'https://example.org/pib-2023');
 
-    const lienPopulation = screen.getByRole('link', { name: 'Population 2023' });
+    const lienPopulation = screen.getByRole('link', { name: /Population 2023/i });
     expect(lienPopulation).toHaveAttribute('href', 'https://example.org/population-2023');
   });
 });
