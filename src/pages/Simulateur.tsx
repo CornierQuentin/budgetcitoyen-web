@@ -85,7 +85,7 @@ function CurseurAjustement({
 
   return (
     <li className="flex flex-wrap items-center gap-3 py-1.5 text-sm">
-      <label htmlFor={id} className="w-56 flex-none truncate text-gray-700 dark:text-gray-300">
+      <label htmlFor={id} className="w-56 flex-none text-gray-700 dark:text-gray-300">
         {libelle}
       </label>
       <input

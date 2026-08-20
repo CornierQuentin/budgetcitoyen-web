@@ -1,3 +1,5 @@
+import { LinkIcon } from './icons';
+
 interface SourceIconProps {
   /** URL officielle de la source de la donnée affichée à côté de l'icône. */
   url: string;
@@ -27,7 +29,7 @@ export function SourceIcon({ url, label, className = '' }: SourceIconProps) {
       className={`ml-1 inline-flex align-middle text-gray-400 no-underline hover:text-blue-800
         focus:text-blue-800 dark:text-gray-500 dark:hover:text-blue-300 dark:focus:text-blue-300 ${className}`}
     >
-      <span aria-hidden="true">🔗</span>
+      <LinkIcon />
     </a>
   );
 }

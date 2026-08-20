@@ -71,12 +71,16 @@ describe('Mission', () => {
     expect(screen.getByText(/chargement de la mission/i)).toBeInTheDocument();
   });
 
-  it('affiche un message d’erreur si la mission est introuvable', () => {
+  it('affiche un message d’erreur et un lien de retour si la mission est introuvable', () => {
     useMissionDetailMock.mockReturnValue({ data: undefined, isLoading: false, isError: true });
 
     renderMission('inconnue');
 
     expect(screen.getByText(/mission introuvable/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /retour au tableau de bord/i })).toHaveAttribute(
+      'href',
+      '/tableau-de-bord',
+    );
   });
 
   it('affiche le détail de la mission (programmes, actions, historique des libellés)', () => {

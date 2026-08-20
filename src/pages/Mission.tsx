@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { SourceIcon } from '../components/ui/SourceIcon';
@@ -61,8 +61,15 @@ export default function Mission() {
     return (
       <section ref={conteneurRef} className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
         <p className="text-sm text-gray-500 dark:text-gray-400">
-          Mission introuvable pour « {slug} ».
+          Mission introuvable pour « {slug} ». Le lien est peut-être obsolète ou mal orthographié.
         </p>
+        <Link
+          to="/tableau-de-bord"
+          className="mt-2 inline-block text-sm font-medium text-blue-800 hover:underline
+            dark:text-blue-300"
+        >
+          ← Retour au tableau de bord
+        </Link>
       </section>
     );
   }

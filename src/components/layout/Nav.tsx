@@ -17,14 +17,32 @@ const links: NavLink[] = [
   { to: '/donnees', label: 'Données' },
 ];
 
-export function Nav() {
+interface NavProps {
+  /**
+   * Repliée par défaut sous le point de rupture `md` (masquée via `hidden`,
+   * réapparaît via `md:flex` qui l'emporte sur `hidden` à partir de `md`) :
+   * `mobileOpen` ne pilote que l'état SOUS `md`, jamais au-dessus. Header.tsx
+   * possède cet état (bouton hamburger, fermeture au clic sur un lien ou au
+   * redimensionnement vers desktop).
+   */
+  mobileOpen?: boolean;
+  id?: string;
+  onLinkClick?: () => void;
+}
+
+export function Nav({ mobileOpen = false, id, onLinkClick }: NavProps) {
   return (
     <nav aria-label="Navigation principale">
-      <ul className="flex flex-wrap gap-4">
+      <ul
+        id={id}
+        className={`${mobileOpen ? 'flex' : 'hidden'} mt-3 w-full flex-col gap-3 pb-2
+          md:mt-0 md:flex md:w-auto md:flex-row md:flex-wrap md:gap-4 md:pb-0`}
+      >
         {links.map((link) => (
           <li key={link.to}>
             <Link
               to={link.to}
+              onClick={onLinkClick}
               className="text-sm font-medium text-gray-700 hover:text-blue-800 dark:text-gray-300
                 dark:hover:text-blue-300"
             >

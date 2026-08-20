@@ -119,10 +119,7 @@ export default function MonBudget() {
             <ul className="mt-3 space-y-1.5">
               {repartitionTriee.map((item) => (
                 <li key={item.missionSlug} className="flex items-center gap-3 text-sm">
-                  <span
-                    className="w-56 flex-none truncate text-gray-700 dark:text-gray-300"
-                    title={item.missionNom}
-                  >
+                  <span className="w-56 flex-none text-gray-700 dark:text-gray-300">
                     {item.missionNom}
                   </span>
                   <span className="h-2 flex-1 rounded-full bg-gray-100 dark:bg-gray-800">

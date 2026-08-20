@@ -11,7 +11,14 @@ interface TableProps<T> {
   columns: TableColumn<T>[];
   rows: T[];
   getRowKey: (row: T) => string;
-  emptyMessage: string;
+  /**
+   * `ReactNode` (pas seulement une chaîne) : un état vide dû à des filtres
+   * actifs doit pouvoir inclure une action de récupération juste à côté du
+   * message (ex. "Réinitialiser les filtres"), pas seulement du texte —
+   * un bouton posé ailleurs sur la page, hors du champ de vision une fois
+   * défilé jusqu'au tableau, est trop facile à manquer.
+   */
+  emptyMessage: ReactNode;
 }
 
 // Composant de table generique, extrait pour eviter un 3e <table> hand-roll
