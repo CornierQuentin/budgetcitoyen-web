@@ -14,14 +14,14 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
   return (
     <nav
       aria-label="Pagination"
-      className="flex items-center justify-center gap-4 text-sm text-gray-700 dark:text-gray-300"
+      className="flex items-center justify-center gap-4 text-sm text-ink-muted"
     >
       <button
         type="button"
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="rounded-md border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed
-          disabled:opacity-50 dark:border-gray-600"
+        className="rounded-md border border-line-strong px-3 py-1.5 disabled:cursor-not-allowed
+          disabled:opacity-50 "
       >
         Précédent
       </button>
@@ -32,8 +32,8 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         type="button"
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="rounded-md border border-gray-300 px-3 py-1.5 disabled:cursor-not-allowed
-          disabled:opacity-50 dark:border-gray-600"
+        className="rounded-md border border-line-strong px-3 py-1.5 disabled:cursor-not-allowed
+          disabled:opacity-50 "
       >
         Suivant
       </button>

@@ -120,22 +120,22 @@ export default function DepensesFiscales() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">
           Dépenses fiscales (niches fiscales)
         </h1>
 
         {anneesDisponibles.length > 1 && (
           <label
             htmlFor="annee-depenses-fiscales"
-            className="text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="text-sm font-medium text-ink-muted"
           >
             Année
             <select
               id="annee-depenses-fiscales"
               value={anneeActive}
               onChange={(event) => setAnneeChoisie(Number(event.target.value))}
-              className="ml-2 rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="ml-2 rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
             >
               {anneesDisponibles.map((annee) => (
                 <option key={annee} value={annee}>
@@ -147,8 +147,8 @@ export default function DepensesFiscales() {
         )}
       </div>
 
-      <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-        <p className="text-sm text-blue-900 dark:text-blue-200">
+      <Card className="border-accent-line bg-accent-soft ">
+        <p className="text-sm text-accent">
           Données {anneeActive ?? ''} (dernier montant réalisé connu — pas une prévision), issues
           de l&apos;annexe « Voies et moyens » Tome II du PLF, seule édition publiée dans un format
           structuré exploitable. Une dépense fiscale n&apos;est connue avec certitude qu&apos;après
@@ -161,12 +161,12 @@ export default function DepensesFiscales() {
       {depensesFiscales && depensesFiscales.length > 0 && (
         <section>
           <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <h2 className="text-sm font-semibold text-ink-muted">
               Répartition par impôt concerné (total chiffré {formatMd(totalChiffreEuros)})
             </h2>
           </div>
           {nbNonChiffrees > 0 && (
-            <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+            <p className="mb-2 text-xs text-ink-muted">
               {nbNonChiffrees} mesure{nbNonChiffrees > 1 ? 's' : ''} sur {depensesFiscales.length}{' '}
               n&apos;a pas de montant chiffré exploitable (effet non calculé ou nul) et{' '}
               {nbNonChiffrees > 1 ? 'sont exclues' : 'est exclue'} de ce total et du graphique —
@@ -179,7 +179,7 @@ export default function DepensesFiscales() {
 
       <section>
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-lg font-semibold text-ink">
             Liste des mesures {depensesFiscales ? `(${depensesFiscales.length})` : ''}
           </h2>
           {depensesFiscales && depensesFiscales.length > 0 && (
@@ -197,7 +197,7 @@ export default function DepensesFiscales() {
         <div className="mt-3 max-w-sm">
           <label
             htmlFor="recherche-depense-fiscale"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-ink-muted"
           >
             Rechercher une mesure
             <input
@@ -206,62 +206,62 @@ export default function DepensesFiscales() {
               value={recherche}
               onChange={(event) => setRecherche(event.target.value)}
               placeholder="Ex. TVA, entreprises, crédit d'impôt…"
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
             />
           </label>
         </div>
 
-        <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-          <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-            <thead className="bg-gray-50 dark:bg-gray-800">
+        <div className="mt-3 overflow-x-auto rounded-lg border border-line">
+          <table className="min-w-full divide-y divide-line text-sm ">
+            <thead className="bg-surface-sunken">
               <tr>
                 <th
                   scope="col"
-                  className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
+                  className="px-3 py-2 text-left font-medium text-ink-muted"
                 >
                   Impôt concerné
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
+                  className="px-3 py-2 text-left font-medium text-ink-muted"
                 >
                   Libellé
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
+                  className="px-3 py-2 text-left font-medium text-ink-muted"
                 >
                   Bénéficiaire
                 </th>
                 <th
                   scope="col"
-                  className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                  className="px-3 py-2 text-right font-medium text-ink-muted"
                 >
                   Montant
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+            <tbody className="divide-y divide-line">
               {depensesFiltrees.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-3 py-4 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={4} className="px-3 py-4 text-center text-ink-muted">
                     Aucune mesure ne correspond à « {recherche.trim()} ».
                   </td>
                 </tr>
               ) : (
                 depensesFiltrees.map((depense) => (
                   <tr key={depense.numero}>
-                    <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                    <td className="px-3 py-2 text-ink">
                       {depense.categorie}
                     </td>
-                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300" title={depense.libelle}>
+                    <td className="px-3 py-2 text-ink-muted" title={depense.libelle}>
                       {depense.libelle}
                     </td>
-                    <td className="px-3 py-2 text-gray-600 dark:text-gray-300">
+                    <td className="px-3 py-2 text-ink-muted">
                       {depense.beneficiaire}
                     </td>
-                    <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                    <td className="px-3 py-2 text-right text-ink-muted">
                       {formatMontant(depense)}
                     </td>
                   </tr>

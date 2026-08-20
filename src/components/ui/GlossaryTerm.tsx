@@ -37,9 +37,8 @@ export function GlossaryTerm({ term, children, className = '' }: GlossaryTermPro
           sans réinventer la sémantique interactive. */}
       <button
         type="button"
-        className={`cursor-help border-0 border-b border-dotted border-gray-400 bg-transparent p-0
-          text-inherit outline-none [font:inherit] focus:border-blue-800 dark:border-gray-500
-          dark:focus:border-blue-400 ${className}`}
+        className={`cursor-help border-0 border-b border-dotted border-line-strong bg-transparent p-0
+          text-inherit outline-none [font:inherit] focus:border-accent ${className}`}
       >
         {children}
       </button>

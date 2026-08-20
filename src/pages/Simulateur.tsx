@@ -85,7 +85,7 @@ function CurseurAjustement({
 
   return (
     <li className="flex flex-wrap items-center gap-3 py-1.5 text-sm">
-      <label htmlFor={id} className="w-56 flex-none text-gray-700 dark:text-gray-300">
+      <label htmlFor={id} className="w-56 flex-none text-ink-muted">
         {libelle}
       </label>
       <input
@@ -98,7 +98,7 @@ function CurseurAjustement({
         onChange={(event) => onChange(Number(event.target.value))}
         className="h-1.5 flex-1"
       />
-      <span className="w-14 flex-none text-right tabular-nums text-gray-500 dark:text-gray-400">
+      <span className="w-14 flex-none text-right tabular-nums text-ink-muted">
         {ajustementPct >= 0 ? '+' : ''}
         {Math.round(ajustementPct)}%
       </span>
@@ -115,16 +115,16 @@ function CurseurAjustement({
             if (event.key === 'Escape') setEnEdition(false);
           }}
           aria-label={`Montant exact pour ${libelle} (Md€)`}
-          className="w-24 flex-none rounded border border-gray-300 bg-white px-1 py-0.5 text-right
-            tabular-nums text-gray-900 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+          className="w-24 flex-none rounded border border-line-strong bg-white px-1 py-0.5 text-right
+            tabular-nums text-ink "
         />
       ) : (
         <button
           type="button"
           onClick={commencerEdition}
           title="Cliquer pour saisir un montant exact"
-          className="w-24 flex-none text-right tabular-nums text-gray-900 hover:text-blue-800
-            dark:text-gray-100 dark:hover:text-blue-300"
+          className="w-24 flex-none text-right tabular-nums text-ink hover:text-accent
+            "
         >
           {formatMd(montant)}
         </button>
@@ -155,12 +155,12 @@ export default function Simulateur() {
   const isLoading = budgetEnCours || missionsEnCours || recettesEnCours;
 
   if (isLoading) {
-    return <p className="text-sm text-gray-500 dark:text-gray-400">Chargement…</p>;
+    return <p className="text-sm text-ink-muted">Chargement…</p>;
   }
 
   if (budgetEnErreur || !budget || !missions || !recettes) {
     return (
-      <p className="text-sm text-gray-500 dark:text-gray-400">
+      <p className="text-sm text-ink-muted">
         Impossible de charger les données du simulateur pour le moment.
       </p>
     );
@@ -192,14 +192,14 @@ export default function Simulateur() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+      <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">
         Simulateur budgétaire — Refais le budget {derniereAnnee}
       </h1>
 
       {/* Avertissement de neutralité (CDC principe 1.3, non négociable) :
           toujours visible, jamais masquable. */}
-      <Card className="border-amber-300 bg-amber-50 dark:border-amber-700 dark:bg-amber-950">
-        <p className="text-sm text-amber-900 dark:text-amber-200">
+      <Card className="border-warn/30 bg-warn-soft ">
+        <p className="text-sm text-warn ">
           Ce simulateur recalcule uniquement l&apos;effet arithmétique de vos choix sur le{' '}
           <GlossaryTerm term="déficit">déficit</GlossaryTerm>, à partir des données réelles{' '}
           {derniereAnnee}. Il ne modélise aucun effet économique dynamique (croissance, emploi,
@@ -231,16 +231,16 @@ export default function Simulateur() {
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Dépenses simulées</p>
-          <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
+          <p className="text-sm text-ink-muted">Dépenses simulées</p>
+          <p className="mt-1 text-xl font-bold text-ink">
             {formatMd(resultat.depensesAjustees)}
           </p>
           {resultat.deltaDepenses !== 0 && (
             <p
               className={`text-sm ${
                 resultat.deltaDepenses >= 0
-                  ? 'text-red-700 dark:text-red-400'
-                  : 'text-green-700 dark:text-green-400'
+                  ? 'text-neg'
+                  : 'text-pos'
               }`}
             >
               {formatDeltaMd(resultat.deltaDepenses)}
@@ -248,37 +248,37 @@ export default function Simulateur() {
           )}
         </Card>
         <Card>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-ink-muted">
             Recettes simulées {mode === 'simple' && '(non ajustables en mode simple)'}
           </p>
-          <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
+          <p className="mt-1 text-xl font-bold text-ink">
             {formatMd(resultat.recettesAjustees)}
           </p>
           {resultat.deltaRecettes !== 0 && (
             <p
               className={`text-sm ${
                 resultat.deltaRecettes >= 0
-                  ? 'text-green-700 dark:text-green-400'
-                  : 'text-red-700 dark:text-red-400'
+                  ? 'text-pos'
+                  : 'text-neg'
               }`}
             >
               {formatDeltaMd(resultat.deltaRecettes)}
             </p>
           )}
         </Card>
-        <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-          <p className="text-sm text-blue-900 dark:text-blue-200">
+        <Card className="border-accent-line bg-accent-soft ">
+          <p className="text-sm text-accent">
             <GlossaryTerm term="déficit">Déficit</GlossaryTerm> simulé
           </p>
-          <p className="mt-1 text-xl font-bold text-blue-900 dark:text-blue-100">
+          <p className="mt-1 text-xl font-bold text-accent">
             {formatMd(resultat.deficitAjuste)}
           </p>
           {resultat.deltaDeficit !== 0 && (
             <p
               className={`text-sm ${
                 resultat.deltaDeficit >= 0
-                  ? 'text-red-700 dark:text-red-400'
-                  : 'text-green-700 dark:text-green-400'
+                  ? 'text-neg'
+                  : 'text-pos'
               }`}
             >
               {formatDeltaMd(resultat.deltaDeficit)}
@@ -288,10 +288,10 @@ export default function Simulateur() {
       </section>
 
       <section>
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+        <h2 className="text-lg font-semibold text-ink">
           Dépenses par mission
         </h2>
-        <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
+        <ul className="mt-2 divide-y divide-line">
           {missionsTriees.map((mission) => (
             <CurseurAjustement
               key={mission.slug}
@@ -309,8 +309,8 @@ export default function Simulateur() {
 
       {mode === 'avance' && (
         <section>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recettes</h2>
-          <ul className="mt-2 divide-y divide-gray-100 dark:divide-gray-800">
+          <h2 className="text-lg font-semibold text-ink">Recettes</h2>
+          <ul className="mt-2 divide-y divide-line">
             {recettesAjustables.map((recette) => (
               <CurseurAjustement
                 key={recette.type}

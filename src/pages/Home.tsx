@@ -68,10 +68,10 @@ export default function Home() {
   return (
     <div className="space-y-8">
       <section>
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
+        <h1 className="text-2xl font-bold tracking-[-0.02em] text-ink">
           Le budget de l&apos;État, expliqué simplement
         </h1>
-        <p className="mt-2 max-w-2xl text-gray-600 dark:text-gray-300">
+        <p className="mt-2 max-w-2xl text-ink-muted">
           BudgetCitoyen.fr rend le budget de l&apos;État français explorable par toutes et tous :
           missions, programmes, actions, dépenses et recettes.
         </p>
@@ -79,10 +79,10 @@ export default function Home() {
 
       <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-ink-muted">
             Dépenses totales {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <p className="mt-1 text-2xl font-bold text-ink">
             {budget ? <AnimatedValue value={budget.depensesNettes} format={formatMd} /> : '—'}
             {budget && (
               <SourceIcon url={budget.sourceUrl} label={`dépenses ${derniereAnnee}`} />
@@ -90,10 +90,10 @@ export default function Home() {
           </p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-ink-muted">
             Recettes totales {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <p className="mt-1 text-2xl font-bold text-ink">
             {budget ? <AnimatedValue value={budget.recettesNettes} format={formatMd} /> : '—'}
             {budget && (
               <SourceIcon url={budget.sourceUrl} label={`recettes ${derniereAnnee}`} />
@@ -101,11 +101,11 @@ export default function Home() {
           </p>
         </Card>
         <Card>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
+          <p className="text-sm text-ink-muted">
             <GlossaryTerm term="déficit">Solde budgétaire</GlossaryTerm>{' '}
             {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
-          <p className="mt-1 text-2xl font-bold text-gray-900 dark:text-gray-100">
+          <p className="mt-1 text-2xl font-bold text-ink">
             {budget ? <AnimatedValue value={-budget.deficit} format={formatMd} /> : '—'}
             {budget && (
               <SourceIcon url={budget.sourceUrl} label={`déficit ${derniereAnnee}`} />
@@ -116,11 +116,11 @@ export default function Home() {
 
       <section>
         <Card>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Dépense de l&apos;État par Français, chaque seconde</p>
+          <p className="text-sm text-ink-muted">Dépense de l&apos;État par Français, chaque seconde</p>
           {parFrancaisParSeconde !== null ? (
-            <p className="mt-1 text-2xl font-bold text-blue-800 dark:text-blue-300">
+            <p className="mt-1 text-2xl font-bold text-accent">
               <AnimatedValue value={parFrancaisParSeconde} format={parSecondeFormatter.format} />
-              <span className="ml-1 text-sm font-normal text-gray-500 dark:text-gray-400">
+              <span className="ml-1 text-sm font-normal text-ink-muted">
                 / seconde
               </span>
               {(indicateur?.sourcePopulationUrl ?? indicateur?.sourcePibUrl) && (
@@ -131,7 +131,7 @@ export default function Home() {
               )}
             </p>
           ) : (
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p className="mt-1 text-sm text-ink-muted">
               Donnée de population non disponible pour {derniereAnnee ?? 'cette année'} : cet
               indicateur ne peut pas être calculé pour le moment.
             </p>
@@ -140,40 +140,40 @@ export default function Home() {
       </section>
 
       <section>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Explorer</h2>
+        <h2 className="text-xl font-semibold text-ink">Explorer</h2>
         <ul className="mt-2 flex flex-wrap gap-4">
           <li>
             <Link
               to="/tableau-de-bord"
-              className="text-blue-800 hover:underline dark:text-blue-300"
+              className="text-accent hover:underline "
             >
               Tableau de bord
             </Link>
           </li>
           <li>
-            <Link to="/historique" className="text-blue-800 hover:underline dark:text-blue-300">
+            <Link to="/historique" className="text-accent hover:underline ">
               Historique
             </Link>
           </li>
           <li>
-            <Link to="/comparer" className="text-blue-800 hover:underline dark:text-blue-300">
+            <Link to="/comparer" className="text-accent hover:underline ">
               Comparateur
             </Link>
           </li>
           <li>
-            <Link to="/mon-budget" className="text-blue-800 hover:underline dark:text-blue-300">
+            <Link to="/mon-budget" className="text-accent hover:underline ">
               Mon budget
             </Link>
           </li>
           <li>
-            <Link to="/simulateur" className="text-blue-800 hover:underline dark:text-blue-300">
+            <Link to="/simulateur" className="text-accent hover:underline ">
               Simulateur
             </Link>
           </li>
           <li>
             <Link
               to="/depenses-fiscales"
-              className="text-blue-800 hover:underline dark:text-blue-300"
+              className="text-accent hover:underline "
             >
               Niches fiscales
             </Link>
@@ -181,13 +181,13 @@ export default function Home() {
           <li>
             <Link
               to="/marches-publics"
-              className="text-blue-800 hover:underline dark:text-blue-300"
+              className="text-accent hover:underline "
             >
               Marchés publics
             </Link>
           </li>
           <li>
-            <Link to="/donnees" className="text-blue-800 hover:underline dark:text-blue-300">
+            <Link to="/donnees" className="text-accent hover:underline ">
               Données
             </Link>
           </li>

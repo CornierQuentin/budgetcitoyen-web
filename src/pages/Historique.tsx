@@ -40,7 +40,7 @@ export default function Historique() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Historique</h1>
+        <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">Historique</h1>
         {data.length > 0 && (
           <Button type="button" variant="secondary" onClick={handleExportCsv}>
             Exporter CSV
@@ -49,7 +49,7 @@ export default function Historique() {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <h2 className="mb-2 text-sm font-semibold text-ink-muted">
           Dépenses et recettes nettes
         </h2>
         <LineChart
@@ -60,7 +60,7 @@ export default function Historique() {
       </div>
 
       <div>
-        <h2 className="mb-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <h2 className="mb-2 text-sm font-semibold text-ink-muted">
           <GlossaryTerm term="déficit">Déficit</GlossaryTerm>
         </h2>
         {/* Graphique distinct plutôt qu'une troisième courbe sur le graphique

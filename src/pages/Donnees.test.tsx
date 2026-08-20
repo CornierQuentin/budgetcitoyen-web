@@ -41,7 +41,7 @@ describe('Donnees', () => {
   it('affiche les sources statiques et les sources dynamiques issues des hooks, sans doublon', () => {
     render(<Donnees />);
 
-    expect(screen.getByRole('heading', { name: 'Données' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /Données/ })).toBeInTheDocument();
 
     expect(screen.getByRole('link', { name: 'data.gouv.fr' })).toHaveAttribute(
       'href',

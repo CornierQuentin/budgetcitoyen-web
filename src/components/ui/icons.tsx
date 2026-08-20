@@ -149,6 +149,16 @@ export function DatabaseIcon({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
+export function ExternalLinkIcon({ className = 'h-3.5 w-3.5' }: IconProps) {
+  return (
+    <svg {...COMMON_PROPS} className={className}>
+      <path d="M11.5 4H16v4.5" />
+      <path d="m16 4-6 6" />
+      <path d="M15 12v3.5a.5.5 0 0 1-.5.5h-10a.5.5 0 0 1-.5-.5v-10a.5.5 0 0 1 .5-.5H8" />
+    </svg>
+  );
+}
+
 export function LogoMarkIcon({ className = 'h-[18px] w-[18px]' }: IconProps) {
   return (
     <svg {...COMMON_PROPS} strokeWidth={1.9} className={className}>
