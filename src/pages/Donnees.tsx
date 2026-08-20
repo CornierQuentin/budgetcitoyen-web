@@ -4,6 +4,7 @@ import { ExternalLinkIcon } from '../components/ui/icons';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useIndicateur } from '../hooks/useIndicateur';
+import { urlDocumentationApi } from '../utils/urlsApi';
 
 interface SourceDonnee {
   nom: string;
@@ -83,12 +84,29 @@ export default function Donnees() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">Données &amp; sources</h1>
-        <p className="mt-0.5 text-[13px] text-ink-muted">
-          Toutes les données présentées sur BudgetCitoyen.fr proviennent de sources publiques
-          officielles, réutilisables sous Licence Ouverte 2.0.
-        </p>
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">Données &amp; sources</h1>
+          <p className="mt-0.5 text-[13px] text-ink-muted">
+            Toutes les données présentées sur BudgetCitoyen.fr proviennent de sources publiques
+            officielles, réutilisables sous Licence Ouverte 2.0.
+          </p>
+        </div>
+
+        {/* Les mêmes données sont exposées par une API REST publique et
+            documentée (CDC §6.1) : c'est la porte d'entrée des développeurs,
+            le quatrième public du projet. */}
+        <a
+          href={urlDocumentationApi()}
+          target="_blank"
+          rel="noreferrer"
+          className="ml-auto inline-flex h-8 items-center gap-1.5 rounded-md border border-accent
+            bg-accent px-3 text-[13px] font-semibold text-accent-contrast transition-colors
+            hover:border-accent-hover hover:bg-accent-hover"
+        >
+          Documentation de l&apos;API
+          <ExternalLinkIcon className="h-3.5 w-3.5" />
+        </a>
       </div>
 
       <Card flush title="Sources officielles" note={`${sources.length} sources`}>
