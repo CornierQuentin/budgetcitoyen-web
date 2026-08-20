@@ -149,6 +149,22 @@ export function DatabaseIcon({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
+export function ShieldIcon({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg {...COMMON_PROPS} className={className}>
+      <path d="M10 2.5 4 5v5c0 3.5 2.5 5.9 6 6.9 3.5-1 6-3.4 6-6.9V5z" />
+    </svg>
+  );
+}
+
+export function CodeIcon({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg {...COMMON_PROPS} className={className}>
+      <path d="M7 6 3 10l4 4M13 6l4 4-4 4" />
+    </svg>
+  );
+}
+
 export function ExternalLinkIcon({ className = 'h-3.5 w-3.5' }: IconProps) {
   return (
     <svg {...COMMON_PROPS} className={className}>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { animate, useReducedMotion } from 'framer-motion';
 
 import { SourceIcon } from '../components/ui/SourceIcon';
+import { CodeIcon, LinkIcon, ListIcon, ShieldIcon } from '../components/ui/icons';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useComparateur } from '../hooks/useComparateur';
@@ -533,34 +534,41 @@ export default function Home() {
         <div className="mt-11 grid gap-6 md:grid-cols-2">
           {[
             {
+              Icone: ShieldIcon,
               titre: 'Neutralité politique absolue',
               texte:
                 "Des données factuelles, zéro commentaire partisan. La contrainte va jusqu'au design : aucun montant n'est teinté d'une couleur connotée, et le rouge ou le vert ne servent qu'aux variations.",
             },
             {
+              Icone: LinkIcon,
               titre: 'Chaque chiffre porte sa source',
               texte:
                 "Une icône à côté de chaque montant renvoie au document officiel précis qui l'établit — pas au portail, au texte. Vous pouvez tout vérifier.",
             },
             {
+              Icone: CodeIcon,
               titre: 'Open source, de bout en bout',
               texte:
                 'Le site et le pipeline de données sont publiés sous licence AGPL. La méthode de calcul est vérifiable, y compris ses limites, qui sont affichées et non enfouies.',
             },
             {
+              Icone: ListIcon,
               titre: 'La profondeur est offerte, jamais imposée',
               texte:
                 "Trois chiffres suffisent à repartir avec une idée juste. Mais si vous voulez descendre jusqu'à l'action budgétaire d'un programme, rien ne vous arrête.",
             },
-          ].map((engagement) => (
-            <div key={engagement.titre} className="flex gap-3.5">
+          ].map(({ Icone, titre, texte }) => (
+            <div key={titre} className="flex gap-3.5">
               <span
                 aria-hidden="true"
-                className="mt-0.5 h-1.5 w-1.5 flex-none rounded-full bg-accent"
-              />
+                className="flex h-[38px] w-[38px] flex-none items-center justify-center rounded-[9px]
+                  bg-accent-soft text-accent"
+              >
+                <Icone className="h-[19px] w-[19px]" />
+              </span>
               <div>
-                <h3 className="text-base font-semibold text-ink">{engagement.titre}</h3>
-                <p className="mt-1 text-[14.5px] text-ink-muted">{engagement.texte}</p>
+                <h3 className="text-base font-semibold text-ink">{titre}</h3>
+                <p className="mt-1 text-[14.5px] text-ink-muted">{texte}</p>
               </div>
             </div>
           ))}
