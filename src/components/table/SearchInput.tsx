@@ -14,7 +14,7 @@ interface SearchInputProps {
 // controle, sans logique de timing.
 export function SearchInput({ id, label, value, onChange, placeholder }: SearchInputProps) {
   return (
-    <label htmlFor={id} className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+    <label htmlFor={id} className="block text-sm font-medium text-ink-muted">
       {label}
       <input
         id={id}
@@ -22,8 +22,8 @@ export function SearchInput({ id, label, value, onChange, placeholder }: SearchI
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder={placeholder}
-        className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
-          dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+        className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+          "
       />
     </label>
   );

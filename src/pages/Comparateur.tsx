@@ -131,21 +131,21 @@ export default function Comparateur() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Comparateur</h1>
+      <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">Comparateur</h1>
 
       <div className="flex flex-wrap gap-6">
         <div>
           <label
             htmlFor="annee-a"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-ink-muted"
           >
             Année A
             <select
               id="annee-a"
               value={anneeA ?? ''}
               onChange={(event) => setAnneeA(Number(event.target.value))}
-              className="mt-1 block rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="mt-1 block rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
             >
               {anneesDisponibles.map((annee) => (
                 <option key={annee} value={annee}>
@@ -159,15 +159,15 @@ export default function Comparateur() {
         <div>
           <label
             htmlFor="annee-b"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-ink-muted"
           >
             Année B
             <select
               id="annee-b"
               value={anneeB ?? ''}
               onChange={(event) => setAnneeB(Number(event.target.value))}
-              className="mt-1 block rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="mt-1 block rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
             >
               {anneesDisponibles.map((annee) => (
                 <option key={annee} value={annee}>
@@ -192,27 +192,27 @@ export default function Comparateur() {
             </Button>
           </div>
 
-          <div ref={comparatifRef} className="space-y-6 bg-white p-1 dark:bg-gray-900">
+          <div ref={comparatifRef} className="space-y-6 bg-white p-1 ">
             <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <Card>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Écart de dépenses</p>
-                <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
+                <p className="text-sm text-ink-muted">Écart de dépenses</p>
+                <p className="mt-1 text-xl font-bold text-ink">
                   {formatMd(comparateur.ecartDepenses)}
                   {sourcesEcart}
                 </p>
               </Card>
               <Card>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Écart de recettes</p>
-                <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
+                <p className="text-sm text-ink-muted">Écart de recettes</p>
+                <p className="mt-1 text-xl font-bold text-ink">
                   {formatMd(comparateur.ecartRecettes)}
                   {sourcesEcart}
                 </p>
               </Card>
               <Card>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
+                <p className="text-sm text-ink-muted">
                   Écart de <GlossaryTerm term="déficit">déficit</GlossaryTerm>
                 </p>
-                <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
+                <p className="mt-1 text-xl font-bold text-ink">
                   {formatMd(comparateur.ecartDeficit)}
                   {sourcesEcart}
                 </p>
@@ -221,7 +221,7 @@ export default function Comparateur() {
 
             <section>
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <h2 className="text-lg font-semibold text-ink">
                   Missions — {anneeA} vs {anneeB}
                   {sourcesEcart}
                 </h2>
@@ -234,16 +234,16 @@ export default function Comparateur() {
                   Exporter CSV
                 </Button>
               </div>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <p className="mt-1 text-sm text-ink-muted">
                 Triées par écart absolu décroissant : les plus fortes hausses en tête, les plus
-                fortes baisses en bas. En <span className="text-red-700 dark:text-red-400">rouge</span>,
-                une hausse de dépenses ; en <span className="text-green-700 dark:text-green-400">vert</span>,
+                fortes baisses en bas. En <span className="text-neg">rouge</span>,
+                une hausse de dépenses ; en <span className="text-pos">vert</span>,
                 une baisse.
               </p>
               <div className="mt-3 max-w-sm">
                 <label
                   htmlFor="recherche-mission"
-                  className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+                  className="block text-sm font-medium text-ink-muted"
                 >
                   Rechercher une mission
                   <input
@@ -252,53 +252,53 @@ export default function Comparateur() {
                     value={rechercheMission}
                     onChange={(event) => setRechercheMission(event.target.value)}
                     placeholder="Ex. Défense, Enseignement scolaire…"
-                    className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                      dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+                    className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                      "
                   />
                 </label>
               </div>
-              <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-800">
+              <div className="mt-3 overflow-x-auto rounded-lg border border-line">
+                <table className="min-w-full divide-y divide-line text-sm ">
+                  <thead className="bg-surface-sunken">
                     <tr>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-left font-medium text-ink-muted"
                       >
                         Mission
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-right font-medium text-ink-muted"
                       >
                         {anneeA}
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-right font-medium text-ink-muted"
                       >
                         {anneeB}
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-right font-medium text-ink-muted"
                       >
                         Écart
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-right font-medium text-ink-muted"
                       >
                         Écart %
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tbody className="divide-y divide-line">
                     {missionsFiltrees.length === 0 ? (
                       <tr>
                         <td
                           colSpan={5}
-                          className="px-3 py-4 text-center text-gray-500 dark:text-gray-400"
+                          className="px-3 py-4 text-center text-ink-muted"
                         >
                           Aucune mission ne correspond à « {rechercheMission.trim()} ».
                         </td>
@@ -306,26 +306,26 @@ export default function Comparateur() {
                     ) : (
                       missionsFiltrees.map((mission) => (
                         <tr key={mission.slug}>
-                          <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                          <td className="px-3 py-2 text-ink">
                             {mission.nom}
                           </td>
-                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          <td className="px-3 py-2 text-right text-ink-muted">
                             {formatMd(mission.montantA)}
                           </td>
-                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          <td className="px-3 py-2 text-right text-ink-muted">
                             {formatMd(mission.montantB)}
                           </td>
                           <td
                             className={`px-3 py-2 text-right font-medium ${
                               mission.deltaAbsolu >= 0
-                                ? 'text-red-700 dark:text-red-400'
-                                : 'text-green-700 dark:text-green-400'
+                                ? 'text-neg'
+                                : 'text-pos'
                             }`}
                           >
                             {mission.deltaAbsolu >= 0 ? '+' : ''}
                             {formatMd(mission.deltaAbsolu)}
                           </td>
-                          <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                          <td className="px-3 py-2 text-right text-ink-muted">
                             {mission.deltaRelatifPct !== null
                               ? formatPct(mission.deltaRelatifPct / 100)
                               : '—'}
@@ -340,7 +340,7 @@ export default function Comparateur() {
 
             <section>
               <div className="flex flex-wrap items-start justify-between gap-2">
-                <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+                <h2 className="text-lg font-semibold text-ink">
                   Recettes par type — {anneeA} vs {anneeB}
                   {sourcesEcart}
                 </h2>
@@ -353,60 +353,60 @@ export default function Comparateur() {
                   Exporter CSV
                 </Button>
               </div>
-              <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-                En <span className="text-green-700 dark:text-green-400">vert</span>, une hausse de
-                recettes ; en <span className="text-red-700 dark:text-red-400">rouge</span>, une
+              <p className="mt-1 text-sm text-ink-muted">
+                En <span className="text-pos">vert</span>, une hausse de
+                recettes ; en <span className="text-neg">rouge</span>, une
                 baisse.
               </p>
-              <div className="mt-3 overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
-                <table className="min-w-full divide-y divide-gray-200 text-sm dark:divide-gray-700">
-                  <thead className="bg-gray-50 dark:bg-gray-800">
+              <div className="mt-3 overflow-x-auto rounded-lg border border-line">
+                <table className="min-w-full divide-y divide-line text-sm ">
+                  <thead className="bg-surface-sunken">
                     <tr>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-left font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-left font-medium text-ink-muted"
                       >
                         Type
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-right font-medium text-ink-muted"
                       >
                         {anneeA}
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-right font-medium text-ink-muted"
                       >
                         {anneeB}
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-right font-medium text-ink-muted"
                       >
                         Écart
                       </th>
                       <th
                         scope="col"
-                        className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300"
+                        className="px-3 py-2 text-right font-medium text-ink-muted"
                       >
                         Écart %
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
+                  <tbody className="divide-y divide-line">
                     {comparateur.recettes.map((recette) => (
                       <tr key={recette.type}>
-                        <td className="px-3 py-2 text-gray-900 dark:text-gray-100">
+                        <td className="px-3 py-2 text-ink">
                           <GlossaryTerm term={recette.type}>{recette.type}</GlossaryTerm>
                         </td>
-                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                        <td className="px-3 py-2 text-right text-ink-muted">
                           {recette.montantA !== null ? formatMd(recette.montantA) : '—'}
                         </td>
-                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                        <td className="px-3 py-2 text-right text-ink-muted">
                           {recette.montantB !== null ? formatMd(recette.montantB) : '—'}
                         </td>
-                        <td className="px-3 py-2 text-right font-medium text-gray-700 dark:text-gray-300">
+                        <td className="px-3 py-2 text-right font-medium text-ink-muted">
                           {recette.deltaAbsolu !== null ? (
                             <span
                               // Convention inversée par rapport au tableau des missions :
@@ -415,8 +415,8 @@ export default function Comparateur() {
                               // rouge. Retour utilisateur explicite.
                               className={
                                 recette.deltaAbsolu >= 0
-                                  ? 'text-green-700 dark:text-green-400'
-                                  : 'text-red-700 dark:text-red-400'
+                                  ? 'text-pos'
+                                  : 'text-neg'
                               }
                             >
                               {recette.deltaAbsolu >= 0 ? '+' : ''}
@@ -426,7 +426,7 @@ export default function Comparateur() {
                             '—'
                           )}
                         </td>
-                        <td className="px-3 py-2 text-right text-gray-600 dark:text-gray-300">
+                        <td className="px-3 py-2 text-right text-ink-muted">
                           {recette.deltaRelatifPct !== null
                             ? formatPct(recette.deltaRelatifPct / 100)
                             : '—'}
@@ -436,7 +436,7 @@ export default function Comparateur() {
                   </tbody>
                 </table>
               </div>
-              <p className="mt-2 text-xs text-gray-500 dark:text-gray-400">
+              <p className="mt-2 text-xs text-ink-muted">
                 Un écart affiché « — » signifie que la donnée n&apos;est pas disponible pour
                 l&apos;une des deux années comparées.
               </p>

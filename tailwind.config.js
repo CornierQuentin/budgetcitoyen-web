@@ -47,6 +47,7 @@ export default {
           5: 'var(--data-5)',
         },
         bar: { DEFAULT: 'var(--bar)', track: 'var(--bar-track)' },
+        inverse: { DEFAULT: 'var(--inverse)', ink: 'var(--inverse-ink)' },
       },
       boxShadow: {
         sm: 'var(--shadow-sm)',

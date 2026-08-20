@@ -188,7 +188,7 @@ export default function Marches() {
         <button
           type="button"
           onClick={resetFiltres}
-          className="font-medium text-blue-800 hover:underline dark:text-blue-300"
+          className="font-medium text-accent hover:underline "
         >
           Réinitialiser les filtres
         </button>
@@ -200,11 +200,11 @@ export default function Marches() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Marchés publics</h1>
+        <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">Marchés publics</h1>
       </div>
 
-      <Card className="border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950">
-        <p className="text-sm text-blue-900 dark:text-blue-200">
+      <Card className="border-accent-line bg-accent-soft ">
+        <p className="text-sm text-accent">
           Données Essentielles de la Commande Publique (DECP)
           {bornes?.dateMin && bornes?.dateMax && (
             <>
@@ -222,7 +222,7 @@ export default function Marches() {
       {donutData.length > 0 && (
         <section>
           <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-            <h2 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <h2 className="text-sm font-semibold text-ink-muted">
               Répartition par catégorie (impôt/CPV)
               {totalChiffreLabel && ` — total ${totalChiffreLabel}`}
               {cpvDivision && (
@@ -237,7 +237,7 @@ export default function Marches() {
               )}
             </h2>
           </div>
-          <p className="mb-2 text-xs text-gray-500 dark:text-gray-400">
+          <p className="mb-2 text-xs text-ink-muted">
             Cliquez une tranche pour filtrer la liste par catégorie. Répartition calculée sur
             l&apos;ensemble des marchés correspondant aux filtres actifs, pas seulement la page
             affichée.
@@ -252,7 +252,7 @@ export default function Marches() {
 
       <section>
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+          <h2 className="text-lg font-semibold text-ink">
             Liste des marchés {pageData ? `(${pageData.total.toLocaleString('fr-FR')})` : ''}
           </h2>
           {pageData && pageData.items.length > 0 && (
@@ -277,7 +277,7 @@ export default function Marches() {
           />
           <label
             htmlFor="date-debut-marche"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-ink-muted"
           >
             Notifié à partir du
             <input
@@ -287,13 +287,13 @@ export default function Marches() {
               min={bornes?.dateMin ?? undefined}
               max={bornes?.dateMax ?? undefined}
               onChange={(event) => setDateDebut(event.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
             />
           </label>
           <label
             htmlFor="date-fin-marche"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-ink-muted"
           >
             Notifié jusqu&apos;au
             <input
@@ -303,13 +303,13 @@ export default function Marches() {
               min={bornes?.dateMin ?? undefined}
               max={bornes?.dateMax ?? undefined}
               onChange={(event) => setDateFin(event.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
             />
           </label>
           <label
             htmlFor="montant-min-marche"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-ink-muted"
           >
             Montant minimum (€)
             <input
@@ -318,13 +318,13 @@ export default function Marches() {
               min={0}
               value={montantMin}
               onChange={(event) => setMontantMin(event.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
             />
           </label>
           <label
             htmlFor="montant-max-marche"
-            className="block text-sm font-medium text-gray-700 dark:text-gray-300"
+            className="block text-sm font-medium text-ink-muted"
           >
             Montant maximum (€)
             <input
@@ -333,8 +333,8 @@ export default function Marches() {
               min={0}
               value={montantMax}
               onChange={(event) => setMontantMax(event.target.value)}
-              className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm
-                dark:border-gray-600 dark:bg-gray-800 dark:text-gray-100"
+              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
             />
           </label>
           <div className="flex items-end">

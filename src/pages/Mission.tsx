@@ -51,22 +51,22 @@ export default function Mission() {
 
   if (isLoading) {
     return (
-      <section ref={conteneurRef} className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-        <p className="text-sm text-gray-500 dark:text-gray-400">Chargement de la mission…</p>
+      <section ref={conteneurRef} className="rounded-lg border border-line p-4 ">
+        <p className="text-sm text-ink-muted">Chargement de la mission…</p>
       </section>
     );
   }
 
   if (isError || !detail) {
     return (
-      <section ref={conteneurRef} className="rounded-lg border border-gray-200 p-4 dark:border-gray-700">
-        <p className="text-sm text-gray-500 dark:text-gray-400">
+      <section ref={conteneurRef} className="rounded-lg border border-line p-4 ">
+        <p className="text-sm text-ink-muted">
           Mission introuvable pour « {slug} ». Le lien est peut-être obsolète ou mal orthographié.
         </p>
         <Link
           to="/tableau-de-bord"
-          className="mt-2 inline-block text-sm font-medium text-blue-800 hover:underline
-            dark:text-blue-300"
+          className="mt-2 inline-block text-sm font-medium text-accent hover:underline
+            "
         >
           ← Retour au tableau de bord
         </Link>
@@ -75,12 +75,12 @@ export default function Mission() {
   }
 
   return (
-    <section ref={conteneurRef} className="space-y-6 rounded-lg border border-gray-200 p-4 dark:border-gray-700">
+    <section ref={conteneurRef} className="space-y-6 rounded-lg border border-line p-4 ">
       <div>
-        <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100">
+        <h2 className="text-xl font-semibold text-ink">
           {detail.nomOfficiel}
         </h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        <p className="mt-1 text-sm text-ink-muted">
           Année {detail.annee} — {formatMd(detail.montantTotal)} au total
           {budgetAnnee && (
             <SourceIcon url={budgetAnnee.sourceUrl} label={`mission ${detail.nomOfficiel}`} />
@@ -89,7 +89,7 @@ export default function Mission() {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+        <h3 className="text-sm font-semibold text-ink-muted">
           <GlossaryTerm term="Programme">Programmes</GlossaryTerm>
         </h3>
         {detail.programmes
@@ -98,54 +98,54 @@ export default function Mission() {
           .map((programme) => (
             <div
               key={programme.id}
-              className="rounded-md border border-gray-100 p-3 dark:border-gray-800"
+              className="rounded-md border border-line p-3 "
             >
               <div className="flex items-baseline justify-between gap-4">
-                <p className="font-medium text-gray-900 dark:text-gray-100">
+                <p className="font-medium text-ink">
                   {programme.code} — {programme.nom}
                 </p>
-                <p className="whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
+                <p className="whitespace-nowrap text-sm text-ink-muted">
                   {formatMd(programme.montantTotal)}
                 </p>
               </div>
 
               <div className="mt-2 overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-100 text-xs dark:divide-gray-800">
+                <table className="min-w-full divide-y divide-line text-xs ">
                   <thead>
                     <tr>
                       <th
                         scope="col"
-                        className="px-2 py-1 text-left font-medium text-gray-500 dark:text-gray-400"
+                        className="px-2 py-1 text-left font-medium text-ink-muted"
                       >
                         <GlossaryTerm term="Action">Action</GlossaryTerm>
                       </th>
                       <th
                         scope="col"
-                        className="px-2 py-1 text-right font-medium text-gray-500 dark:text-gray-400"
+                        className="px-2 py-1 text-right font-medium text-ink-muted"
                       >
                         <GlossaryTerm term="AE">AE</GlossaryTerm>
                       </th>
                       <th
                         scope="col"
-                        className="px-2 py-1 text-right font-medium text-gray-500 dark:text-gray-400"
+                        className="px-2 py-1 text-right font-medium text-ink-muted"
                       >
                         <GlossaryTerm term="CP">CP</GlossaryTerm>
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-50 dark:divide-gray-800">
+                  <tbody className="divide-y divide-line">
                     {programme.actions
                       .slice()
                       .sort((a, b) => b.cp - a.cp)
                       .map((action) => (
                         <tr key={action.id}>
-                          <td className="px-2 py-1 text-gray-700 dark:text-gray-300">
+                          <td className="px-2 py-1 text-ink-muted">
                             {action.code} — {action.nom}
                           </td>
-                          <td className="px-2 py-1 text-right text-gray-600 dark:text-gray-300">
+                          <td className="px-2 py-1 text-right text-ink-muted">
                             {formatEuros(action.ae)}
                           </td>
-                          <td className="px-2 py-1 text-right text-gray-600 dark:text-gray-300">
+                          <td className="px-2 py-1 text-right text-ink-muted">
                             {formatEuros(action.cp)}
                           </td>
                         </tr>
@@ -159,10 +159,10 @@ export default function Mission() {
 
       {changementsLibelle.length > 1 && (
         <div>
-          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+          <h3 className="text-sm font-semibold text-ink-muted">
             Libellé au fil du temps
           </h3>
-          <ul className="mt-1 space-y-0.5 text-sm text-gray-600 dark:text-gray-300">
+          <ul className="mt-1 space-y-0.5 text-sm text-ink-muted">
             {changementsLibelle.map((item) => (
               <li key={item.annee}>
                 {item.annee} : {item.nomOfficiel}

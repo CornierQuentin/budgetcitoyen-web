@@ -51,7 +51,7 @@ export default function LineChart({ data, series, nomFichierExport = 'graphique.
     return (
       <div
         className="flex h-64 items-center justify-center rounded-lg border border-dashed
-          border-gray-300 text-sm text-gray-500 dark:border-gray-600 dark:text-gray-400"
+          border-line-strong text-sm text-ink-muted "
       >
         Aucune donnée à afficher pour cette période.
       </div>
@@ -81,7 +81,7 @@ export default function LineChart({ data, series, nomFichierExport = 'graphique.
 
       <div
         ref={exportRef}
-        className="h-80 rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-900"
+        className="h-80 rounded-lg border border-line bg-white p-4 "
       >
         <ResponsiveContainer width="100%" height="100%">
           <RechartsLineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>

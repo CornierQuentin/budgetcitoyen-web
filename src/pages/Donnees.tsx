@@ -1,3 +1,5 @@
+import { Card } from '../components/ui/Card';
+import { ExternalLinkIcon } from '../components/ui/icons';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useIndicateur } from '../hooks/useIndicateur';
@@ -40,26 +42,33 @@ export default function Donnees() {
   ];
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Données</h1>
-      <p className="text-gray-600 dark:text-gray-300">
-        Les données présentées sur BudgetCitoyen.fr proviennent de sources publiques officielles.
-      </p>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">Données &amp; sources</h1>
+        <p className="mt-0.5 text-[13px] text-ink-muted">
+          Toutes les données présentées sur BudgetCitoyen.fr proviennent de sources publiques
+          officielles, réutilisables sous Licence Ouverte 2.0.
+        </p>
+      </div>
 
-      <ul className="space-y-2">
-        {sources.map((source) => (
-          <li key={source.url}>
-            <a
-              href={source.url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-blue-800 hover:underline dark:text-blue-300"
-            >
-              {source.nom}
-            </a>
-          </li>
-        ))}
-      </ul>
+      <Card flush title="Sources officielles" note={`${sources.length} sources`}>
+        <ul>
+          {sources.map((source) => (
+            <li key={source.url} className="border-b border-line last:border-b-0">
+              <a
+                href={source.url}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium text-ink
+                  transition-colors hover:bg-surface-hover hover:text-accent"
+              >
+                {source.nom}
+                <ExternalLinkIcon className="h-3.5 w-3.5 flex-none text-ink-faint" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </div>
   );
 }

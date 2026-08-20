@@ -18,7 +18,7 @@ export function SiretLink({ siret, idType }: SiretLinkProps) {
       href={`https://annuaire-entreprises.data.gouv.fr/etablissement/${siret}`}
       target="_blank"
       rel="noopener noreferrer"
-      className="text-blue-800 hover:underline dark:text-blue-300"
+      className="text-accent hover:underline "
     >
       {siret}
     </a>
