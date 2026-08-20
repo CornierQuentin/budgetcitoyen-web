@@ -36,9 +36,9 @@ export default {
           line: 'var(--accent-line)',
           contrast: 'var(--accent-contrast)',
         },
-        pos: { DEFAULT: 'var(--pos)', soft: 'var(--pos-soft)' },
-        neg: { DEFAULT: 'var(--neg)', soft: 'var(--neg-soft)' },
-        warn: { DEFAULT: 'var(--warn)', soft: 'var(--warn-soft)' },
+        pos: { DEFAULT: 'var(--pos)', soft: 'var(--pos-soft)', line: 'var(--pos-line)' },
+        neg: { DEFAULT: 'var(--neg)', soft: 'var(--neg-soft)', line: 'var(--neg-line)' },
+        warn: { DEFAULT: 'var(--warn)', soft: 'var(--warn-soft)', line: 'var(--warn-line)' },
         data: {
           1: 'var(--data-1)',
           2: 'var(--data-2)',
@@ -48,6 +48,11 @@ export default {
         },
         bar: { DEFAULT: 'var(--bar)', track: 'var(--bar-track)' },
         inverse: { DEFAULT: 'var(--inverse)', ink: 'var(--inverse-ink)' },
+        deep: {
+          DEFAULT: 'var(--deep)',
+          ink: 'var(--deep-ink)',
+          muted: 'var(--deep-muted)',
+        },
       },
       boxShadow: {
         sm: 'var(--shadow-sm)',

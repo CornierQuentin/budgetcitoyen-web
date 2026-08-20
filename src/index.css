@@ -32,10 +32,13 @@
   --accent-contrast: #ffffff;
   --pos: #0f7b4f;
   --pos-soft: #e6f4ed;
+  --pos-line: #b9dcc9;
   --neg: #b4241c;
   --neg-soft: #fdeceb;
+  --neg-line: #f3c4c0;
   --warn: #9a6700;
   --warn-soft: #fdf5e3;
+  --warn-line: #ecd9a8;
 
   /* Rampe de données : une seule teinte, déclinée en valeur. La quantité se
      lit à la valeur et à la longueur, jamais à une couleur connotée — en
@@ -53,6 +56,13 @@
      fond dans les deux thèmes, donc elle s'inverse avec eux. */
   --inverse: #1a1f29;
   --inverse-ink: #f7f8fa;
+
+  /* Panneau profond, sombre dans LES DEUX thèmes (contrairement à `inverse`,
+     qui bascule). Sert au bloc de clôture de la page d'accueil, dont l'effet
+     tient précisément à rester une masse sombre sur fond clair. */
+  --deep: #101724;
+  --deep-ink: #e9edf4;
+  --deep-muted: #9aa6b8;
 
   --shadow-sm: 0 1px 2px rgb(21 31 48 / 0.06), 0 1px 1px rgb(21 31 48 / 0.04);
   --shadow-md: 0 2px 6px rgb(21 31 48 / 0.07), 0 4px 14px rgb(21 31 48 / 0.05);
@@ -75,10 +85,13 @@
   --accent-contrast: #0f1319;
   --pos: #4ec08b;
   --pos-soft: #12281f;
+  --pos-line: #245c42;
   --neg: #f08279;
   --neg-soft: #2c1614;
+  --neg-line: #6b2f29;
   --warn: #d9a441;
   --warn-soft: #2a2213;
+  --warn-line: #5c4a1e;
 
   /* Rampe inversée : sur fond sombre, la valeur la plus claire porte la plus
      grosse quantité, pour conserver le même ordre de lecture qu'en clair. */
@@ -92,6 +105,10 @@
 
   --inverse: #e8ecf2;
   --inverse-ink: #12161d;
+
+  --deep: #0a0e15;
+  --deep-ink: #e9edf4;
+  --deep-muted: #9aa6b8;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-md: 0 2px 6px rgb(0 0 0 / 0.45), 0 8px 20px rgb(0 0 0 / 0.35);

@@ -1,0 +1,505 @@
+<title>BudgetCitoyen.fr — Maquette de la page d'accueil</title>
+
+<style>
+  :root {
+    --ground:#ffffff; --ground-alt:#f6f7f9; --surface:#ffffff; --sunken:#f1f3f6; --hover:#f7f9fc;
+    --line:#e3e6eb; --line-strong:#d2d7de;
+    --ink:#1a1f29; --muted:#5b6472; --faint:#838d9c;
+    --accent:#1a56db; --accent-hover:#1546b4; --accent-soft:#eaf0fe; --accent-line:#c3d5fb; --accent-contrast:#fff;
+    --pos:#0f7b4f; --pos-soft:#e6f4ed; --neg:#b4241c; --neg-soft:#fdeceb; --warn:#9a6700; --warn-soft:#fdf5e3;
+    --d1:#16326b; --d2:#244d99; --d3:#3d6ec4; --d4:#7b9ad9; --d5:#b9caea;
+    --bar:#3d6ec4; --bar-track:#eceff4;
+    --deep:#101724; --deep-ink:#e9edf4; --deep-muted:#9aa6b8; --deep-line:#26314a;
+    --shadow-sm:0 1px 2px rgb(21 31 48/.06),0 1px 1px rgb(21 31 48/.04);
+    --shadow-lg:0 1px 3px rgb(16 23 36/.08),0 12px 32px rgb(16 23 36/.10),0 40px 80px rgb(16 23 36/.08);
+    --r:10px; --r-sm:7px;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0f1319; --ground-alt:#131922; --surface:#161b23; --sunken:#1b212b; --hover:#1e252f;
+      --line:#262d38; --line-strong:#333c49;
+      --ink:#e8ecf2; --muted:#a0a9b8; --faint:#7d8797;
+      --accent:#7ba4f7; --accent-hover:#9bbaf9; --accent-soft:#16233d; --accent-line:#2b4477; --accent-contrast:#0f1319;
+      --pos:#4ec08b; --pos-soft:#12281f; --neg:#f08279; --neg-soft:#2c1614; --warn:#d9a441; --warn-soft:#2a2213;
+      --d1:#b9caea; --d2:#7b9ad9; --d3:#4f7fd0; --d4:#35589c; --d5:#253c6b;
+      --bar:#4f7fd0; --bar-track:#222a35;
+      --deep:#0a0e15; --deep-ink:#e9edf4; --deep-muted:#9aa6b8; --deep-line:#1e2637;
+      --shadow-sm:0 1px 2px rgb(0 0 0/.4);
+      --shadow-lg:0 12px 32px rgb(0 0 0/.5),0 40px 80px rgb(0 0 0/.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0f1319; --ground-alt:#131922; --surface:#161b23; --sunken:#1b212b; --hover:#1e252f;
+    --line:#262d38; --line-strong:#333c49;
+    --ink:#e8ecf2; --muted:#a0a9b8; --faint:#7d8797;
+    --accent:#7ba4f7; --accent-hover:#9bbaf9; --accent-soft:#16233d; --accent-line:#2b4477; --accent-contrast:#0f1319;
+    --pos:#4ec08b; --pos-soft:#12281f; --neg:#f08279; --neg-soft:#2c1614; --warn:#d9a441; --warn-soft:#2a2213;
+    --d1:#b9caea; --d2:#7b9ad9; --d3:#4f7fd0; --d4:#35589c; --d5:#253c6b;
+    --bar:#4f7fd0; --bar-track:#222a35;
+    --deep:#0a0e15; --deep-ink:#e9edf4; --deep-muted:#9aa6b8; --deep-line:#1e2637;
+    --shadow-sm:0 1px 2px rgb(0 0 0/.4);
+    --shadow-lg:0 12px 32px rgb(0 0 0/.5),0 40px 80px rgb(0 0 0/.4);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--accent-soft);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+  h1,h2,h3,p{margin:0}
+  a{color:inherit}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  .wrap{width:100%;max-width:1120px;margin:0 auto;padding:0 24px}
+
+  /* ---------- En-tête léger : pas de rail ---------- */
+  header.top{position:sticky;top:0;z-index:40;background:color-mix(in srgb,var(--ground) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top-in{display:flex;align-items:center;gap:26px;height:64px}
+  .brand{display:flex;align-items:center;gap:9px;font-weight:670;letter-spacing:-.015em;font-size:15.5px;text-decoration:none}
+  .top nav{display:flex;gap:22px;margin-left:8px}
+  .top nav a{color:var(--muted);text-decoration:none;font-size:14.5px;font-weight:500}
+  .top nav a:hover{color:var(--ink)}
+  .top-actions{margin-left:auto;display:flex;align-items:center;gap:10px}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 18px;border-radius:var(--r-sm);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;font-size:14.5px;font-weight:560;cursor:pointer;text-decoration:none;white-space:nowrap}
+  .btn:hover{background:var(--hover);border-color:var(--faint)}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast)}
+  .btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+  .btn-sm{height:34px;font-size:13.5px;padding:0 13px}
+  .btn-icon{width:38px;padding:0}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:84px 0 20px;text-align:center}
+  .hero h1{font-size:clamp(38px,5.4vw,64px);line-height:1.04;letter-spacing:-.035em;font-weight:680;text-wrap:balance;max-width:17ch;margin:0 auto}
+  .hero p.lead{margin:20px auto 0;font-size:clamp(17px,1.5vw,19.5px);line-height:1.5;color:var(--muted);max-width:60ch;text-wrap:balance}
+  .hero-actions{margin-top:30px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+  .hero-note{margin-top:18px;font-size:13.5px;color:var(--faint)}
+
+  /* ---------- Aperçu produit ---------- */
+  .preview{margin-top:52px;position:relative}
+  .preview::after{content:"";position:absolute;left:0;right:0;bottom:-1px;height:120px;background:linear-gradient(to bottom,transparent,var(--ground));pointer-events:none}
+  .frame{border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:var(--shadow-lg);overflow:hidden}
+  .frame-bar{display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--sunken)}
+  .dot{width:10px;height:10px;border-radius:50%;background:var(--line-strong)}
+  .frame-url{margin-left:10px;font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums}
+  .frame-body{display:grid;grid-template-columns:150px minmax(0,1fr);min-height:340px}
+  .mini-rail{border-right:1px solid var(--line);padding:12px 8px;display:flex;flex-direction:column;gap:3px}
+  .mini-lbl{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);padding:6px 8px 3px}
+  .mini-item{font-size:12px;color:var(--muted);padding:5px 8px;border-radius:5px}
+  .mini-item.on{background:var(--accent-soft);color:var(--accent);font-weight:620}
+  .mini-main{padding:16px}
+  .mini-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  .mini-kpi{border:1px solid var(--line);border-radius:7px;padding:10px}
+  .mini-kpi span{display:block;font-size:10.5px;color:var(--muted)}
+  .mini-kpi b{display:block;font-size:19px;letter-spacing:-.025em;margin-top:3px;font-variant-numeric:tabular-nums}
+  .mini-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--line);font-size:11.5px}
+  .mini-row:last-child{border-bottom:0}
+  .mini-row .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mini-row .vl{font-variant-numeric:tabular-nums;color:var(--muted)}
+  .mini-bar{width:76px;height:5px;border-radius:3px;background:var(--bar-track);overflow:hidden;flex:none}
+  .mini-bar i{display:block;height:100%;background:var(--bar);border-radius:3px}
+
+  /* ---------- Sections ---------- */
+  section{padding:76px 0;scroll-margin-top:72px}
+  .band{background:var(--ground-alt);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  h2{font-size:clamp(26px,3vw,36px);line-height:1.12;letter-spacing:-.028em;font-weight:670;text-wrap:balance;max-width:22ch}
+  .sec-lead{margin-top:14px;font-size:16.5px;color:var(--muted);max-width:62ch}
+
+  /* Chiffres commentés */
+  .figures{margin-top:44px;display:grid;gap:34px;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .fig .val{font-size:clamp(32px,3.6vw,44px);font-weight:680;letter-spacing:-.032em;line-height:1;font-variant-numeric:tabular-nums}
+  .fig .cap{margin-top:12px;font-size:15px;font-weight:600}
+  .fig p{margin-top:7px;font-size:14.5px;color:var(--muted);line-height:1.5}
+  .fig .src{color:var(--faint);text-decoration:none;display:inline-flex;vertical-align:middle;margin-left:5px}
+  .fig .src:hover{color:var(--accent)}
+
+  /* Blocs produit alternés */
+  .feat{display:grid;gap:44px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:center;margin-top:60px}
+  .feat:first-of-type{margin-top:44px}
+  .feat.rev .feat-txt{order:2}
+  .feat h3{font-size:22px;letter-spacing:-.02em;font-weight:660}
+  .feat p{margin-top:11px;color:var(--muted);font-size:15.5px}
+  .feat .go{margin-top:16px;display:inline-flex;align-items:center;gap:6px;color:var(--accent);font-weight:600;font-size:14.5px;text-decoration:none}
+  .feat .go:hover{text-decoration:underline;text-underline-offset:3px}
+  .shot{border:1px solid var(--line);border-radius:10px;background:var(--surface);box-shadow:var(--shadow-sm);padding:14px;min-height:210px}
+  .shot-h{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:640;padding-bottom:9px;border-bottom:1px solid var(--line);margin-bottom:10px}
+  .shot-h .sp{flex:1 1 auto}
+  .shot-h em{font-style:normal;font-weight:500;color:var(--faint);font-size:11px}
+
+  .cmp{display:flex;align-items:center;gap:9px;padding:6px 0;font-size:12px;border-bottom:1px solid var(--line)}
+  .cmp:last-child{border-bottom:0}
+  .cmp .nm{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .pill{font-size:11px;font-weight:660;padding:2px 7px;border-radius:99px;border:1px solid transparent;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .p-neg{background:var(--neg-soft);color:var(--neg);border-color:color-mix(in srgb,var(--neg) 22%,transparent)}
+  .p-pos{background:var(--pos-soft);color:var(--pos);border-color:color-mix(in srgb,var(--pos) 22%,transparent)}
+  .p-quiet{background:var(--sunken);color:var(--muted);border-color:var(--line)}
+
+  .sim{display:flex;align-items:center;gap:9px;padding:7px 0;font-size:12px}
+  .sim .nm{width:104px;flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)}
+  .track{flex:1 1 auto;height:4px;border-radius:3px;background:var(--bar-track);position:relative}
+  .track i{position:absolute;inset:0 auto 0 0;background:var(--bar);border-radius:3px}
+  .knob{position:absolute;top:50%;width:11px;height:11px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%)}
+  .sim .vl{width:62px;text-align:right;font-variant-numeric:tabular-nums}
+
+  /* Engagements */
+  .why{display:grid;gap:26px;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:44px}
+  .why-item{display:flex;gap:14px;align-items:flex-start}
+  .why-ic{flex:none;width:38px;height:38px;border-radius:9px;background:var(--accent-soft);color:var(--accent);display:grid;place-content:center}
+  .why-item h3{font-size:16px;font-weight:640}
+  .why-item p{margin-top:5px;font-size:14.5px;color:var(--muted)}
+
+  /* Sources */
+  .srcs{margin-top:36px;display:grid;gap:14px;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .src-card{border:1px solid var(--line);border-radius:9px;padding:14px;background:var(--surface)}
+  .src-card b{font-size:14px;font-weight:620;display:block}
+  .src-card span{display:block;margin-top:5px;font-size:13px;color:var(--muted)}
+
+  /* Clôture */
+  .close{background:var(--deep);color:var(--deep-ink);border-radius:14px;padding:56px 40px;text-align:center;margin:0 0 76px}
+  .close h2{color:var(--deep-ink);margin:0 auto;max-width:20ch}
+  .close p{margin:16px auto 0;color:var(--deep-muted);max-width:56ch;font-size:16.5px}
+  .close .hero-actions{margin-top:28px}
+  .close .btn{background:transparent;border-color:var(--deep-line);color:var(--deep-ink)}
+  .close .btn:hover{background:rgb(255 255 255/.06)}
+  .close .btn-primary{background:var(--accent);border-color:var(--accent);color:#fff}
+
+  footer{border-top:1px solid var(--line);padding:34px 0 46px;font-size:13.5px;color:var(--muted)}
+  .foot-in{display:flex;gap:20px;flex-wrap:wrap;align-items:baseline}
+  .foot-in a{color:var(--muted);text-decoration:none}
+  .foot-in a:hover{color:var(--accent)}
+  .foot-in .sp{flex:1 1 auto}
+
+  .note-inline{border-left:2px solid var(--accent-line);padding-left:12px;font-size:13px;color:var(--faint);margin-top:16px;max-width:74ch}
+
+  @media (max-width:900px){
+    .figures,.feat,.why,.srcs{grid-template-columns:minmax(0,1fr)}
+    .feat.rev .feat-txt{order:0}
+    .top nav{display:none}
+    .frame-body{grid-template-columns:minmax(0,1fr)}
+    .mini-rail{display:none}
+    section{padding:56px 0}
+    .hero{padding:56px 0 8px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#">
+      <svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M3 16.5h14"/><path d="M5.5 16.5V9M10 16.5V4.5M14.5 16.5v-5"/></svg>
+      BudgetCitoyen.fr
+    </a>
+    <nav>
+      <a href="#chiffres">Les chiffres</a>
+      <a href="#outil">L'outil</a>
+      <a href="#idee">L'idée</a>
+      <a href="#donnees">Les données</a>
+    </nav>
+    <div class="top-actions">
+      <button class="btn btn-icon" id="theme" aria-label="Basculer le thème" title="Basculer le thème">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 11.5A6 6 0 0 1 8.5 4.5a6 6 0 1 0 7 7Z"/></svg>
+      </button>
+      <a class="btn btn-primary btn-sm" href="#">Explorer le budget 2026</a>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════ HERO ═══════════ -->
+<div class="wrap hero">
+  <h1>Le budget de l'État, enfin lisible</h1>
+  <p class="lead">
+    593,9 milliards d'euros de dépenses, 32 missions, 689 062 marchés publics. Tout est public —
+    mais éparpillé dans des fichiers que personne ne lit. BudgetCitoyen le rend explorable,
+    chiffre par chiffre, source à l'appui.
+  </p>
+  <div class="hero-actions">
+    <a class="btn btn-primary" href="#">Explorer le budget 2026</a>
+    <a class="btn" href="#">Calculer ma contribution</a>
+  </div>
+  <p class="hero-note">Gratuit, sans compte, open source. Données officielles sous Licence Ouverte 2.0.</p>
+</div>
+
+<div class="wrap preview">
+  <div class="frame">
+    <div class="frame-bar">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+      <span class="frame-url">budgetcitoyen.fr/tableau-de-bord</span>
+    </div>
+    <div class="frame-body">
+      <div class="mini-rail">
+        <span class="mini-lbl">Vue d'ensemble</span>
+        <span class="mini-item">Accueil</span>
+        <span class="mini-item on">Tableau de bord</span>
+        <span class="mini-item">Historique</span>
+        <span class="mini-lbl">Analyser</span>
+        <span class="mini-item">Comparateur</span>
+        <span class="mini-item">Simulateur</span>
+        <span class="mini-item">Mon budget</span>
+        <span class="mini-lbl">Explorer</span>
+        <span class="mini-item">Niches fiscales</span>
+        <span class="mini-item">Marchés publics</span>
+      </div>
+      <div class="mini-main">
+        <div class="mini-kpis">
+          <div class="mini-kpi"><span>Dépenses totales</span><b>593,9 Md€</b></div>
+          <div class="mini-kpi"><span>Recettes totales</span><b>460,4 Md€</b></div>
+          <div class="mini-kpi"><span>Solde budgétaire</span><b>-133,5 Md€</b></div>
+        </div>
+        <div class="mini-row"><span class="nm">Remboursements et dégrèvements</span><span class="mini-bar"><i style="width:100%"></i></span><span class="vl">145,6 Md€</span></div>
+        <div class="mini-row"><span class="nm">Enseignement scolaire</span><span class="mini-bar"><i style="width:61%"></i></span><span class="vl">89,6 Md€</span></div>
+        <div class="mini-row"><span class="nm">Défense</span><span class="mini-bar"><i style="width:46%"></i></span><span class="vl">66,5 Md€</span></div>
+        <div class="mini-row"><span class="nm">Engagements financiers de l'État</span><span class="mini-bar"><i style="width:41%"></i></span><span class="vl">60,3 Md€</span></div>
+        <div class="mini-row"><span class="nm">Recherche et enseignement supérieur</span><span class="mini-bar"><i style="width:22%"></i></span><span class="vl">31,6 Md€</span></div>
+        <div class="mini-row"><span class="nm">Solidarité, insertion et égalité des chances</span><span class="mini-bar"><i style="width:21%"></i></span><span class="vl">31,3 Md€</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════ CHIFFRES COMMENTÉS ═══════════ -->
+<section id="chiffres">
+  <div class="wrap">
+    <h2>Trois chiffres pour situer l'exercice 2026</h2>
+    <p class="sec-lead">
+      Chacun renvoie au texte officiel qui l'établit. Vous n'avez jamais à nous croire sur parole.
+    </p>
+
+    <div class="figures">
+      <div class="fig">
+        <div class="val">593,9 Md€</div>
+        <div class="cap">
+          Ce que l'État prévoit de dépenser
+          <a class="src" href="#" title="Voir la source officielle"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8.3 11.7 11.7 8.3M8.8 5.6l.7-.7a2.9 2.9 0 0 1 4.1 4.1l-.7.7M11.2 14.4l-.7.7a2.9 2.9 0 0 1-4.1-4.1l.7-.7"/></svg></a>
+        </div>
+        <p>Réparties entre 32 missions, de l'enseignement scolaire à la défense. La plus lourde n'est pas celle qu'on croit : les remboursements et dégrèvements d'impôts, à eux seuls, pèsent 145,6 Md€.</p>
+      </div>
+      <div class="fig">
+        <div class="val">460,4 Md€</div>
+        <div class="cap">
+          Ce qu'il prévoit d'encaisser
+          <a class="src" href="#" title="Voir la source officielle"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8.3 11.7 11.7 8.3M8.8 5.6l.7-.7a2.9 2.9 0 0 1 4.1 4.1l-.7.7M11.2 14.4l-.7.7a2.9 2.9 0 0 1-4.1-4.1l.7-.7"/></svg></a>
+        </div>
+        <p>TVA, impôt sur le revenu, impôt sur les sociétés, taxes sur l'énergie et le reste. C'est 7 milliards de plus qu'en 2025, sans que les dépenses aient bougé pour autant.</p>
+      </div>
+      <div class="fig">
+        <div class="val">-133,5 Md€</div>
+        <div class="cap">
+          La différence, appelée solde budgétaire
+          <a class="src" href="#" title="Voir la source officielle"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8.3 11.7 11.7 8.3M8.8 5.6l.7-.7a2.9 2.9 0 0 1 4.1 4.1l-.7.7M11.2 14.4l-.7.7a2.9 2.9 0 0 1-4.1-4.1l.7-.7"/></svg></a>
+        </div>
+        <p>Autrement dit : l'État dépense 1,29 € pour chaque euro qu'il encaisse. L'écart se creuse chaque année depuis 2015, avec un pic à 172,4 Md€ en 2021.</p>
+      </div>
+    </div>
+
+    <p class="note-inline">
+      Refonte : ces chiffres ne sont plus des cartes alignées sans commentaire. Chacun est suivi
+      d'une phrase qui le rend saisissable — c'est la différence entre afficher une donnée et
+      la faire comprendre.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════ L'OUTIL ═══════════ -->
+<section id="outil" class="band">
+  <div class="wrap">
+    <h2>Ce que vous pouvez faire ici</h2>
+    <p class="sec-lead">
+      Quatre façons d'entrer dans le budget, du regard d'ensemble à la ligne de marché public.
+    </p>
+
+    <div class="feat">
+      <div class="feat-txt">
+        <h3>Voir où va l'argent</h3>
+        <p>
+          Les 32 missions de l'État, classées par montant, jusqu'au programme et à l'action.
+          Chaque ligne est cliquable, chaque total est sourcé, et tout s'exporte en CSV.
+        </p>
+        <a class="go" href="#">Ouvrir le tableau de bord →</a>
+      </div>
+      <div class="shot">
+        <div class="shot-h">Dépenses par mission <span class="sp"></span><em>32 missions · 593,9 Md€</em></div>
+        <div class="mini-row"><span class="nm">Remboursements et dégrèvements</span><span class="mini-bar"><i style="width:100%"></i></span><span class="vl">145,6</span></div>
+        <div class="mini-row"><span class="nm">Enseignement scolaire</span><span class="mini-bar"><i style="width:61%"></i></span><span class="vl">89,6</span></div>
+        <div class="mini-row"><span class="nm">Défense</span><span class="mini-bar"><i style="width:46%"></i></span><span class="vl">66,5</span></div>
+        <div class="mini-row"><span class="nm">Engagements financiers</span><span class="mini-bar"><i style="width:41%"></i></span><span class="vl">60,3</span></div>
+        <div class="mini-row"><span class="nm">Recherche et ens. supérieur</span><span class="mini-bar"><i style="width:22%"></i></span><span class="vl">31,6</span></div>
+      </div>
+    </div>
+
+    <div class="feat rev">
+      <div class="feat-txt">
+        <h3>Comparer deux exercices</h3>
+        <p>
+          Ce qui a augmenté, ce qui a baissé, et de combien. La page repère aussi les missions
+          qui disparaissent ou apparaissent — souvent un simple renommage qu'on prendrait à tort
+          pour une coupe de crédits.
+        </p>
+        <a class="go" href="#">Ouvrir le comparateur →</a>
+      </div>
+      <div class="shot">
+        <div class="shot-h">2025 vs 2026 <span class="sp"></span><em>plus fortes hausses</em></div>
+        <div class="cmp"><span class="nm">Défense</span><span class="pill p-neg">+6,5 Md€</span></div>
+        <div class="cmp"><span class="nm">Écologie et mobilité durables</span><span class="pill p-neg">+2,3 Md€</span></div>
+        <div class="cmp"><span class="nm">Monde combattant</span><span class="pill p-neg">+1,7 Md€</span></div>
+        <div class="cmp"><span class="nm">Audiovisuel public</span><span class="pill p-pos">-4,0 Md€</span></div>
+        <div class="cmp"><span class="nm">Aide publique au développement</span><span class="pill p-pos">-1,6 Md€</span></div>
+      </div>
+    </div>
+
+    <div class="feat">
+      <div class="feat-txt">
+        <h3>Refaire le budget vous-même</h3>
+        <p>
+          Déplacez les curseurs et voyez l'effet immédiat sur le solde. Le calcul est purement
+          arithmétique : aucun effet économique n'est modélisé, aucune politique n'est suggérée.
+        </p>
+        <a class="go" href="#">Ouvrir le simulateur →</a>
+      </div>
+      <div class="shot">
+        <div class="shot-h">Solde simulé <span class="sp"></span><em class="num" style="color:var(--accent);font-weight:660">-125,5 Md€</em></div>
+        <div class="sim"><span class="nm">Défense</span><span class="track"><i style="width:44%"></i><span class="knob" style="left:44%"></span></span><span class="vl">58,5</span></div>
+        <div class="sim"><span class="nm">Enseignement</span><span class="track"><i style="width:50%"></i><span class="knob" style="left:50%"></span></span><span class="vl">89,6</span></div>
+        <div class="sim"><span class="nm">Recherche</span><span class="track"><i style="width:50%"></i><span class="knob" style="left:50%"></span></span><span class="vl">31,6</span></div>
+        <div class="sim"><span class="nm">Écologie</span><span class="track"><i style="width:50%"></i><span class="knob" style="left:50%"></span></span><span class="vl">22,8</span></div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--pos);font-weight:600" class="num">+8,0 Md€ vs budget réel</div>
+      </div>
+    </div>
+
+    <div class="feat rev">
+      <div class="feat-txt">
+        <h3>Fouiller les marchés publics</h3>
+        <p>
+          689 062 contrats passés par l'État et les collectivités depuis 2010, cherchables par
+          objet, par date et par montant. La source ne fournit que des SIRET, jamais de noms
+          d'entreprises — la page le dit plutôt que de le masquer.
+        </p>
+        <a class="go" href="#">Ouvrir la recherche →</a>
+      </div>
+      <div class="shot">
+        <div class="shot-h">Marchés publics <span class="sp"></span><em>689 062 résultats</em></div>
+        <div class="cmp"><span class="nm">Réhabilitation d'une maison en 3 logements</span><span class="pill p-quiet">57 988 €</span></div>
+        <div class="cmp"><span class="nm">Catalogue de dispositifs médicaux</span><span class="pill p-quiet">270 000 €</span></div>
+        <div class="cmp"><span class="nm">Travaux de voirie communale</span><span class="pill p-quiet">1,2 M€</span></div>
+        <div class="cmp"><span class="nm">Fourniture de repas scolaires</span><span class="pill p-quiet">840 000 €</span></div>
+        <div style="margin-top:10px;font-size:11.5px;color:var(--faint)">Montant cumulé : 1 020,5 Md€ sur seize ans</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ L'IDÉE ═══════════ -->
+<section id="idee">
+  <div class="wrap">
+    <h2>Pourquoi cet outil existe</h2>
+    <p class="sec-lead">
+      Le budget de l'État est public depuis toujours. Il est aussi, dans les faits, illisible :
+      des annexes de plusieurs centaines de pages, des fichiers tabulaires sans mode d'emploi,
+      un vocabulaire qui suppose qu'on le maîtrise déjà. Le citoyen ordinaire n'a pas d'outil
+      à son niveau. C'est ce trou-là que BudgetCitoyen comble — et il le comble sous quatre
+      contraintes qui ne se négocient pas.
+    </p>
+
+    <div class="why">
+      <div class="why-item">
+        <span class="why-ic"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 2.5 4 5v5c0 3.5 2.5 5.9 6 6.9 3.5-1 6-3.4 6-6.9V5z"/></svg></span>
+        <div>
+          <h3>Neutralité politique absolue</h3>
+          <p>Des données factuelles, zéro commentaire partisan. La contrainte va jusqu'au design : aucun montant n'est teinté d'une couleur connotée, et le rouge ou le vert ne servent qu'aux variations.</p>
+        </div>
+      </div>
+      <div class="why-item">
+        <span class="why-ic"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8.3 11.7 11.7 8.3M8.8 5.6l.7-.7a2.9 2.9 0 0 1 4.1 4.1l-.7.7M11.2 14.4l-.7.7a2.9 2.9 0 0 1-4.1-4.1l.7-.7"/></svg></span>
+        <div>
+          <h3>Chaque chiffre porte sa source</h3>
+          <p>Une icône à côté de chaque montant renvoie au document officiel précis qui l'établit — pas au portail, au texte. Vous pouvez tout vérifier.</p>
+        </div>
+      </div>
+      <div class="why-item">
+        <span class="why-ic"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6 3 10l4 4M13 6l4 4-4 4"/></svg></span>
+        <div>
+          <h3>Open source, de bout en bout</h3>
+          <p>Le site et le pipeline de données sont publiés sous licence AGPL. La méthode de calcul est vérifiable, y compris ses limites, qui sont affichées et non enfouies.</p>
+        </div>
+      </div>
+      <div class="why-item">
+        <span class="why-ic"><svg width="19" height="19" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h12M4 10h8M4 14h5"/></svg></span>
+        <div>
+          <h3>La profondeur est offerte, jamais imposée</h3>
+          <p>Trois chiffres suffisent à repartir avec une idée juste. Mais si vous voulez descendre jusqu'à l'action budgétaire d'un programme, rien ne vous arrête.</p>
+        </div>
+      </div>
+    </div>
+
+    <p class="note-inline">
+      Cette section n'existait pas : rien sur le site ne disait ce qu'il est ni pourquoi il a été
+      fait. C'est pourtant ce qui distingue un service public d'un tableau de bord anonyme.
+    </p>
+  </div>
+</section>
+
+<!-- ═══════════ LES DONNÉES ═══════════ -->
+<section id="donnees" class="band">
+  <div class="wrap">
+    <h2>D'où viennent les données</h2>
+    <p class="sec-lead">
+      Uniquement de sources publiques officielles, réutilisables sous Licence Ouverte 2.0.
+      Rien n'est estimé pour combler un trou : quand une donnée manque, le site le dit.
+    </p>
+
+    <div class="srcs">
+      <div class="src-card">
+        <b>Légifrance — lois de finances</b>
+        <span>Dépenses, recettes et solde, de 2015 à 2026. Mise à jour annuelle.</span>
+      </div>
+      <div class="src-card">
+        <b>data.gouv.fr — DECP</b>
+        <span>689 062 marchés publics de 2010 à aujourd'hui. Mise à jour quotidienne.</span>
+      </div>
+      <div class="src-card">
+        <b>Annexe « Voies et moyens »</b>
+        <span>465 niches fiscales, dont 89,6 Md€ chiffrés. Millésime 2021, dernier exploitable.</span>
+      </div>
+    </div>
+
+    <div style="margin-top:26px;display:flex;gap:12px;flex-wrap:wrap">
+      <a class="btn" href="#">Voir toutes les sources</a>
+      <a class="btn" href="#">Documentation de l'API</a>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════ CLÔTURE ═══════════ -->
+<div class="wrap">
+  <div class="close">
+    <h2>Commencez par le chiffre qui vous intéresse</h2>
+    <p>
+      L'exercice 2026 en un coup d'œil, ou votre propre contribution estimée à partir de votre
+      revenu. Sans compte, sans traceur, sans conditions.
+    </p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="#">Explorer le budget 2026</a>
+      <a class="btn" href="#">Calculer ma contribution</a>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap foot-in">
+    <span>BudgetCitoyen.fr — projet open source sous licence AGPL-3.0-or-later.</span>
+    <span class="sp"></span>
+    <a href="#">Données &amp; sources</a>
+    <a href="#">API</a>
+    <a href="#">Code source</a>
+  </div>
+</footer>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    document.getElementById('theme').addEventListener('click', function () {
+      var explicit = root.getAttribute('data-theme');
+      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = explicit ? explicit === 'dark' : systemDark;
+      root.setAttribute('data-theme', dark ? 'light' : 'dark');
+    });
+  })();
+</script>

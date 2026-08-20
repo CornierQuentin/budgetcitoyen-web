@@ -16,9 +16,9 @@ interface BadgeProps {
 const TONES: Record<BadgeTone, string> = {
   accent: 'border-accent-line bg-accent-soft text-accent',
   quiet: 'border-line bg-surface-sunken text-ink-muted',
-  pos: 'border-pos/25 bg-pos-soft text-pos',
-  neg: 'border-neg/25 bg-neg-soft text-neg',
-  warn: 'border-warn/30 bg-warn-soft text-warn',
+  pos: 'border-pos-line bg-pos-soft text-pos',
+  neg: 'border-neg-line bg-neg-soft text-neg',
+  warn: 'border-warn-line bg-warn-soft text-warn',
 };
 
 export function Badge({ children, tone = 'accent', className = '' }: BadgeProps) {
