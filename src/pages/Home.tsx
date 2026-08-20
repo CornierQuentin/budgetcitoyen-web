@@ -464,8 +464,8 @@ export default function Home() {
                     className={`whitespace-nowrap rounded-full border px-1.5 py-0.5 text-[11px]
                       font-semibold tabular-nums ${
                         mission.deltaAbsolu >= 0
-                          ? 'border-neg/25 bg-neg-soft text-neg'
-                          : 'border-pos/25 bg-pos-soft text-pos'
+                          ? 'border-neg-line bg-neg-soft text-neg'
+                          : 'border-pos-line bg-pos-soft text-pos'
                       }`}
                   >
                     {mission.deltaAbsolu >= 0 ? '+' : ''}

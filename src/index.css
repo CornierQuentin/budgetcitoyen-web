@@ -32,10 +32,13 @@
   --accent-contrast: #ffffff;
   --pos: #0f7b4f;
   --pos-soft: #e6f4ed;
+  --pos-line: #b9dcc9;
   --neg: #b4241c;
   --neg-soft: #fdeceb;
+  --neg-line: #f3c4c0;
   --warn: #9a6700;
   --warn-soft: #fdf5e3;
+  --warn-line: #ecd9a8;
 
   /* Rampe de données : une seule teinte, déclinée en valeur. La quantité se
      lit à la valeur et à la longueur, jamais à une couleur connotée — en
@@ -82,10 +85,13 @@
   --accent-contrast: #0f1319;
   --pos: #4ec08b;
   --pos-soft: #12281f;
+  --pos-line: #245c42;
   --neg: #f08279;
   --neg-soft: #2c1614;
+  --neg-line: #6b2f29;
   --warn: #d9a441;
   --warn-soft: #2a2213;
+  --warn-line: #5c4a1e;
 
   /* Rampe inversée : sur fond sombre, la valeur la plus claire porte la plus
      grosse quantité, pour conserver le même ordre de lecture qu'en clair. */

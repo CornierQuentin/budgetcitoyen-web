@@ -249,7 +249,7 @@ export default function Simulateur() {
 
       {/* Avertissement de neutralité (CDC principe 1.3, non négociable) :
           toujours visible, jamais masquable. */}
-      <Card className="border-warn/30 bg-warn-soft ">
+      <Card className="border-warn-line bg-warn-soft ">
         <p className="text-sm text-warn ">
           Ce simulateur recalcule uniquement l&apos;effet arithmétique de vos choix sur le{' '}
           <GlossaryTerm term="déficit">déficit</GlossaryTerm>, à partir des données réelles{' '}
