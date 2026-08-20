@@ -38,14 +38,14 @@ beforeEach(() => {
 });
 
 describe('Historique', () => {
-  it('affiche deux graphiques distincts (dépenses/recettes, puis déficit sur sa propre échelle)', () => {
+  it('affiche deux graphiques distincts (dépenses/recettes, puis solde sur sa propre échelle)', () => {
     render(<Historique />);
 
     expect(screen.getByRole('heading', { name: /historique du budget/i })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Dépenses et recettes nettes' })).toBeInTheDocument();
     // Le nom accessible du second titre inclut aussi la définition du
     // glossaire (portée par le GlossaryTerm imbriqué), d'où le match partiel.
-    expect(screen.getByRole('heading', { name: /^Déficit/ })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Solde budgétaire' })).toBeInTheDocument();
 
     // Chaque légende recharts est bien limitée à ses propres séries.
     expect(screen.getByText('Dépenses nettes')).toBeInTheDocument();
@@ -71,9 +71,9 @@ describe('Historique', () => {
 
     expect(screen.getByText(/dépenses depuis 2021/i)).toBeInTheDocument();
     expect(screen.getByText(/recettes depuis 2021/i)).toBeInTheDocument();
-    // Déficit cumulé sur les trois exercices : 10 + 15 + 10 = 35 Md€.
-    expect(screen.getByText('35 Md€')).toBeInTheDocument();
-    // Pic atteint en 2022 (15 Md€), et non à l'exercice le plus récent.
+    // Solde cumulé sur les trois exercices : -(10 + 15 + 10) = -35 Md€.
+    expect(screen.getByText('-35 Md€')).toBeInTheDocument();
+    // Solde le plus bas atteint en 2022, et non à l'exercice le plus récent.
     expect(screen.getByText('en 2022')).toBeInTheDocument();
   });
 

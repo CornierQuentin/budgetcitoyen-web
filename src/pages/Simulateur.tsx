@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
@@ -8,7 +9,7 @@ import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useMissions } from '../hooks/useMissions';
 import { useRecettes } from '../hooks/useRecettes';
 import type { TypeRecette } from '../types/domain';
-import { formatMd } from '../utils/format';
+import { formatEcartMd, formatMd, soldeDepuisDeficit } from '../utils/format';
 import { type AjustementLigne, simuler } from '../utils/simulateur';
 
 type Mode = 'simple' | 'avance';
@@ -29,10 +30,6 @@ const AJUSTEMENT_MAX = 200;
 
 function clamp(valeur: number, min: number, max: number): number {
   return Math.min(Math.max(valeur, min), max);
-}
-
-function formatDeltaMd(montant: number): string {
-  return `${montant >= 0 ? '+' : ''}${formatMd(montant)}`;
 }
 
 interface CurseurAjustementProps {
@@ -143,7 +140,7 @@ function CurseurAjustement({
         </button>
       )}
       <span className={`w-24 flex-none text-right text-xs tabular-nums ${couleurImpact}`}>
-        {impact === 0 ? '—' : formatDeltaMd(impact)}
+        {impact === 0 ? '—' : formatEcartMd(impact)}
       </span>
     </li>
   );
@@ -268,7 +265,7 @@ export default function Simulateur() {
             <p className="mt-1 text-xl font-bold text-ink">{formatMd(resultat.depensesAjustees)}</p>
             {resultat.deltaDepenses !== 0 && (
               <p className={`text-sm ${resultat.deltaDepenses >= 0 ? 'text-neg' : 'text-pos'}`}>
-                {formatDeltaMd(resultat.deltaDepenses)}
+                {formatEcartMd(resultat.deltaDepenses)}
               </p>
             )}
           </Card>
@@ -279,20 +276,36 @@ export default function Simulateur() {
             <p className="mt-1 text-xl font-bold text-ink">{formatMd(resultat.recettesAjustees)}</p>
             {resultat.deltaRecettes !== 0 && (
               <p className={`text-sm ${resultat.deltaRecettes >= 0 ? 'text-pos' : 'text-neg'}`}>
-                {formatDeltaMd(resultat.deltaRecettes)}
+                {formatEcartMd(resultat.deltaRecettes)}
               </p>
             )}
           </Card>
-          <Card className="border-accent-line bg-accent-soft ">
-            <p className="text-sm text-accent">
-              <GlossaryTerm term="déficit">Déficit</GlossaryTerm> simulé
+          <Card className="border-accent-line">
+            <p className="text-sm font-medium text-accent">Solde simulé</p>
+            <p className="mt-1 text-xl font-bold tabular-nums text-accent">
+              {formatMd(soldeDepuisDeficit(resultat.deficitAjuste))}
             </p>
-            <p className="mt-1 text-xl font-bold text-accent">{formatMd(resultat.deficitAjuste)}</p>
-            {resultat.deltaDeficit !== 0 && (
-              <p className={`text-sm ${resultat.deltaDeficit >= 0 ? 'text-neg' : 'text-pos'}`}>
-                {formatDeltaMd(resultat.deltaDeficit)}
-              </p>
-            )}
+            <p className="mt-1 flex flex-wrap items-center gap-2">
+              <Badge tone="quiet">
+                {resultat.deficitAjuste > 0 ? (
+                  <GlossaryTerm term="déficit">Déficit</GlossaryTerm>
+                ) : (
+                  'Excédent'
+                )}
+              </Badge>
+              {resultat.deltaDeficit !== 0 && (
+                /* On affiche l'écart DU SOLDE, pas celui du déficit : un solde
+                   qui monte est une amélioration arithmétique, et le signe veut
+                   ainsi dire la même chose que partout ailleurs sur le site. */
+                <span
+                  className={`text-xs tabular-nums ${
+                    resultat.deltaDeficit > 0 ? 'text-neg' : 'text-pos'
+                  }`}
+                >
+                  {formatEcartMd(soldeDepuisDeficit(resultat.deltaDeficit))} vs budget réel
+                </span>
+              )}
+            </p>
           </Card>
         </section>
       </div>

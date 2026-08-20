@@ -8,7 +8,7 @@ import { SourceIcon } from '../components/ui/SourceIcon';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useIndicateur } from '../hooks/useIndicateur';
-import { formatMd } from '../utils/format';
+import { formatMd, soldeDepuisDeficit } from '../utils/format';
 
 // Nombre moyen de secondes dans une année (365,25 jours, cohérent avec les
 // années bissextiles) — utilisé uniquement pour l'indicateur "par seconde".
@@ -106,7 +106,7 @@ export default function Home() {
             {derniereAnnee ? `(${derniereAnnee})` : ''}
           </p>
           <p className="mt-1 text-2xl font-bold text-ink">
-            {budget ? <AnimatedValue value={-budget.deficit} format={formatMd} /> : '—'}
+            {budget ? <AnimatedValue value={soldeDepuisDeficit(budget.deficit)} format={formatMd} /> : '—'}
             {budget && (
               <SourceIcon url={budget.sourceUrl} label={`déficit ${derniereAnnee}`} />
             )}

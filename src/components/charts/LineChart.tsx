@@ -104,7 +104,10 @@ export default function LineChart({ data, series, nomFichierExport = 'graphique.
               tick={{ fill: tickColor, fontSize: 12 }}
               tickLine={false}
               tickFormatter={(value: number) => formatMd(value)}
-              width={70}
+              // 84 et non 70 : depuis le passage au solde signé, une graduation
+              // porte un signe négatif en plus (« -120 Md€ »), et l'ancienne
+              // largeur la faisait passer sur deux lignes.
+              width={84}
             />
             <Tooltip
               formatter={(value: number) => formatMd(value)}
