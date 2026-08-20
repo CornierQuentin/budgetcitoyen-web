@@ -1,8 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet } from 'react-router-dom';
 
-import Footer from './components/layout/Footer';
-import Header from './components/layout/Header';
+import AppShell from './components/layout/AppShell';
 import { PageLoader } from './components/layout/PageLoader';
 
 const Comparateur = lazy(() => import('./pages/Comparateur'));
@@ -18,15 +17,11 @@ const Simulateur = lazy(() => import('./pages/Simulateur'));
 
 function Layout() {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
-        <Suspense fallback={<PageLoader />}>
-          <Outlet />
-        </Suspense>
-      </main>
-      <Footer />
-    </div>
+    <AppShell>
+      <Suspense fallback={<PageLoader />}>
+        <Outlet />
+      </Suspense>
+    </AppShell>
   );
 }
 

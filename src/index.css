@@ -2,12 +2,130 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fond/texte de page global, avec équivalent mode sombre (cf. cahier des
-   charges, section 6.2 : « Mode sombre supporté nativement »). La classe
-   `dark` est posée sur <html> par src/store/useThemeStore.ts, dès le chargement
-   du module (avant le premier rendu) pour éviter tout flash de mauvais thème. */
+/* ---------------------------------------------------------------------------
+   Tokens de la refonte 2026 (cf. contrat de direction dans index.html).
+
+   Une seule source de vérité pour la couleur : ces variables. Elles sont
+   exposées à Tailwind dans tailwind.config.js (`bg-surface`, `text-ink-muted`,
+   `border-line`…), de sorte qu'aucun composant n'écrive `gray-200`/`blue-800`
+   en dur — c'était précisément ce qui rendait l'ancienne interface impossible
+   à faire évoluer d'un bloc.
+
+   Le thème sombre redéfinit UNIQUEMENT les valeurs, jamais les règles : la
+   classe `dark` est posée sur <html> par src/store/useThemeStore.ts (choix
+   manuel persistant, préférence système suivie à défaut).
+   --------------------------------------------------------------------------- */
+:root {
+  --ground: #f6f7f9;
+  --surface: #ffffff;
+  --surface-sunken: #f1f3f6;
+  --surface-hover: #f7f9fc;
+  --line: #e3e6eb;
+  --line-strong: #d2d7de;
+  --ink: #1a1f29;
+  --ink-muted: #5b6472;
+  --ink-faint: #838d9c;
+  --accent: #1a56db;
+  --accent-hover: #1546b4;
+  --accent-soft: #eaf0fe;
+  --accent-line: #c3d5fb;
+  --accent-contrast: #ffffff;
+  --pos: #0f7b4f;
+  --pos-soft: #e6f4ed;
+  --neg: #b4241c;
+  --neg-soft: #fdeceb;
+  --warn: #9a6700;
+  --warn-soft: #fdf5e3;
+
+  /* Rampe de données : une seule teinte, déclinée en valeur. La quantité se
+     lit à la valeur et à la longueur, jamais à une couleur connotée — en
+     France presque chaque teinte est associée à un parti (principe produit
+     « la neutralité est une contrainte de conception »). */
+  --data-1: #16326b;
+  --data-2: #244d99;
+  --data-3: #3d6ec4;
+  --data-4: #7b9ad9;
+  --data-5: #b9caea;
+  --bar: #3d6ec4;
+  --bar-track: #eceff4;
+
+  --shadow-sm: 0 1px 2px rgb(21 31 48 / 0.06), 0 1px 1px rgb(21 31 48 / 0.04);
+  --shadow-md: 0 2px 6px rgb(21 31 48 / 0.07), 0 4px 14px rgb(21 31 48 / 0.05);
+}
+
+.dark {
+  --ground: #0f1319;
+  --surface: #161b23;
+  --surface-sunken: #1b212b;
+  --surface-hover: #1e252f;
+  --line: #262d38;
+  --line-strong: #333c49;
+  --ink: #e8ecf2;
+  --ink-muted: #a0a9b8;
+  --ink-faint: #7d8797;
+  --accent: #7ba4f7;
+  --accent-hover: #9bbaf9;
+  --accent-soft: #16233d;
+  --accent-line: #2b4477;
+  --accent-contrast: #0f1319;
+  --pos: #4ec08b;
+  --pos-soft: #12281f;
+  --neg: #f08279;
+  --neg-soft: #2c1614;
+  --warn: #d9a441;
+  --warn-soft: #2a2213;
+
+  /* Rampe inversée : sur fond sombre, la valeur la plus claire porte la plus
+     grosse quantité, pour conserver le même ordre de lecture qu'en clair. */
+  --data-1: #b9caea;
+  --data-2: #7b9ad9;
+  --data-3: #4f7fd0;
+  --data-4: #35589c;
+  --data-5: #253c6b;
+  --bar: #4f7fd0;
+  --bar-track: #222a35;
+
+  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 2px 6px rgb(0 0 0 / 0.45), 0 8px 20px rgb(0 0 0 / 0.35);
+}
+
 body {
-  @apply bg-white text-gray-900 dark:bg-gray-950 dark:text-gray-100;
+  background-color: var(--ground);
+  color: var(--ink);
+}
+
+/* Les surfaces que nous ne dessinons pas portent quand même le design :
+   sélection, curseur de défilement et anneau de focus arrivent sinon avec des
+   valeurs par défaut du navigateur, qui n'appartiennent à aucun système. */
+::selection {
+  background-color: var(--accent-soft);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--line-strong);
+  border-radius: 6px;
+  border: 3px solid var(--ground);
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
 }
 
 /* Focus des tranches du DonutChart (recharts Pie), scopé à la classe
@@ -29,12 +147,7 @@ body {
 
 .donut-chart-pie .recharts-pie:focus-visible,
 .donut-chart-pie .recharts-pie-sector:focus-visible {
-  outline: 2px solid #1e40af;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 2px;
-}
-
-.dark .donut-chart-pie .recharts-pie:focus-visible,
-.dark .donut-chart-pie .recharts-pie-sector:focus-visible {
-  outline-color: #60a5fa;
 }
