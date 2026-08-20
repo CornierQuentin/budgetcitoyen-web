@@ -11,7 +11,7 @@ import { useComparateur } from '../hooks/useComparateur';
 import { useExportPng } from '../hooks/useExportPng';
 import type { MissionDelta, RecetteDelta } from '../types/domain';
 import { exportCsv } from '../utils/exportCsv';
-import { formatMd, formatPct } from '../utils/format';
+import { formatEcartMd, formatMd, formatPct, soldeDepuisDeficit } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
 
 // Normalise une chaîne pour une recherche insensible à la casse et aux
@@ -229,11 +229,19 @@ export default function Comparateur() {
             </Card>
             <Card className="flex flex-col gap-1.5">
               <span className="flex items-center gap-1.5 text-[12.5px] font-medium text-ink-muted">
-                Écart de <GlossaryTerm term="déficit">déficit</GlossaryTerm>
+                Écart de solde
                 {sourcesEcart}
               </span>
+              {/* L'API renvoie un écart de DÉFICIT ; on affiche l'écart du
+                  SOLDE, sans quoi cette carte annoncerait « -7,2 » là où le
+                  tableau de bord annonce « +7,2 » pour le même fait. */}
               <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
-                {formatMd(comparateur.ecartDeficit)}
+                {formatEcartMd(soldeDepuisDeficit(comparateur.ecartDeficit))}
+              </span>
+              <span className="text-xs text-ink-faint">
+                <GlossaryTerm term="déficit">déficit</GlossaryTerm>{' '}
+                {comparateur.ecartDeficit <= 0 ? 'réduit' : 'creusé'} de{' '}
+                {formatMd(Math.abs(comparateur.ecartDeficit))}
               </span>
             </Card>
           </section>

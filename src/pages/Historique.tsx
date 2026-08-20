@@ -7,7 +7,7 @@ import { Card } from '../components/ui/Card';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { useHistorique } from '../hooks/useHistorique';
 import { exportCsv } from '../utils/exportCsv';
-import { formatMd, formatPct } from '../utils/format';
+import { formatEcartMd, formatMd, formatPct, soldeDepuisDeficit } from '../utils/format';
 
 // Dépenses et recettes partagent la même teinte, déclinée en valeur, et se
 // distinguent par le trait : deux couleurs voisines sont indiscernables à
@@ -17,14 +17,14 @@ import { formatMd, formatPct } from '../utils/format';
 // résolue (même contrainte que la rampe des recettes du tableau de bord).
 const COULEUR_DEPENSES = '#244d99';
 const COULEUR_RECETTES = '#7b9ad9';
-const COULEUR_DEFICIT = '#3d6ec4';
+const COULEUR_SOLDE = '#3d6ec4';
 
 const SERIES_DEPENSES_RECETTES: LineChartSerie[] = [
   { key: 'depenses', label: 'Dépenses nettes', color: COULEUR_DEPENSES },
   { key: 'recettes', label: 'Recettes nettes', color: COULEUR_RECETTES, dash: '6 4' },
 ];
-const SERIES_DEFICIT: LineChartSerie[] = [
-  { key: 'deficit', label: 'Déficit', color: COULEUR_DEFICIT },
+const SERIES_SOLDE: LineChartSerie[] = [
+  { key: 'solde', label: 'Solde budgétaire', color: COULEUR_SOLDE },
 ];
 
 /** Nombre d'années affichées par le sélecteur de période. */
@@ -44,7 +44,10 @@ export default function Historique() {
           annee: item.annee,
           depenses: item.depensesNettes,
           recettes: item.recettesNettes,
+          // `deficit` reste disponible pour les calculs (magnitude, comme
+          // l'API) ; `solde` est ce que l'on trace et affiche.
           deficit: item.deficit,
+          solde: soldeDepuisDeficit(item.deficit),
         })),
     [historique],
   );
@@ -60,14 +63,14 @@ export default function Historique() {
     if (data.length < 2) return undefined;
     const premier = data[0];
     const dernier = data[data.length - 1];
-    const pic = data.reduce((max, item) => (item.deficit > max.deficit ? item : max), data[0]);
+    const pire = data.reduce((min, item) => (item.solde < min.solde ? item : min), data[0]);
     return {
       premier,
       dernier,
       evolutionDepenses: premier.depenses > 0 ? dernier.depenses / premier.depenses - 1 : 0,
       evolutionRecettes: premier.recettes > 0 ? dernier.recettes / premier.recettes - 1 : 0,
-      deficitCumule: data.reduce((somme, item) => somme + item.deficit, 0),
-      pic,
+      soldeCumule: data.reduce((somme, item) => somme + item.solde, 0),
+      pire,
     };
   }, [data]);
 
@@ -90,7 +93,7 @@ export default function Historique() {
       { cle: 'annee', libelle: 'Année' },
       { cle: 'depenses', libelle: 'Dépenses nettes (€)' },
       { cle: 'recettes', libelle: 'Recettes nettes (€)' },
-      { cle: 'deficit', libelle: 'Déficit (€)' },
+      { cle: 'solde', libelle: 'Solde (€)' },
     ]);
   };
 
@@ -171,9 +174,9 @@ export default function Historique() {
           </Card>
 
           <Card className="flex flex-col gap-1.5">
-            <span className="text-[12.5px] font-medium text-ink-muted">Déficit cumulé</span>
+            <span className="text-[12.5px] font-medium text-ink-muted">Solde cumulé</span>
             <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
-              {formatMd(reperes.deficitCumule)}
+              {formatMd(reperes.soldeCumule)}
             </span>
             <span className="text-xs text-ink-faint">
               somme des {data.length} exercices affichés
@@ -181,11 +184,11 @@ export default function Historique() {
           </Card>
 
           <Card className="flex flex-col gap-1.5">
-            <span className="text-[12.5px] font-medium text-ink-muted">Pic de déficit</span>
+            <span className="text-[12.5px] font-medium text-ink-muted">Solde le plus bas</span>
             <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
-              {formatMd(reperes.pic.deficit)}
+              {formatMd(reperes.pire.solde)}
             </span>
-            <span className="text-xs tabular-nums text-ink-faint">en {reperes.pic.annee}</span>
+            <span className="text-xs tabular-nums text-ink-faint">en {reperes.pire.annee}</span>
           </Card>
         </section>
       )}
@@ -199,11 +202,11 @@ export default function Historique() {
       </Card>
 
       {/* Graphique distinct plutôt qu'une troisième courbe sur le graphique
-          ci-dessus : le déficit (~90-170 Md€) est un ordre de grandeur plus
+          ci-dessus : le solde (~-90 à -170 Md€) est un ordre de grandeur plus
           petit que dépenses/recettes (~300-600 Md€) — sur un axe Y commun, sa
-          courbe serait écrasée en bas et quasi illisible. */}
-      <Card title={<GlossaryTerm term="déficit">Déficit</GlossaryTerm>}>
-        <LineChart data={data} series={SERIES_DEFICIT} nomFichierExport="historique-deficit.png" />
+          courbe serait écrasée et quasi illisible. */}
+      <Card title="Solde budgétaire">
+        <LineChart data={data} series={SERIES_SOLDE} nomFichierExport="historique-solde.png" />
       </Card>
 
       {lignes.length > 0 && (
@@ -254,16 +257,14 @@ export default function Historique() {
                       {formatMd(ligne.recettes)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-right tabular-nums text-ink-muted">
-                      {formatMd(-ligne.deficit)}
+                      {formatMd(ligne.solde)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-right">
                       {ligne.ecartDepenses === undefined ? (
                         <span className="text-ink-faint">—</span>
                       ) : (
                         <Badge tone="quiet" className="tabular-nums">
-                          {ligne.ecartDepenses >= 0
-                            ? `+${formatMd(ligne.ecartDepenses)}`
-                            : formatMd(ligne.ecartDepenses)}
+                          {formatEcartMd(ligne.ecartDepenses)}
                         </Badge>
                       )}
                     </td>

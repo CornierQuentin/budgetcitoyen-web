@@ -103,7 +103,7 @@ describe('Simulateur', () => {
     expect(screen.getByText('Chargement…')).toBeInTheDocument();
   });
 
-  it("affiche le bandeau de neutralité et le déficit simulé identique à la référence quand aucun curseur n'est modifié", () => {
+  it("affiche le bandeau de neutralité et le solde simulé identique à la référence quand aucun curseur n'est modifié", () => {
     configurerMocksParDefaut();
 
     render(<Simulateur />);
@@ -111,17 +111,17 @@ describe('Simulateur', () => {
     expect(
       screen.getByText(/aucun effet économique dynamique/i, { exact: false }),
     ).toBeInTheDocument();
-    expect(screen.getByText('150 Md€')).toBeInTheDocument(); // déficit simulé
+    expect(screen.getByText('-150 Md€')).toBeInTheDocument(); // solde simulé
   });
 
-  it('déplacer un curseur de mission met à jour le déficit simulé en temps réel', () => {
+  it('déplacer un curseur de mission met à jour le solde simulé en temps réel', () => {
     configurerMocksParDefaut();
 
     render(<Simulateur />);
 
     fireEvent.change(screen.getByLabelText('Défense'), { target: { value: '10' } }); // +10% de 60 Md€ = +6 Md€
 
-    expect(screen.getByText('156 Md€')).toBeInTheDocument();
+    expect(screen.getByText('-156 Md€')).toBeInTheDocument();
   });
 
   it('le mode avancé révèle les curseurs de recettes (IR/TVA/IS/TICPE/AUTRES), absents en mode simple', () => {
@@ -152,7 +152,7 @@ describe('Simulateur', () => {
     fireEvent.blur(champSaisie);
 
     expect(screen.getByLabelText('Défense')).toHaveValue('25'); // (75/60 - 1) * 100 = +25%
-    expect(screen.getByText('165 Md€')).toBeInTheDocument(); // déficit : 150 + 15
+    expect(screen.getByText('-165 Md€')).toBeInTheDocument(); // solde : -(150 + 15)
   });
 
   it('le champ de saisie se pré-remplit avec le montant arrondi affiché, pas la division brute', () => {
@@ -179,16 +179,16 @@ describe('Simulateur', () => {
     expect(screen.getByLabelText('Défense')).toHaveValue('-100');
   });
 
-  it('réinitialiser remet tous les curseurs et le déficit simulé à leur valeur de référence', () => {
+  it('réinitialiser remet tous les curseurs et le solde simulé à leur valeur de référence', () => {
     configurerMocksParDefaut();
 
     render(<Simulateur />);
     fireEvent.change(screen.getByLabelText('Défense'), { target: { value: '10' } });
-    expect(screen.getByText('156 Md€')).toBeInTheDocument();
+    expect(screen.getByText('-156 Md€')).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: 'Réinitialiser' }));
 
-    expect(screen.getByText('150 Md€')).toBeInTheDocument();
+    expect(screen.getByText('-150 Md€')).toBeInTheDocument();
     expect(screen.getByLabelText('Défense')).toHaveValue('0');
   });
 });

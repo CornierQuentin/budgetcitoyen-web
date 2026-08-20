@@ -15,7 +15,7 @@ import { useRecettes } from '../hooks/useRecettes';
 import { useFiltersStore } from '../store/useFiltersStore';
 import type { TypeRecette } from '../types/domain';
 import { exportCsv } from '../utils/exportCsv';
-import { formatMd, formatPct } from '../utils/format';
+import { formatEcartMd, formatMd, formatPct, soldeDepuisDeficit } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
 import { topNAvecAutres } from '../utils/topNAvecAutres';
 
@@ -30,16 +30,6 @@ const SIGLES_RECETTES: TypeRecette[] = ['IR', 'TVA', 'IS', 'TICPE', 'AUTRES'];
 // doivent donc rester alignés à la main sur `--data-1..5` de src/index.css.
 const RAMPE_RECETTES_CLAIR = ['#16326b', '#244d99', '#3d6ec4', '#7b9ad9', '#b9caea'];
 const RAMPE_RECETTES_SOMBRE = ['#b9caea', '#7b9ad9', '#4f7fd0', '#35589c', '#253c6b'];
-
-/**
- * Écart signé en Md€, pour une variation d'une année sur l'autre. Le signe
- * négatif est laissé à `formatMd` (donc à Intl) plutôt qu'ajouté à la main :
- * un signe moins typographique écrit ici jurerait avec le trait d'union que
- * produit Intl partout ailleurs sur la page.
- */
-function formatEcart(valeur: number): string {
-  return valeur >= 0 ? `+${formatMd(valeur)}` : formatMd(valeur);
-}
 
 export default function Dashboard() {
   const anneeActive = useFiltersStore((state) => state.anneeActive);
@@ -213,7 +203,7 @@ export default function Dashboard() {
             {budgetPrecedent && (
               <span className="flex flex-wrap items-center gap-2">
                 <Badge tone="quiet" className="tabular-nums">
-                  {formatEcart(budgetAnnee.depensesNettes - budgetPrecedent.depensesNettes)}
+                  {formatEcartMd(budgetAnnee.depensesNettes - budgetPrecedent.depensesNettes)}
                 </Badge>
                 <span className="text-xs text-ink-faint">vs {anneeActive - 1}</span>
               </span>
@@ -236,7 +226,7 @@ export default function Dashboard() {
                   }
                   className="tabular-nums"
                 >
-                  {formatEcart(budgetAnnee.recettesNettes - budgetPrecedent.recettesNettes)}
+                  {formatEcartMd(budgetAnnee.recettesNettes - budgetPrecedent.recettesNettes)}
                 </Badge>
                 <span className="text-xs text-ink-faint">vs {anneeActive - 1}</span>
               </span>
@@ -248,18 +238,19 @@ export default function Dashboard() {
               <GlossaryTerm term="déficit">Solde budgétaire</GlossaryTerm>
               <SourceIcon url={budgetAnnee.sourceUrl} label={`solde ${anneeActive}`} />
             </span>
-            {/* L'API expose `deficit` comme une magnitude POSITIVE : le solde
-                budgétaire en est l'opposé (même convention que Home.tsx, qui
-                affiche `-budget.deficit`). */}
             <span className="text-3xl font-bold tracking-[-0.028em] tabular-nums text-ink">
-              {formatMd(-budgetAnnee.deficit)}
+              {formatMd(soldeDepuisDeficit(budgetAnnee.deficit))}
             </span>
             <span className="flex flex-wrap items-center gap-2">
               <Badge tone="quiet">{budgetAnnee.deficit > 0 ? 'Déficit' : 'Excédent'}</Badge>
               {budgetPrecedent && (
                 <span className="text-xs tabular-nums text-ink-faint">
-                  Écart {formatEcart(budgetPrecedent.deficit - budgetAnnee.deficit)} vs{' '}
-                  {anneeActive - 1}
+                  Écart{' '}
+                  {formatEcartMd(
+                    soldeDepuisDeficit(budgetAnnee.deficit) -
+                      soldeDepuisDeficit(budgetPrecedent.deficit),
+                  )}{' '}
+                  vs {anneeActive - 1}
                 </span>
               )}
             </span>
