@@ -259,6 +259,46 @@ export default function Home() {
               budgetcitoyen.fr/tableau-de-bord
             </span>
           </div>
+          <div className="grid grid-cols-1 sm:grid-cols-[150px_minmax(0,1fr)]">
+            <div
+              aria-hidden="true"
+              className="hidden flex-col gap-0.5 border-r border-line p-3 sm:flex"
+            >
+              {[
+                { label: "Vue d'ensemble", groupe: true },
+                { label: 'Accueil' },
+                { label: 'Tableau de bord', actif: true },
+                { label: 'Historique' },
+                { label: 'Analyser', groupe: true },
+                { label: 'Comparateur' },
+                { label: 'Simulateur' },
+                { label: 'Mon budget' },
+                { label: 'Explorer', groupe: true },
+                { label: 'Niches fiscales' },
+                { label: 'Marchés publics' },
+              ].map((entree) =>
+                entree.groupe ? (
+                  <span
+                    key={entree.label}
+                    className="px-2 pb-0.5 pt-1.5 text-[9px] font-bold uppercase tracking-[0.08em] text-ink-faint"
+                  >
+                    {entree.label}
+                  </span>
+                ) : (
+                  <span
+                    key={entree.label}
+                    className={`rounded px-2 py-1 text-[12px] ${
+                      entree.actif
+                        ? 'bg-accent-soft font-semibold text-accent'
+                        : 'text-ink-muted'
+                    }`}
+                  >
+                    {entree.label}
+                  </span>
+                ),
+              )}
+            </div>
+
           <div className="p-4">
             <div className="mb-3.5 grid grid-cols-1 gap-2.5 sm:grid-cols-3">
               {[
@@ -285,6 +325,7 @@ export default function Home() {
                 montant={formatMd(mission.montantTotal)}
               />
             ))}
+          </div>
           </div>
         </div>
       </div>
@@ -623,11 +664,11 @@ export default function Home() {
 
       {/* ─────────── Clôture ─────────── */}
       <div className="mx-auto w-full max-w-[1120px] px-6 pb-16">
-        <div className="rounded-2xl border border-line bg-surface-sunken px-8 py-12 text-center sm:py-14">
-          <h2 className="mx-auto max-w-[20ch] text-balance text-[clamp(24px,2.8vw,34px)] font-bold leading-[1.12] tracking-[-0.028em] text-ink">
+        <div className="rounded-2xl bg-deep px-8 py-12 text-center sm:py-14">
+          <h2 className="mx-auto max-w-[20ch] text-balance text-[clamp(24px,2.8vw,34px)] font-bold leading-[1.12] tracking-[-0.028em] text-deep-ink">
             Commencez par le chiffre qui vous intéresse
           </h2>
-          <p className="mx-auto mt-4 max-w-[56ch] text-[16.5px] text-ink-muted">
+          <p className="mx-auto mt-4 max-w-[56ch] text-[16.5px] text-deep-muted">
             L&apos;exercice {derniereAnnee ?? ''} en un coup d&apos;œil, ou votre propre contribution
             estimée à partir de votre revenu. Sans compte, sans traceur, sans conditions.
           </p>
@@ -642,9 +683,8 @@ export default function Home() {
             </Link>
             <Link
               to="/mon-budget"
-              className="inline-flex h-10 items-center rounded-md border border-line-strong
-                bg-surface px-5 text-[14.5px] font-medium text-ink transition-colors
-                hover:bg-surface-hover"
+              className="inline-flex h-10 items-center rounded-md border border-white/20
+                px-5 text-[14.5px] font-medium text-deep-ink transition-colors hover:bg-white/10"
             >
               Calculer ma contribution
             </Link>

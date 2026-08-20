@@ -54,6 +54,13 @@
   --inverse: #1a1f29;
   --inverse-ink: #f7f8fa;
 
+  /* Panneau profond, sombre dans LES DEUX thèmes (contrairement à `inverse`,
+     qui bascule). Sert au bloc de clôture de la page d'accueil, dont l'effet
+     tient précisément à rester une masse sombre sur fond clair. */
+  --deep: #101724;
+  --deep-ink: #e9edf4;
+  --deep-muted: #9aa6b8;
+
   --shadow-sm: 0 1px 2px rgb(21 31 48 / 0.06), 0 1px 1px rgb(21 31 48 / 0.04);
   --shadow-md: 0 2px 6px rgb(21 31 48 / 0.07), 0 4px 14px rgb(21 31 48 / 0.05);
 }
@@ -92,6 +99,10 @@
 
   --inverse: #e8ecf2;
   --inverse-ink: #12161d;
+
+  --deep: #0a0e15;
+  --deep-ink: #e9edf4;
+  --deep-muted: #9aa6b8;
 
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-md: 0 2px 6px rgb(0 0 0 / 0.45), 0 8px 20px rgb(0 0 0 / 0.35);

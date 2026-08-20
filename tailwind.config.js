@@ -48,6 +48,11 @@ export default {
         },
         bar: { DEFAULT: 'var(--bar)', track: 'var(--bar-track)' },
         inverse: { DEFAULT: 'var(--inverse)', ink: 'var(--inverse-ink)' },
+        deep: {
+          DEFAULT: 'var(--deep)',
+          ink: 'var(--deep-ink)',
+          muted: 'var(--deep-muted)',
+        },
       },
       boxShadow: {
         sm: 'var(--shadow-sm)',
