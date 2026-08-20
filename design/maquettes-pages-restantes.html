@@ -1,0 +1,854 @@
+<title>BudgetCitoyen.fr — Maquettes des 8 pages</title>
+
+<style>
+  :root {
+    --ground:#f6f7f9; --surface:#fff; --sunken:#f1f3f6; --hover:#f7f9fc;
+    --line:#e3e6eb; --line-strong:#d2d7de;
+    --ink:#1a1f29; --muted:#5b6472; --faint:#838d9c;
+    --accent:#1a56db; --accent-hover:#1546b4; --accent-soft:#eaf0fe; --accent-line:#c3d5fb; --accent-contrast:#fff;
+    --pos:#0f7b4f; --pos-soft:#e6f4ed; --neg:#b4241c; --neg-soft:#fdeceb; --warn:#9a6700; --warn-soft:#fdf5e3;
+    --d1:#16326b; --d2:#244d99; --d3:#3d6ec4; --d4:#7b9ad9; --d5:#b9caea; --d6:#dbe4f3;
+    --bar:#3d6ec4; --bar-track:#eceff4;
+    --shadow-sm:0 1px 2px rgb(21 31 48/.06),0 1px 1px rgb(21 31 48/.04);
+    --shadow-md:0 2px 6px rgb(21 31 48/.07),0 4px 14px rgb(21 31 48/.05);
+    --radius:8px; --radius-sm:6px;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:#0f1319; --surface:#161b23; --sunken:#1b212b; --hover:#1e252f;
+      --line:#262d38; --line-strong:#333c49;
+      --ink:#e8ecf2; --muted:#a0a9b8; --faint:#7d8797;
+      --accent:#7ba4f7; --accent-hover:#9bbaf9; --accent-soft:#16233d; --accent-line:#2b4477; --accent-contrast:#0f1319;
+      --pos:#4ec08b; --pos-soft:#12281f; --neg:#f08279; --neg-soft:#2c1614; --warn:#d9a441; --warn-soft:#2a2213;
+      --d1:#b9caea; --d2:#7b9ad9; --d3:#4f7fd0; --d4:#35589c; --d5:#253c6b; --d6:#1a2b4d;
+      --bar:#4f7fd0; --bar-track:#222a35;
+      --shadow-sm:0 1px 2px rgb(0 0 0/.4); --shadow-md:0 2px 6px rgb(0 0 0/.45),0 8px 20px rgb(0 0 0/.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:#0f1319; --surface:#161b23; --sunken:#1b212b; --hover:#1e252f;
+    --line:#262d38; --line-strong:#333c49;
+    --ink:#e8ecf2; --muted:#a0a9b8; --faint:#7d8797;
+    --accent:#7ba4f7; --accent-hover:#9bbaf9; --accent-soft:#16233d; --accent-line:#2b4477; --accent-contrast:#0f1319;
+    --pos:#4ec08b; --pos-soft:#12281f; --neg:#f08279; --neg-soft:#2c1614; --warn:#d9a441; --warn-soft:#2a2213;
+    --d1:#b9caea; --d2:#7b9ad9; --d3:#4f7fd0; --d4:#35589c; --d5:#253c6b; --d6:#1a2b4d;
+    --bar:#4f7fd0; --bar-track:#222a35;
+    --shadow-sm:0 1px 2px rgb(0 0 0/.4); --shadow-md:0 2px 6px rgb(0 0 0/.45),0 8px 20px rgb(0 0 0/.35);
+  }
+
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+  ::selection{background:var(--accent-soft);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
+  .num{font-variant-numeric:tabular-nums;white-space:nowrap}
+  h1,h2,h3{margin:0}
+  a{color:var(--accent)}
+
+  .app{display:grid;grid-template-columns:244px minmax(0,1fr);min-height:100vh}
+  .rail{background:var(--surface);border-right:1px solid var(--line);position:sticky;top:0;height:100vh;overflow-y:auto}
+  .brand{display:flex;align-items:center;gap:9px;height:56px;padding:0 16px;border-bottom:1px solid var(--line);font-weight:650;font-size:14.5px;letter-spacing:-.012em}
+  .rail-nav{padding:12px 8px 20px;display:flex;flex-direction:column;gap:16px}
+  .nav-group{display:flex;flex-direction:column;gap:1px}
+  .nav-label{font-size:10.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);padding:4px 10px 6px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:var(--radius-sm);color:var(--muted);text-decoration:none;font-size:13.5px;font-weight:500;border:0;background:none;font-family:inherit;cursor:pointer;width:100%;text-align:left}
+  .nav-item svg{flex:none;color:var(--faint)}
+  .nav-item:hover{background:var(--hover);color:var(--ink)}
+  .nav-item.active{background:var(--accent-soft);color:var(--accent);font-weight:650}
+  .nav-item.active svg{color:var(--accent)}
+
+  .topbar{height:56px;background:var(--surface);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 20px;position:sticky;top:0;z-index:20}
+  .crumb{color:var(--muted);font-size:13px}
+  .crumb strong{color:var(--ink);font-weight:600}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:32px;padding:0 11px;border-radius:var(--radius-sm);border:1px solid var(--line-strong);background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:550;cursor:pointer;white-space:nowrap}
+  .btn:hover{background:var(--hover);border-color:var(--faint)}
+  .btn-sm{height:28px;font-size:12.5px;padding:0 9px}
+  .btn-primary{background:var(--accent);border-color:var(--accent);color:var(--accent-contrast)}
+  .btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+  .btn-icon{width:32px;padding:0}
+
+  .content{padding:20px;display:flex;flex-direction:column;gap:16px;max-width:1400px}
+  .page-head{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+  h1{font-size:20px;font-weight:650;letter-spacing:-.02em;text-wrap:balance}
+  .page-sub{color:var(--muted);font-size:13px;margin-top:3px;max-width:78ch}
+  .head-actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow-sm)}
+  .card-head{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+  .card-title{font-size:13.5px;font-weight:650;letter-spacing:-.008em}
+  .card-note{font-size:12px;color:var(--muted)}
+  .card-head .sp{flex:1 1 auto}
+  .card-body{padding:16px}
+  .card-foot{border-top:1px solid var(--line);padding:11px 16px;font-size:12.5px;color:var(--muted);display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+  .kpis{display:grid;gap:16px}
+  .k3{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .k4{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .kpi{padding:15px 16px 16px;display:flex;flex-direction:column;gap:9px}
+  .kpi-label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);font-weight:550}
+  .kpi-value{font-size:30px;font-weight:650;letter-spacing:-.028em;line-height:1.05}
+  .kpi-value.sm{font-size:23px}
+  .kpi-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--faint)}
+
+  .chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:650;padding:2px 7px;border-radius:100px;border:1px solid transparent;white-space:nowrap}
+  .c-pos{background:var(--pos-soft);color:var(--pos);border-color:color-mix(in srgb,var(--pos) 22%,transparent)}
+  .c-neg{background:var(--neg-soft);color:var(--neg);border-color:color-mix(in srgb,var(--neg) 22%,transparent)}
+  .c-warn{background:var(--warn-soft);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 25%,transparent)}
+  .c-quiet{background:var(--sunken);color:var(--muted);border-color:var(--line)}
+  .c-accent{background:var(--accent-soft);color:var(--accent);border-color:var(--accent-line)}
+
+  .src{display:inline-flex;color:var(--faint);text-decoration:none}
+  .src:hover{color:var(--accent)}
+
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  .tbl-wrap{overflow-x:auto}
+  thead th{text-align:left;font-weight:600;font-size:11.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--faint);padding:9px 16px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+  thead th.r{text-align:right}
+  tbody td{padding:9px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr:hover{background:var(--hover)}
+  td.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  .mono-name{font-weight:500;color:var(--ink)}
+  .bar-track{display:block;height:6px;width:100%;background:var(--bar-track);border-radius:3px;overflow:hidden}
+  .bar-fill{display:block;height:100%;background:var(--bar);border-radius:3px}
+
+  .grid2{display:grid;gap:16px;grid-template-columns:minmax(0,1.62fr) minmax(0,1fr);align-items:start}
+  .grid2e{display:grid;gap:16px;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .col{display:flex;flex-direction:column;gap:16px}
+
+  .seg{display:inline-flex;border:1px solid var(--line-strong);border-radius:var(--radius-sm);overflow:hidden;height:32px}
+  .seg button{border:0;background:none;font:inherit;font-size:13px;font-weight:550;color:var(--muted);padding:0 11px;cursor:pointer;border-right:1px solid var(--line)}
+  .seg button:last-child{border-right:0}
+  .seg button:hover{background:var(--hover);color:var(--ink)}
+  .seg button.on{background:var(--accent-soft);color:var(--accent);font-weight:650}
+
+  .field{display:flex;flex-direction:column;gap:5px}
+  .field label{font-size:12px;font-weight:600;color:var(--muted)}
+  .field input,.field select{height:32px;border:1px solid var(--line-strong);border-radius:var(--radius-sm);background:var(--surface);color:var(--ink);font:inherit;font-size:13px;padding:0 9px}
+  .field input::placeholder{color:var(--faint)}
+
+  .legend{display:flex;flex-direction:column;gap:1px}
+  .leg-row{display:flex;align-items:center;gap:9px;padding:5px 6px;border-radius:var(--radius-sm);font-size:13px}
+  .leg-row:hover{background:var(--hover)}
+  .sw{width:9px;height:9px;border-radius:2px;flex:none}
+  .leg-val{margin-left:auto;font-weight:650;font-variant-numeric:tabular-nums}
+  .leg-pct{color:var(--faint);width:46px;text-align:right;font-size:12px;font-variant-numeric:tabular-nums}
+  .donut-row{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+
+  .note{display:flex;gap:12px;padding:14px 16px;align-items:flex-start}
+  .note-ic{flex:none;width:32px;height:32px;border-radius:var(--radius-sm);display:grid;place-content:center}
+  .note h3{font-size:13.5px;font-weight:650;margin-bottom:2px}
+  .note p{margin:0;font-size:12.5px;color:var(--muted);max-width:74ch}
+
+  .banner{display:flex;gap:9px;padding:11px 14px;border-radius:var(--radius);font-size:12.5px;align-items:flex-start}
+  .b-accent{background:var(--accent-soft);border:1px solid var(--accent-line)}
+  .b-warn{background:var(--warn-soft);border:1px solid color-mix(in srgb,var(--warn) 30%,transparent);color:var(--ink)}
+  .banner svg{flex:none;margin-top:1px}
+
+  .tiles{display:grid;gap:16px;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tile{display:flex;flex-direction:column;gap:8px;padding:16px;text-decoration:none;color:inherit}
+  .tile:hover{border-color:var(--accent-line);background:var(--hover)}
+  .tile-q{font-size:15px;font-weight:650;letter-spacing:-.01em}
+  .tile-p{font-size:12.5px;color:var(--muted);margin:0}
+  .tile-n{font-size:20px;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+  .tile-go{margin-top:auto;font-size:12.5px;font-weight:600;color:var(--accent)}
+
+  .slider-row{display:grid;grid-template-columns:230px minmax(120px,1fr) 62px 92px 84px;gap:12px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);font-size:13px}
+  .slider-row:last-child{border-bottom:0}
+  .slider-row:hover{background:var(--hover)}
+  input[type=range]{width:100%;accent-color:var(--accent);height:4px}
+  .sticky-result{position:sticky;top:56px;z-index:15}
+
+  .marks{display:flex;gap:6px;flex-wrap:wrap}
+  .pager{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted)}
+  .pager .sp{flex:1 1 auto}
+
+  .hidden{display:none}
+  .page-note{font-size:12px;color:var(--faint);border-left:2px solid var(--accent-line);padding-left:10px}
+
+  @media (max-width:1080px){.grid2,.grid2e,.tiles,.k3,.k4{grid-template-columns:minmax(0,1fr)}}
+  @media (max-width:880px){
+    .app{grid-template-columns:minmax(0,1fr)}
+    .rail{display:none}
+    .slider-row{grid-template-columns:1fr 1fr;gap:8px}
+  }
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="app">
+  <aside class="rail">
+    <div class="brand">
+      <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><path d="M3 16.5h14"/><path d="M5.5 16.5V9M10 16.5V4.5M14.5 16.5v-5"/></svg>
+      BudgetCitoyen.fr
+    </div>
+    <nav class="rail-nav" aria-label="Navigation principale">
+      <div class="nav-group">
+        <span class="nav-label">Vue d'ensemble</span>
+        <button class="nav-item active" data-page="accueil"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5 10 3l7 5.5"/><path d="M4.5 8v9h11V8"/></svg>Accueil</button>
+        <button class="nav-item" data-page="dashboard"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><rect x="3" y="3" width="6.5" height="8" rx="1.2"/><rect x="3" y="13" width="6.5" height="4" rx="1.2"/><rect x="11.5" y="3" width="5.5" height="4" rx="1.2"/><rect x="11.5" y="9" width="5.5" height="8" rx="1.2"/></svg>Tableau de bord</button>
+        <button class="nav-item" data-page="historique"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 16.5h14"/><path d="m4 13 4-4.5 3.5 3L16 5.5"/></svg>Historique</button>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Analyser</span>
+        <button class="nav-item" data-page="comparateur"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M7 4v12M13 4v12"/><path d="M4 7h6M10 13h6"/></svg>Comparateur</button>
+        <button class="nav-item" data-page="simulateur"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 6.5h14M3 13.5h14"/><circle cx="7.5" cy="6.5" r="2"/><circle cx="12.5" cy="13.5" r="2"/></svg>Simulateur</button>
+        <button class="nav-item" data-page="monbudget"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10" cy="6.5" r="3"/><path d="M4 17c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/></svg>Mon budget</button>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Explorer</span>
+        <button class="nav-item" data-page="niches"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M4 5h12M4 10h8M4 15h5"/></svg>Niches fiscales</button>
+        <button class="nav-item" data-page="marches"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="9" cy="9" r="5.5"/><path d="m13.5 13.5 3.5 3.5"/></svg>Marchés publics</button>
+      </div>
+      <div class="nav-group">
+        <span class="nav-label">Référence</span>
+        <button class="nav-item" data-page="donnees"><svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="10" cy="5.5" rx="6" ry="2.5"/><path d="M4 5.5v9c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-9"/><path d="M4 10c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5"/></svg>Données</button>
+      </div>
+    </nav>
+  </aside>
+
+  <div>
+    <header class="topbar">
+      <span class="crumb">Budget de l'État <span style="color:var(--faint)">/</span> <strong id="crumb">Accueil</strong></span>
+      <span style="flex:1 1 auto"></span>
+      <button class="btn btn-icon" id="theme" aria-label="Basculer le thème" title="Basculer le thème">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M15.5 11.5A6 6 0 0 1 8.5 4.5a6 6 0 1 0 7 7Z"/></svg>
+      </button>
+    </header>
+
+    <!-- ══════════════ ACCUEIL ══════════════ -->
+    <div class="content page" id="p-accueil">
+      <div class="page-head">
+        <div>
+          <h1>Le budget de l'État, expliqué simplement</h1>
+          <p class="page-sub">Où va l'argent public, d'où il vient, et ce qui change d'une année sur l'autre. Chaque chiffre renvoie au texte officiel qui l'établit.</p>
+        </div>
+      </div>
+
+      <section class="kpis k3">
+        <div class="card kpi">
+          <span class="kpi-label">Dépenses de l'État en 2026 <a class="src" href="#" title="Voir la source officielle"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8.3 11.7 11.7 8.3M8.8 5.6l.7-.7a2.9 2.9 0 0 1 4.1 4.1l-.7.7M11.2 14.4l-.7.7a2.9 2.9 0 0 1-4.1-4.1l.7-.7"/></svg></a></span>
+          <span class="kpi-value num">593,9 Md€</span>
+          <span class="kpi-foot"><span class="chip c-quiet num">−0,1 Md€</span> vs 2025</span>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-label">Recettes <a class="src" href="#" title="Voir la source officielle"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8.3 11.7 11.7 8.3M8.8 5.6l.7-.7a2.9 2.9 0 0 1 4.1 4.1l-.7.7M11.2 14.4l-.7.7a2.9 2.9 0 0 1-4.1-4.1l.7-.7"/></svg></a></span>
+          <span class="kpi-value num">460,4 Md€</span>
+          <span class="kpi-foot"><span class="chip c-pos num">+7,0 Md€</span> vs 2025</span>
+        </div>
+        <div class="card kpi">
+          <span class="kpi-label">Solde budgétaire <a class="src" href="#" title="Voir la source officielle"><svg width="13" height="13" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M8.3 11.7 11.7 8.3M8.8 5.6l.7-.7a2.9 2.9 0 0 1 4.1 4.1l-.7.7M11.2 14.4l-.7.7a2.9 2.9 0 0 1-4.1-4.1l.7-.7"/></svg></a></span>
+          <span class="kpi-value num">−133,5 Md€</span>
+          <span class="kpi-foot"><span class="chip c-quiet">Déficit</span> l'État dépense 1,29 € pour 1 € encaissé</span>
+        </div>
+      </section>
+
+      <p class="page-note">Nouveau : la liste « Explorer » qui doublonnait le rail de navigation disparaît. À la place, trois portes d'entrée formulées comme les questions que les gens se posent — chacune porte un vrai chiffre en guise de promesse.</p>
+
+      <section class="tiles">
+        <a class="card tile" href="#" data-goto="dashboard">
+          <span class="tile-q">Où va l'argent ?</span>
+          <span class="tile-n num">32 missions</span>
+          <p class="tile-p">De l'enseignement scolaire à la défense, le détail de chaque euro dépensé, jusqu'au programme et à l'action.</p>
+          <span class="tile-go">Voir le tableau de bord →</span>
+        </a>
+        <a class="card tile" href="#" data-goto="comparateur">
+          <span class="tile-q">Qu'est-ce qui change ?</span>
+          <span class="tile-n num">+6,5 Md€</span>
+          <p class="tile-p">La plus forte hausse entre 2025 et 2026 concerne la Défense. Comparez deux années, mission par mission.</p>
+          <span class="tile-go">Ouvrir le comparateur →</span>
+        </a>
+        <a class="card tile" href="#" data-goto="monbudget">
+          <span class="tile-q">Et moi, je paie quoi ?</span>
+          <span class="tile-n num">3 011 € / an</span>
+          <p class="tile-p">Contribution estimée pour un revenu net de 2 000 € par mois, et sa répartition entre les missions.</p>
+          <span class="tile-go">Calculer ma part →</span>
+        </a>
+      </section>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Douze ans en un coup d'œil</h2>
+          <span class="card-note">Dépenses et recettes nettes, 2015 → 2026</span>
+          <span class="sp"></span>
+          <button class="btn btn-sm" data-goto="historique">Voir l'historique complet</button>
+        </div>
+        <div class="card-body">
+          <svg viewBox="0 0 900 170" width="100%" height="170" role="img" aria-label="Évolution des dépenses et recettes nettes de 2015 à 2026">
+            <line x1="50" y1="150" x2="880" y2="150" stroke="var(--line)"/>
+            <polyline fill="none" stroke="var(--d2)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+              points="50,64 125,60 201,56 276,51 352,45 427,43 503,34 578,32 654,18 729,17 805,14 880,14"/>
+            <polyline fill="none" stroke="var(--d4)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="6 4"
+              points="50,105 125,110 201,109 276,95 352,95 427,88 503,100 578,93 654,66 729,71 805,68 880,66"/>
+            <text x="50" y="166" font-size="10.5" fill="var(--faint)">2015</text>
+            <text x="855" y="166" font-size="10.5" fill="var(--faint)">2026</text>
+          </svg>
+          <div class="marks" style="margin-top:8px">
+            <span class="leg-row" style="padding:0"><svg class="sw" width="14" height="9" style="width:14px;height:9px" aria-hidden="true"><line x1="0" y1="4.5" x2="14" y2="4.5" stroke="var(--d2)" stroke-width="2.5"/></svg> Dépenses <b class="num" style="margin-left:4px">593,9 Md€</b></span>
+            <span class="leg-row" style="padding:0;margin-left:14px"><svg class="sw" width="14" height="9" style="width:14px;height:9px" aria-hidden="true"><line x1="0" y1="4.5" x2="14" y2="4.5" stroke="var(--d4)" stroke-width="2.5" stroke-dasharray="4 3"/></svg> Recettes <b class="num" style="margin-left:4px">460,4 Md€</b></span>
+          </div>
+        </div>
+        <div class="card-foot">En douze ans, les dépenses ont progressé de 50 % et les recettes de 43 %. L'écart entre les deux courbes, c'est le déficit annuel.</div>
+      </div>
+
+      <div class="card note">
+        <span class="note-ic" style="background:var(--warn-soft);color:var(--warn)"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 6.5v4M10 13.5h.01"/></svg></span>
+        <div>
+          <h3>Dépense de l'État par Français, chaque seconde</h3>
+          <p>L'INSEE n'a pas encore publié la population 2026 : cet indicateur ne peut pas être calculé. Il réapparaîtra automatiquement dès la publication.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ TABLEAU DE BORD (rappel) ══════════════ -->
+    <div class="content page hidden" id="p-dashboard">
+      <div class="page-head">
+        <div>
+          <h1>Budget de l'État — exercice 2026</h1>
+          <p class="page-sub">Page déjà livrée en production. Elle sert ici de référence de style pour les sept autres.</p>
+        </div>
+      </div>
+      <div class="banner b-accent">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 13.5v-4M10 6.5h.01"/></svg>
+        Cette page est en ligne depuis la refonte (lots 1 et 2). Les maquettes ci-contre en reprennent la grammaire : coque applicative, résumé avant détail, cartes à en-tête, tableaux denses, rampe d'une seule teinte.
+      </div>
+      <section class="kpis k3">
+        <div class="card kpi"><span class="kpi-label">Dépenses totales</span><span class="kpi-value num">593,9 Md€</span><span class="kpi-foot"><span class="chip c-quiet num">−0,1 Md€</span> vs 2025</span></div>
+        <div class="card kpi"><span class="kpi-label">Recettes totales</span><span class="kpi-value num">460,4 Md€</span><span class="kpi-foot"><span class="chip c-pos num">+7,0 Md€</span> vs 2025</span></div>
+        <div class="card kpi"><span class="kpi-label">Solde budgétaire</span><span class="kpi-value num">−133,5 Md€</span><span class="kpi-foot"><span class="chip c-quiet">Déficit</span> Écart +7,2 Md€</span></div>
+      </section>
+    </div>
+
+    <!-- ══════════════ HISTORIQUE ══════════════ -->
+    <div class="content page hidden" id="p-historique">
+      <div class="page-head">
+        <div>
+          <h1>Historique du budget</h1>
+          <p class="page-sub">Dépenses, recettes et déficit de l'État, année par année, depuis 2015.</p>
+        </div>
+        <div class="head-actions">
+          <div class="seg" role="group" aria-label="Période"><button>5 ans</button><button>10 ans</button><button class="on">Tout (2015–2026)</button></div>
+          <button class="btn">Exporter CSV</button>
+        </div>
+      </div>
+
+      <p class="page-note">Refonte : la page n'affichait que deux graphiques empilés, sans chiffres de synthèse ni table exploitable. J'ajoute une bande de repères, un sélecteur de période, et surtout un tableau année par année — c'est ce qu'un journaliste vient chercher.</p>
+
+      <section class="kpis k4">
+        <div class="card kpi"><span class="kpi-label">Dépenses depuis 2015</span><span class="kpi-value sm num">+50,1 %</span><span class="kpi-foot">395,6 → 593,9 Md€</span></div>
+        <div class="card kpi"><span class="kpi-label">Recettes depuis 2015</span><span class="kpi-value sm num">+43,3 %</span><span class="kpi-foot">321,3 → 460,4 Md€</span></div>
+        <div class="card kpi"><span class="kpi-label">Déficit cumulé</span><span class="kpi-value sm num">1 445,5 Md€</span><span class="kpi-foot">somme des 12 exercices</span></div>
+        <div class="card kpi"><span class="kpi-label">Pic de déficit</span><span class="kpi-value sm num">172,4 Md€</span><span class="kpi-foot">en 2021</span></div>
+      </section>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Dépenses et recettes nettes</h2>
+          <span class="sp"></span>
+          <button class="btn btn-sm">Exporter PNG</button>
+        </div>
+        <div class="card-body">
+          <svg viewBox="0 0 900 280" width="100%" height="280" role="img" aria-label="Courbes des dépenses et recettes nettes de 2015 à 2026">
+            <g stroke="var(--line)" stroke-width="1">
+              <line x1="50" y1="250" x2="880" y2="250"/><line x1="50" y1="192" x2="880" y2="192"/>
+              <line x1="50" y1="135" x2="880" y2="135"/><line x1="50" y1="78" x2="880" y2="78"/><line x1="50" y1="21" x2="880" y2="21"/>
+            </g>
+            <g font-size="10.5" fill="var(--faint)" text-anchor="end">
+              <text x="42" y="254">0</text><text x="42" y="196">160</text><text x="42" y="139">320</text><text x="42" y="82">480</text><text x="42" y="25">640</text>
+            </g>
+            <polyline fill="none" stroke="var(--d2)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"
+              points="50,107.8 125,102.7 201,96.8 276,89.6 352,81.6 427,78 503,65.2 578,62.2 654,42.6 729,41.2 805,36.5 880,36.6"/>
+            <polyline fill="none" stroke="var(--d4)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" stroke-dasharray="6 4"
+              points="50,134.5 125,140.9 201,139.7 276,120.7 352,120.7 427,111.5 503,127.1 578,117.5 654,84.8 729,91.3 805,87.1 880,84.5"/>
+            <g fill="var(--d2)"><circle cx="880" cy="36.6" r="3.5"/></g>
+            <g fill="var(--d4)"><circle cx="880" cy="84.5" r="3.5"/></g>
+            <g font-size="10.5" fill="var(--faint)" text-anchor="middle">
+              <text x="50" y="270">2015</text><text x="201" y="270">2017</text><text x="352" y="270">2019</text>
+              <text x="503" y="270">2021</text><text x="654" y="270">2023</text><text x="805" y="270">2025</text>
+            </g>
+          </svg>
+          <div class="marks" style="margin-top:6px">
+            <span class="leg-row" style="padding:0"><svg class="sw" width="14" height="9" style="width:14px;height:9px" aria-hidden="true"><line x1="0" y1="4.5" x2="14" y2="4.5" stroke="var(--d2)" stroke-width="2.5"/></svg> Dépenses nettes</span>
+            <span class="leg-row" style="padding:0;margin-left:16px"><svg class="sw" width="14" height="9" style="width:14px;height:9px" aria-hidden="true"><line x1="0" y1="4.5" x2="14" y2="4.5" stroke="var(--d4)" stroke-width="2.5" stroke-dasharray="4 3"/></svg> Recettes nettes</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Détail année par année</h2>
+          <span class="card-note">12 exercices · montants en Md€</span>
+          <span class="sp"></span>
+          <button class="btn btn-sm">Exporter CSV</button>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Année</th><th class="r">Dépenses</th><th class="r">Recettes</th><th class="r">Solde</th><th class="r">Évolution des dépenses</th></tr></thead>
+            <tbody>
+              <tr><td class="mono-name">2026</td><td class="r">593,9</td><td class="r">460,4</td><td class="r">−133,5</td><td class="r"><span class="chip c-quiet num">−0,1</span></td></tr>
+              <tr><td class="mono-name">2025</td><td class="r">594,0</td><td class="r">453,4</td><td class="r">−140,6</td><td class="r"><span class="chip c-quiet num">+12,9</span></td></tr>
+              <tr><td class="mono-name">2024</td><td class="r">581,1</td><td class="r">441,6</td><td class="r">−139,5</td><td class="r"><span class="chip c-quiet num">+4,1</span></td></tr>
+              <tr><td class="mono-name">2023</td><td class="r">577,0</td><td class="r">459,8</td><td class="r">−117,2</td><td class="r"><span class="chip c-quiet num">+54,5</span></td></tr>
+              <tr><td class="mono-name">2022</td><td class="r">522,5</td><td class="r">368,8</td><td class="r">−153,8</td><td class="r"><span class="chip c-quiet num">+8,2</span></td></tr>
+              <tr><td class="mono-name">2021</td><td class="r">514,3</td><td class="r">341,9</td><td class="r">−172,4</td><td class="r"><span class="chip c-quiet num">+35,7</span></td></tr>
+              <tr><td class="mono-name">2020</td><td class="r">478,5</td><td class="r">385,5</td><td class="r">−93,1</td><td class="r"><span class="chip c-quiet num">+9,9</span></td></tr>
+              <tr><td class="mono-name">2019</td><td class="r">468,6</td><td class="r">359,8</td><td class="r">−108,8</td><td class="r"><span class="chip c-quiet num">+22,4</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card-foot"><span>8 des 12 exercices affichés</span><span class="sp"></span><a href="#">Afficher les 12 exercices →</a></div>
+      </div>
+    </div>
+
+    <!-- ══════════════ COMPARATEUR ══════════════ -->
+    <div class="content page hidden" id="p-comparateur">
+      <div class="page-head">
+        <div>
+          <h1>Comparateur d'exercices</h1>
+          <p class="page-sub">Ce qui a augmenté, ce qui a baissé, et de combien — mission par mission.</p>
+        </div>
+        <div class="head-actions">
+          <div class="field" style="flex-direction:row;align-items:center;gap:6px"><label for="ya">Comparer</label><select id="ya"><option>2025</option></select></div>
+          <div class="field" style="flex-direction:row;align-items:center;gap:6px"><label for="yb">à</label><select id="yb"><option>2026</option></select></div>
+          <button class="btn">Exporter</button>
+        </div>
+      </div>
+
+      <p class="page-note">Refonte : les deux sélecteurs d'année étaient perdus en haut de page, et il fallait lire un tableau de 32 lignes pour trouver ce qui bouge. Je remonte la comparaison dans le titre et j'ajoute un bloc « hausses / baisses » qui répond directement à la question posée.</p>
+
+      <section class="kpis k3">
+        <div class="card kpi"><span class="kpi-label">Écart de dépenses</span><span class="kpi-value sm num">−0,1 Md€</span><span class="kpi-foot">593,9 contre 594,0 Md€</span></div>
+        <div class="card kpi"><span class="kpi-label">Écart de recettes</span><span class="kpi-value sm num">+7,0 Md€</span><span class="kpi-foot">460,4 contre 453,4 Md€</span></div>
+        <div class="card kpi"><span class="kpi-label">Écart de déficit</span><span class="kpi-value sm num">+7,2 Md€</span><span class="kpi-foot">déficit réduit de 140,6 à 133,5 Md€</span></div>
+      </section>
+
+      <section class="grid2e">
+        <div class="card">
+          <div class="card-head"><h2 class="card-title">Plus fortes hausses</h2><span class="card-note">de dépenses</span></div>
+          <div class="tbl-wrap"><table><tbody>
+            <tr><td class="mono-name">Défense</td><td class="r"><span class="chip c-neg num">+6,5 Md€</span></td><td class="r" style="color:var(--faint)">+10,8 %</td></tr>
+            <tr><td class="mono-name">Écologie, développement et mobilité durables</td><td class="r"><span class="chip c-neg num">+2,3 Md€</span></td><td class="r" style="color:var(--faint)">+11,0 %</td></tr>
+            <tr><td class="mono-name">Monde combattant, mémoire et liens avec la Nation</td><td class="r"><span class="chip c-neg num">+1,7 Md€</span></td><td class="r" style="color:var(--faint)">—</td></tr>
+            <tr><td class="mono-name">Solidarité, insertion et égalité des chances</td><td class="r"><span class="chip c-neg num">+0,9 Md€</span></td><td class="r" style="color:var(--faint)">+3,0 %</td></tr>
+            <tr><td class="mono-name">Enseignement scolaire</td><td class="r"><span class="chip c-neg num">+0,8 Md€</span></td><td class="r" style="color:var(--faint)">+0,9 %</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2 class="card-title">Plus fortes baisses</h2><span class="card-note">de dépenses</span></div>
+          <div class="tbl-wrap"><table><tbody>
+            <tr><td class="mono-name">Audiovisuel public</td><td class="r"><span class="chip c-pos num">−4,0 Md€</span></td><td class="r" style="color:var(--faint)">−100 %</td></tr>
+            <tr><td class="mono-name">Anciens combattants, mémoire et liens avec la Nation</td><td class="r"><span class="chip c-pos num">−1,9 Md€</span></td><td class="r" style="color:var(--faint)">−100 %</td></tr>
+            <tr><td class="mono-name">Aide publique au développement</td><td class="r"><span class="chip c-pos num">−1,6 Md€</span></td><td class="r" style="color:var(--faint)">−30,7 %</td></tr>
+            <tr><td class="mono-name">Remboursements et dégrèvements</td><td class="r"><span class="chip c-pos num">−1,5 Md€</span></td><td class="r" style="color:var(--faint)">−1,0 %</td></tr>
+            <tr><td class="mono-name">Investir pour la France de 2030</td><td class="r"><span class="chip c-pos num">−1,4 Md€</span></td><td class="r" style="color:var(--faint)">−24,2 %</td></tr>
+          </tbody></table></div>
+        </div>
+      </section>
+
+      <div class="banner b-accent">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 13.5v-4M10 6.5h.01"/></svg>
+        <span>Deux missions apparaissent des deux côtés sous des noms voisins : « Anciens combattants » disparaît en 2026 au profit de « Monde combattant ». Un renommage, pas une suppression — la page le signale plutôt que de laisser croire à une coupe de 1,9 Md€.</span>
+      </div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Toutes les missions</h2>
+          <span class="card-note">32 missions</span>
+          <span class="sp"></span>
+          <div class="field"><input placeholder="Rechercher une mission…" style="width:220px"></div>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Mission</th><th class="r">2025</th><th class="r">2026</th><th class="r">Écart</th><th class="r">Écart %</th></tr></thead>
+          <tbody>
+            <tr><td class="mono-name">Défense</td><td class="r">60,0</td><td class="r">66,5</td><td class="r" style="color:var(--neg);font-weight:600">+6,5</td><td class="r" style="color:var(--faint)">10,8 %</td></tr>
+            <tr><td class="mono-name">Écologie, développement et mobilité durables</td><td class="r">20,5</td><td class="r">22,8</td><td class="r" style="color:var(--neg);font-weight:600">+2,3</td><td class="r" style="color:var(--faint)">11,0 %</td></tr>
+            <tr><td class="mono-name">Enseignement scolaire</td><td class="r">88,8</td><td class="r">89,6</td><td class="r" style="color:var(--neg);font-weight:600">+0,8</td><td class="r" style="color:var(--faint)">0,9 %</td></tr>
+            <tr><td class="mono-name">Remboursements et dégrèvements</td><td class="r">147,1</td><td class="r">145,6</td><td class="r" style="color:var(--pos);font-weight:600">−1,5</td><td class="r" style="color:var(--faint)">−1,0 %</td></tr>
+            <tr><td class="mono-name">Audiovisuel public</td><td class="r">4,0</td><td class="r">0,0</td><td class="r" style="color:var(--pos);font-weight:600">−4,0</td><td class="r" style="color:var(--faint)">−100 %</td></tr>
+          </tbody>
+        </table></div>
+        <div class="card-foot">En <span style="color:var(--neg);font-weight:600">rouge</span>, une hausse de dépenses ; en <span style="color:var(--pos);font-weight:600">vert</span>, une baisse. Cette convention s'inverse pour les recettes, où une hausse est une rentrée d'argent supplémentaire.</div>
+      </div>
+    </div>
+
+    <!-- ══════════════ MON BUDGET ══════════════ -->
+    <div class="content page hidden" id="p-monbudget">
+      <div class="page-head">
+        <div>
+          <h1>Mon budget</h1>
+          <p class="page-sub">Estimez votre contribution au budget de l'État, et voyez ce qu'elle finance.</p>
+        </div>
+      </div>
+
+      <p class="page-note">Refonte : le résultat se recalcule à la saisie (le bouton « Calculer » devient facultatif), la répartition s'affiche aussi en euros par mois — bien plus parlant que l'annuel — et la méthodologie promise par le cahier des charges obtient enfin une place visible.</p>
+
+      <div class="card">
+        <div class="card-body" style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">
+          <div class="field" style="min-width:220px">
+            <label for="rev">Votre revenu net mensuel</label>
+            <input id="rev" value="2 000 €" style="height:40px;font-size:18px;font-weight:650">
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;padding-bottom:4px">
+            <span style="font-size:12.5px;color:var(--muted)">Exemples :</span>
+            <button class="btn btn-sm">1 500 €</button><button class="btn btn-sm">2 000 €</button><button class="btn btn-sm">3 500 €</button>
+          </div>
+        </div>
+      </div>
+
+      <section class="kpis k3">
+        <div class="card kpi"><span class="kpi-label">Impôt sur le revenu estimé</span><span class="kpi-value sm num">1 100 € / an</span><span class="kpi-foot">soit 92 € par mois</span></div>
+        <div class="card kpi"><span class="kpi-label">TVA estimée</span><span class="kpi-value sm num">1 911 € / an</span><span class="kpi-foot">soit 159 € par mois</span></div>
+        <div class="card kpi" style="border-color:var(--accent-line)"><span class="kpi-label" style="color:var(--accent)">Contribution totale estimée</span><span class="kpi-value sm num" style="color:var(--accent)">3 011 € / an</span><span class="kpi-foot">soit 251 € par mois</span></div>
+      </section>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Où vont vos 3 011 €</h2>
+          <span class="card-note">répartition selon le budget 2026</span>
+          <span class="sp"></span>
+          <button class="btn btn-sm">Exporter CSV</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Mission</th><th class="r">Par an</th><th class="r">Par mois</th><th>Part</th><th class="r">%</th></tr></thead>
+          <tbody>
+            <tr><td class="mono-name">Remboursements et dégrèvements</td><td class="r">738 €</td><td class="r">61,50 €</td><td style="width:150px"><span class="bar-track"><span class="bar-fill" style="width:100%"></span></span></td><td class="r" style="color:var(--faint)">24,5 %</td></tr>
+            <tr><td class="mono-name">Enseignement scolaire</td><td class="r">454 €</td><td class="r">37,83 €</td><td><span class="bar-track"><span class="bar-fill" style="width:61.5%"></span></span></td><td class="r" style="color:var(--faint)">15,1 %</td></tr>
+            <tr><td class="mono-name">Défense</td><td class="r">337 €</td><td class="r">28,08 €</td><td><span class="bar-track"><span class="bar-fill" style="width:45.7%"></span></span></td><td class="r" style="color:var(--faint)">11,2 %</td></tr>
+            <tr><td class="mono-name">Engagements financiers de l'État</td><td class="r">306 €</td><td class="r">25,50 €</td><td><span class="bar-track"><span class="bar-fill" style="width:41.4%"></span></span></td><td class="r" style="color:var(--faint)">10,2 %</td></tr>
+            <tr><td class="mono-name">Recherche et enseignement supérieur</td><td class="r">160 €</td><td class="r">13,33 €</td><td><span class="bar-track"><span class="bar-fill" style="width:21.7%"></span></span></td><td class="r" style="color:var(--faint)">5,3 %</td></tr>
+            <tr><td class="mono-name">Solidarité, insertion et égalité des chances</td><td class="r">159 €</td><td class="r">13,25 €</td><td><span class="bar-track"><span class="bar-fill" style="width:21.5%"></span></span></td><td class="r" style="color:var(--faint)">5,3 %</td></tr>
+          </tbody>
+        </table></div>
+        <div class="card-foot"><span>6 des 32 missions affichées</span><span class="sp"></span><a href="#">Afficher les 32 missions →</a></div>
+      </div>
+
+      <div class="card note">
+        <span class="note-ic" style="background:var(--accent-soft);color:var(--accent)"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 13.5v-4M10 6.5h.01"/></svg></span>
+        <div>
+          <h3>Comment ce montant est calculé</h3>
+          <p>Il s'agit d'une <b>estimation</b>, pas de votre imposition réelle : elle ne tient compte ni de votre situation familiale, ni de vos crédits d'impôt, ni de vos revenus non salariaux. Le détail de la méthode et ses limites doivent être affichés ici — le cahier des charges les promet, ils n'existent pas encore. <b>À rédiger avec vous</b> à partir du calcul réellement implémenté côté serveur.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════ SIMULATEUR ══════════════ -->
+    <div class="content page hidden" id="p-simulateur">
+      <div class="page-head">
+        <div>
+          <h1>Simulateur — refaites le budget 2026</h1>
+          <p class="page-sub">Ajustez les dépenses et voyez l'effet immédiat sur le déficit.</p>
+        </div>
+        <div class="head-actions">
+          <div class="seg"><button class="on">Mode simple</button><button>Mode avancé</button></div>
+          <button class="btn">Réinitialiser</button>
+        </div>
+      </div>
+
+      <p class="page-note">Refonte : la barre de résultat devient collante en haut de page — c'est le retour dont on a besoin en manipulant un curseur situé 800 px plus bas. Chaque ligne gagne une colonne « impact » signée, et l'avertissement de neutralité reste au-dessus, jamais relégué en bas.</p>
+
+      <div class="banner b-warn">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="var(--warn)" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 6.5v4M10 13.5h.01"/></svg>
+        <span>Ce simulateur recalcule uniquement l'effet arithmétique de vos choix sur le déficit, à partir des données réelles 2026. Il ne modélise aucun effet économique dynamique (croissance, emploi, inflation…) et ne recommande aucune politique.</span>
+      </div>
+
+      <section class="card sticky-result">
+        <div class="card-body" style="display:flex;gap:28px;align-items:center;flex-wrap:wrap">
+          <div>
+            <div class="kpi-label">Déficit simulé</div>
+            <div class="kpi-value num" style="font-size:26px">−133,5 Md€</div>
+          </div>
+          <div style="flex:1 1 260px;min-width:200px">
+            <div style="display:flex;justify-content:space-between;font-size:11.5px;color:var(--faint);margin-bottom:4px"><span>Budget réel</span><span>Votre budget</span></div>
+            <span class="bar-track" style="height:8px"><span class="bar-fill" style="width:100%"></span></span>
+            <div style="font-size:12px;color:var(--muted);margin-top:6px">Aucun ajustement pour l'instant — déplacez un curseur pour voir l'écart.</div>
+          </div>
+          <div style="text-align:right">
+            <div class="kpi-label" style="justify-content:flex-end">Écart vs budget réel</div>
+            <div class="kpi-value num" style="font-size:22px">0,0 Md€</div>
+          </div>
+        </div>
+      </section>
+
+      <div class="card">
+        <div class="card-head">
+          <h2 class="card-title">Dépenses par mission</h2>
+          <span class="card-note">32 missions · 593,9 Md€</span>
+        </div>
+        <div>
+          <div class="slider-row" style="font-size:11.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.04em;font-weight:600;border-bottom:1px solid var(--line)">
+            <span>Mission</span><span>Ajustement</span><span style="text-align:right">%</span><span style="text-align:right">Montant simulé</span><span style="text-align:right">Impact</span>
+          </div>
+          <div class="slider-row"><span>Remboursements et dégrèvements</span><input type="range" value="50"><span class="num" style="text-align:right;color:var(--muted)">+0 %</span><span class="num" style="text-align:right;font-weight:600">145,6 Md€</span><span class="num" style="text-align:right;color:var(--faint)">—</span></div>
+          <div class="slider-row"><span>Enseignement scolaire</span><input type="range" value="50"><span class="num" style="text-align:right;color:var(--muted)">+0 %</span><span class="num" style="text-align:right;font-weight:600">89,6 Md€</span><span class="num" style="text-align:right;color:var(--faint)">—</span></div>
+          <div class="slider-row" style="background:var(--accent-soft)"><span>Défense</span><input type="range" value="62"><span class="num" style="text-align:right;color:var(--accent);font-weight:650">+12 %</span><span class="num" style="text-align:right;font-weight:600">74,5 Md€</span><span class="num" style="text-align:right;color:var(--neg);font-weight:600">+8,0 Md€</span></div>
+          <div class="slider-row"><span>Engagements financiers de l'État</span><input type="range" value="50"><span class="num" style="text-align:right;color:var(--muted)">+0 %</span><span class="num" style="text-align:right;font-weight:600">60,3 Md€</span><span class="num" style="text-align:right;color:var(--faint)">—</span></div>
+          <div class="slider-row"><span>Recherche et enseignement supérieur</span><input type="range" value="44"><span class="num" style="text-align:right;color:var(--accent);font-weight:650">−6 %</span><span class="num" style="text-align:right;font-weight:600">29,7 Md€</span><span class="num" style="text-align:right;color:var(--pos);font-weight:600">−1,9 Md€</span></div>
+        </div>
+        <div class="card-foot"><span>5 des 32 missions affichées</span><span class="sp"></span><a href="#">Afficher les 32 missions →</a></div>
+      </div>
+    </div>
+
+    <!-- ══════════════ NICHES FISCALES ══════════════ -->
+    <div class="content page hidden" id="p-niches">
+      <div class="page-head">
+        <div>
+          <h1>Niches fiscales</h1>
+          <p class="page-sub">Les dépenses fiscales — exonérations, crédits et réductions d'impôt — recensées par l'annexe « Voies et moyens » du projet de loi de finances.</p>
+        </div>
+        <div class="head-actions"><button class="btn">Exporter CSV</button></div>
+      </div>
+
+      <p class="page-note">Refonte : la qualité de la donnée devient une information de premier plan. Un tiers des mesures n'a aucun montant exploitable — le dire franchement en haut de page vaut mieux que de laisser croire à un total exhaustif.</p>
+
+      <section class="kpis k4">
+        <div class="card kpi"><span class="kpi-label">Total chiffré</span><span class="kpi-value sm num">89,6 Md€</span><span class="kpi-foot">millésime 2021</span></div>
+        <div class="card kpi"><span class="kpi-label">Mesures recensées</span><span class="kpi-value sm num">465</span><span class="kpi-foot">dont 321 avec un montant</span></div>
+        <div class="card kpi"><span class="kpi-label">Sans montant exploitable</span><span class="kpi-value sm num">144</span><span class="kpi-foot">exclues du total et du graphique</span></div>
+        <div class="card kpi"><span class="kpi-label">Mesure la plus coûteuse</span><span class="kpi-value sm num">6,9 Md€</span><span class="kpi-foot">CICE</span></div>
+      </section>
+
+      <div class="banner b-warn">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="var(--warn)" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 6.5v4M10 13.5h.01"/></svg>
+        <span>Données 2021 : c'est le dernier montant <b>réalisé</b> connu, pas une prévision. Une dépense fiscale n'est établie qu'après dépouillement des déclarations de l'année suivante ; aucune édition plus récente n'existe dans un format exploitable.</span>
+      </div>
+
+      <section class="grid2">
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title">Les mesures les plus coûteuses</h2>
+            <span class="sp"></span>
+            <div class="field"><input placeholder="Rechercher une mesure…" style="width:200px"></div>
+          </div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Mesure</th><th>Impôt</th><th class="r">Montant</th><th>Statut</th></tr></thead>
+            <tbody>
+              <tr><td class="mono-name">Crédit d'impôt en faveur de la compétitivité et de l'emploi (CICE)</td><td style="color:var(--muted)">IR et IS</td><td class="r">6,92 Md€</td><td><span class="chip c-quiet">Chiffré</span></td></tr>
+              <tr><td class="mono-name">Crédit d'impôt en faveur de la recherche (CIR)</td><td style="color:var(--muted)">IR et IS</td><td class="r">6,38 Md€</td><td><span class="chip c-quiet">Chiffré</span></td></tr>
+              <tr><td class="mono-name">Crédit d'impôt au titre de l'emploi d'un salarié à domicile</td><td style="color:var(--muted)">IR</td><td class="r">4,73 Md€</td><td><span class="chip c-quiet">Chiffré</span></td></tr>
+              <tr><td class="mono-name">Abattement de 10 % sur le montant des pensions</td><td style="color:var(--muted)">IR</td><td class="r">4,34 Md€</td><td><span class="chip c-quiet">Chiffré</span></td></tr>
+              <tr><td class="mono-name">Taux de 10 % pour les travaux d'amélioration du logement</td><td style="color:var(--muted)">TVA</td><td class="r">3,99 Md€</td><td><span class="chip c-quiet">Chiffré</span></td></tr>
+              <tr><td class="mono-name">Taux de 10 % pour la restauration commerciale</td><td style="color:var(--muted)">TVA</td><td class="r">3,60 Md€</td><td><span class="chip c-quiet">Chiffré</span></td></tr>
+              <tr style="color:var(--faint)"><td class="mono-name" style="color:var(--muted)">Exonération des gains de cession de titres de jeunes entreprises</td><td>IR</td><td class="r">—</td><td><span class="chip c-warn">Non calculable</span></td></tr>
+            </tbody>
+          </table></div>
+          <div class="card-foot"><span>7 des 465 mesures affichées</span><span class="sp"></span><a href="#">Afficher toutes les mesures →</a></div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Par impôt concerné</h2><span class="sp"></span><button class="btn btn-sm">PNG</button></div>
+            <div class="card-body">
+              <div class="donut-row">
+                <div style="position:relative;width:148px;height:148px;flex:none">
+                  <svg width="148" height="148" viewBox="0 0 148 148" role="img" aria-label="Répartition des niches fiscales par impôt">
+                    <g transform="rotate(-90 74 74)" fill="none" stroke-width="19">
+                      <circle cx="74" cy="74" r="60" stroke="var(--d1)" stroke-dasharray="146.1 376.99" stroke-dashoffset="0"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d2)" stroke-dasharray="88.4 376.99" stroke-dashoffset="-146.1"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d3)" stroke-dasharray="80.0 376.99" stroke-dashoffset="-234.5"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d4)" stroke-dasharray="34.1 376.99" stroke-dashoffset="-314.5"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d5)" stroke-dasharray="16.4 376.99" stroke-dashoffset="-348.6"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d6)" stroke-dasharray="12.0 376.99" stroke-dashoffset="-365.0"/>
+                    </g>
+                  </svg>
+                  <span style="position:absolute;inset:0;display:grid;place-content:center;text-align:center">
+                    <b class="num" style="font-size:17px">89,6</b>
+                    <span style="font-size:10.5px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Md€</span>
+                  </span>
+                </div>
+                <div class="legend" style="flex:1 1 auto;min-width:0">
+                  <span class="leg-row"><span class="sw" style="background:var(--d1)"></span>Impôt sur le revenu<span class="leg-val">34,7</span><span class="leg-pct">38,7 %</span></span>
+                  <span class="leg-row"><span class="sw" style="background:var(--d2)"></span>IR et IS<span class="leg-val">21,0</span><span class="leg-pct">23,4 %</span></span>
+                  <span class="leg-row"><span class="sw" style="background:var(--d3)"></span>TVA<span class="leg-val">19,0</span><span class="leg-pct">21,2 %</span></span>
+                  <span class="leg-row"><span class="sw" style="background:var(--d4)"></span>Accise sur les énergies<span class="leg-val">8,1</span><span class="leg-pct">9,0 %</span></span>
+                  <span class="leg-row"><span class="sw" style="background:var(--d5)"></span>Impôt sur les sociétés<span class="leg-val">3,9</span><span class="leg-pct">4,4 %</span></span>
+                  <span class="leg-row"><span class="sw" style="background:var(--d6)"></span>Autres<span class="leg-val">2,9</span><span class="leg-pct">3,3 %</span></span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Qualité du chiffrage</h2></div>
+            <div class="card-body" style="display:flex;flex-direction:column;gap:9px;font-size:13px">
+              <span style="display:flex;align-items:center;gap:9px">Chiffré <b class="num" style="margin-left:auto">333</b></span>
+              <span style="display:flex;align-items:center;gap:9px">Non calculable <b class="num" style="margin-left:auto">56</b></span>
+              <span style="display:flex;align-items:center;gap:9px">Inférieur à 0,5 M€ <b class="num" style="margin-left:auto">46</b></span>
+              <span style="display:flex;align-items:center;gap:9px">Aucun effet budgétaire <b class="num" style="margin-left:auto">30</b></span>
+            </div>
+            <div class="card-foot">Le statut vient de la source officielle : il n'est ni interprété ni comblé.</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ══════════════ MARCHÉS PUBLICS ══════════════ -->
+    <div class="content page hidden" id="p-marches">
+      <div class="page-head">
+        <div>
+          <h1>Marchés publics</h1>
+          <p class="page-sub">Les contrats passés par l'État et les collectivités, tels que déclarés dans les Données Essentielles de la Commande Publique.</p>
+        </div>
+        <div class="head-actions"><button class="btn">Exporter cette page</button></div>
+      </div>
+
+      <p class="page-note">Refonte : les repères chiffrés remontent en haut, les filtres se compactent sur une seule ligne, et la limite de la source (aucun nom d'entreprise, seulement des SIRET) est dite une fois pour toutes plutôt que répétée.</p>
+
+      <section class="kpis k3">
+        <div class="card kpi"><span class="kpi-label">Marchés recensés</span><span class="kpi-value sm num">689 062</span><span class="kpi-foot">mise à jour quotidienne</span></div>
+        <div class="card kpi"><span class="kpi-label">Montant cumulé</span><span class="kpi-value sm num">1 020,5 Md€</span><span class="kpi-foot">sur 16 ans — jamais un total annuel</span></div>
+        <div class="card kpi"><span class="kpi-label">Période couverte</span><span class="kpi-value sm num">2010 → 2026</span><span class="kpi-foot">du 02/06/2010 au 17/08/2026</span></div>
+      </section>
+
+      <div class="card">
+        <div class="card-body" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+          <div class="field" style="flex:1 1 240px"><label for="q">Rechercher dans l'objet</label><input id="q" placeholder="hôpital, école, voirie…"></div>
+          <div class="field"><label for="d1">Notifié à partir du</label><input id="d1" placeholder="jj/mm/aaaa" style="width:130px"></div>
+          <div class="field"><label for="d2">jusqu'au</label><input id="d2" placeholder="jj/mm/aaaa" style="width:130px"></div>
+          <div class="field"><label for="m1">Montant min.</label><input id="m1" placeholder="€" style="width:110px"></div>
+          <button class="btn">Réinitialiser</button>
+        </div>
+      </div>
+
+      <section class="grid2">
+        <div class="card">
+          <div class="card-head"><h2 class="card-title">Liste des marchés</h2><span class="card-note">689 062 résultats</span></div>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Date</th><th>Objet</th><th>Titulaire</th><th class="r">Montant</th></tr></thead>
+            <tbody>
+              <tr><td class="num" style="color:var(--muted)">17/08/2026</td><td class="mono-name">Réhabilitation et extension d'une maison en 3 logements</td><td><a href="#" class="num">301 029 831 00031</a></td><td class="r">57 988 €</td></tr>
+              <tr><td class="num" style="color:var(--muted)">17/08/2026</td><td class="mono-name">Réhabilitation et extension d'une maison en 3 logements</td><td><a href="#" class="num">301 029 831 00031</a></td><td class="r">20 273 €</td></tr>
+              <tr><td class="num" style="color:var(--muted)">14/08/2026</td><td class="mono-name">Catalogue de consommables et de dispositifs médicaux</td><td><a href="#" class="num">305 635 039 00194</a></td><td class="r">270 000 €</td></tr>
+            </tbody>
+          </table></div>
+          <div class="card-foot">
+            <span class="pager"><button class="btn btn-sm">Précédent</button><span>Page 1 sur 34 454</span><button class="btn btn-sm">Suivant</button></span>
+          </div>
+        </div>
+
+        <div class="col">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title">Par catégorie d'achat</h2><span class="sp"></span><button class="btn btn-sm">PNG</button></div>
+            <div class="card-body">
+              <div class="donut-row" style="margin-bottom:10px">
+                <div style="position:relative;width:132px;height:132px;flex:none">
+                  <svg width="132" height="132" viewBox="0 0 148 148" role="img" aria-label="Répartition des marchés par catégorie d'achat">
+                    <g transform="rotate(-90 74 74)" fill="none" stroke-width="19">
+                      <circle cx="74" cy="74" r="60" stroke="var(--d1)" stroke-dasharray="79.65 376.99" stroke-dashoffset="0"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d2)" stroke-dasharray="39.17 376.99" stroke-dashoffset="-79.65"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d3)" stroke-dasharray="24.13 376.99" stroke-dashoffset="-118.82"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d4)" stroke-dasharray="21.90 376.99" stroke-dashoffset="-142.95"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d5)" stroke-dasharray="20.09 376.99" stroke-dashoffset="-164.85"/>
+                      <circle cx="74" cy="74" r="60" stroke="var(--d6)" stroke-dasharray="192.06 376.99" stroke-dashoffset="-184.94"/>
+                    </g>
+                  </svg>
+                  <span style="position:absolute;inset:0;display:grid;place-content:center;text-align:center">
+                    <b class="num" style="font-size:15px">1 020,5</b>
+                    <span style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Md€</span>
+                  </span>
+                </div>
+              </div>
+              <div class="legend">
+                <span class="leg-row"><span class="sw" style="background:var(--d1)"></span>Travaux de construction<span class="leg-val">215,6</span><span class="leg-pct">21,1 %</span></span>
+                <span class="leg-row"><span class="sw" style="background:var(--d2)"></span>Enseignement et formation<span class="leg-val">106,0</span><span class="leg-pct">10,4 %</span></span>
+                <span class="leg-row"><span class="sw" style="background:var(--d3)"></span>Appareils médicaux<span class="leg-val">65,3</span><span class="leg-pct">6,4 %</span></span>
+                <span class="leg-row"><span class="sw" style="background:var(--d4)"></span>Postes et télécommunications<span class="leg-val">59,3</span><span class="leg-pct">5,8 %</span></span>
+                <span class="leg-row"><span class="sw" style="background:var(--d5)"></span>Produits pétroliers, énergie<span class="leg-val">54,4</span><span class="leg-pct">5,3 %</span></span>
+                <span class="leg-row"><span class="sw" style="background:var(--d6)"></span>Autres catégories<span class="leg-val">519,9</span><span class="leg-pct">51,0 %</span></span>
+              </div>
+              <p style="font-size:12px;color:var(--muted);margin:10px 0 0">Cliquez une catégorie pour filtrer la liste. Montants en Md€, calculés sur l'ensemble des marchés correspondant aux filtres actifs.</p>
+            </div>
+          </div>
+
+          <div class="card note">
+            <span class="note-ic" style="background:var(--accent-soft);color:var(--accent)"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 13.5v-4M10 6.5h.01"/></svg></span>
+            <div>
+              <h3>Pourquoi pas de noms d'entreprises ?</h3>
+              <p>La source ne fournit que des identifiants. Quand il s'agit d'un SIRET, le numéro renvoie vers l'annuaire public des entreprises ; les autres types d'identifiants (TVA, hors-UE…) ne sont pas cliquables.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- ══════════════ DONNÉES ══════════════ -->
+    <div class="content page hidden" id="p-donnees">
+      <div class="page-head">
+        <div>
+          <h1>Données &amp; sources</h1>
+          <p class="page-sub">Tout ce qui est affiché sur BudgetCitoyen.fr vient de sources publiques officielles, réutilisables sous Licence Ouverte 2.0.</p>
+        </div>
+        <div class="head-actions"><button class="btn btn-primary">Documentation de l'API</button></div>
+      </div>
+
+      <p class="page-note">Refonte : la page n'était qu'une liste de liens nus. Elle devient la page de confiance du site — chaque source dit ce qu'elle alimente, sa cadence de mise à jour et sa couverture. Les développeurs y trouvent l'API.</p>
+
+      <div class="card">
+        <div class="card-head"><h2 class="card-title">Sources par domaine</h2><span class="card-note">5 sources actives</span></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Source</th><th>Alimente</th><th>Couverture</th><th>Mise à jour</th></tr></thead>
+          <tbody>
+            <tr><td class="mono-name"><a href="#">Légifrance — lois de finances</a></td><td style="color:var(--muted)">Dépenses, recettes, missions</td><td class="num" style="color:var(--muted)">2015 → 2026</td><td><span class="chip c-quiet">Annuelle</span></td></tr>
+            <tr><td class="mono-name"><a href="#">data.economie.gouv.fr</a></td><td style="color:var(--muted)">Programmes et actions</td><td class="num" style="color:var(--muted)">2006 → 2026</td><td><span class="chip c-quiet">Annuelle</span></td></tr>
+            <tr><td class="mono-name"><a href="#">data.gouv.fr — DECP</a></td><td style="color:var(--muted)">Marchés publics</td><td class="num" style="color:var(--muted)">2010 → 2026</td><td><span class="chip c-accent">Quotidienne</span></td></tr>
+            <tr><td class="mono-name"><a href="#">Annexe « Voies et moyens » du PLF</a></td><td style="color:var(--muted)">Niches fiscales</td><td class="num" style="color:var(--muted)">2021</td><td><span class="chip c-quiet">Annuelle</span></td></tr>
+            <tr><td class="mono-name"><a href="#">INSEE</a></td><td style="color:var(--muted)">PIB, population</td><td class="num" style="color:var(--muted)">jusqu'à 2025</td><td><span class="chip c-warn">2026 non publiée</span></td></tr>
+          </tbody>
+        </table></div>
+        <div class="card-foot">Chaque chiffre du site porte une icône renvoyant au document précis qui l'établit — pas seulement au portail.</div>
+      </div>
+
+      <section class="grid2e">
+        <div class="card note">
+          <span class="note-ic" style="background:var(--accent-soft);color:var(--accent)"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M6 3h6l3 3v11H6z"/><path d="M11.5 3v3.5H15"/></svg></span>
+          <div>
+            <h3>Réutiliser les données</h3>
+            <p>Toutes les vues s'exportent en CSV, tous les graphiques en PNG, et chaque page produit une URL partageable qui restitue vos filtres. Une API REST publique et documentée expose les mêmes données.</p>
+          </div>
+        </div>
+        <div class="card note">
+          <span class="note-ic" style="background:var(--sunken);color:var(--muted)"><svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><path d="M10 3 4 6v4.5c0 3.4 2.5 5.6 6 6.5 3.5-.9 6-3.1 6-6.5V6z"/></svg></span>
+          <div>
+            <h3>Ce que le site ne fait pas</h3>
+            <p>Aucun commentaire partisan, aucune donnée inventée pour combler un trou. Quand une donnée manque — la population 2026, le nom d'un titulaire de marché — la page le dit au lieu de l'estimer.</p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    document.getElementById('theme').addEventListener('click', function () {
+      var explicit = root.getAttribute('data-theme');
+      var systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var dark = explicit ? explicit === 'dark' : systemDark;
+      root.setAttribute('data-theme', dark ? 'light' : 'dark');
+    });
+
+    var titles = {
+      accueil: 'Accueil', dashboard: 'Tableau de bord', historique: 'Historique',
+      comparateur: 'Comparateur', simulateur: 'Simulateur', monbudget: 'Mon budget',
+      niches: 'Niches fiscales', marches: 'Marchés publics', donnees: 'Données'
+    };
+
+    function show(page) {
+      document.querySelectorAll('.page').forEach(function (el) { el.classList.add('hidden'); });
+      var target = document.getElementById('p-' + page);
+      if (target) target.classList.remove('hidden');
+      document.querySelectorAll('.nav-item').forEach(function (b) {
+        b.classList.toggle('active', b.dataset.page === page);
+      });
+      document.getElementById('crumb').textContent = titles[page] || '';
+      window.scrollTo(0, 0);
+    }
+
+    document.querySelectorAll('.nav-item').forEach(function (b) {
+      b.addEventListener('click', function () { show(b.dataset.page); });
+    });
+    document.querySelectorAll('[data-goto]').forEach(function (el) {
+      el.addEventListener('click', function (e) { e.preventDefault(); show(el.dataset.goto); });
+    });
+  })();
+</script>

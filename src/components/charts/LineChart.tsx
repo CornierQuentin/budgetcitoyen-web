@@ -33,6 +33,13 @@ export interface LineChartSerie {
   key: string;
   label: string;
   color: string;
+  /**
+   * Motif de tiretés du tracé. Sert à distinguer deux séries autrement que
+   * par la teinte : sur une rampe d'une seule couleur, deux bleus voisins
+   * sont indiscernables, et la couleur ne doit jamais être le seul signal
+   * (exigence WCAG et garde-fou de neutralité).
+   */
+  dash?: string;
 }
 
 interface LineChartProps {
@@ -81,7 +88,7 @@ export default function LineChart({ data, series, nomFichierExport = 'graphique.
 
       <div
         ref={exportRef}
-        className="h-80 rounded-lg border border-line bg-white p-4 "
+        className="h-80 rounded-lg border border-line bg-surface p-4"
       >
         <ResponsiveContainer width="100%" height="100%">
           <RechartsLineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
@@ -119,6 +126,7 @@ export default function LineChart({ data, series, nomFichierExport = 'graphique.
                 name={serie.label}
                 stroke={serie.color}
                 strokeWidth={2}
+                strokeDasharray={serie.dash}
                 dot={{ r: 4, strokeWidth: 2, fill: serie.color, stroke: estSombre ? '#111827' : '#fcfcfb' }}
                 activeDot={{ r: 5 }}
                 // Sans ceci, l'animation de tracé de recharts (stroke-dasharray

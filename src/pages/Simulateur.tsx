@@ -61,6 +61,15 @@ function CurseurAjustement({
   const [enEdition, setEnEdition] = useState(false);
   const [brouillon, setBrouillon] = useState('');
 
+  // Écart en euros entre le montant simulé et le montant réel de la mission.
+  const impact = montant - montantActuel;
+  // Rouge pour une dépense ajoutée, vert pour une dépense retirée : même
+  // convention que le Comparateur, et la valeur reste écrite en toutes lettres
+  // — la couleur n'est jamais le seul signal.
+  let couleurImpact = 'text-ink-faint';
+  if (impact > 0) couleurImpact = 'text-neg';
+  else if (impact < 0) couleurImpact = 'text-pos';
+
   const commencerEdition = () => {
     // Arrondi au dixième de Md€, comme `formatMd` : les montants réels ne
     // sont pas des ronds exacts (ex. Défense ~ 60,0035 Md€, affiché
@@ -98,7 +107,11 @@ function CurseurAjustement({
         onChange={(event) => onChange(Number(event.target.value))}
         className="h-1.5 flex-1"
       />
-      <span className="w-14 flex-none text-right tabular-nums text-ink-muted">
+      <span
+        className={`w-14 flex-none text-right tabular-nums ${
+          ajustementPct === 0 ? 'text-ink-muted' : 'font-semibold text-accent'
+        }`}
+      >
         {ajustementPct >= 0 ? '+' : ''}
         {Math.round(ajustementPct)}%
       </span>
@@ -115,7 +128,7 @@ function CurseurAjustement({
             if (event.key === 'Escape') setEnEdition(false);
           }}
           aria-label={`Montant exact pour ${libelle} (Md€)`}
-          className="w-24 flex-none rounded border border-line-strong bg-white px-1 py-0.5 text-right
+          className="w-24 flex-none rounded border border-line-strong bg-surface px-1 py-0.5 text-right
             tabular-nums text-ink "
         />
       ) : (
@@ -129,6 +142,9 @@ function CurseurAjustement({
           {formatMd(montant)}
         </button>
       )}
+      <span className={`w-24 flex-none text-right text-xs tabular-nums ${couleurImpact}`}>
+        {impact === 0 ? '—' : formatDeltaMd(impact)}
+      </span>
     </li>
   );
 }
@@ -138,8 +154,11 @@ export default function Simulateur() {
   const derniereAnnee =
     annees && annees.length > 0 ? Math.max(...annees.map((item) => item.annee)) : undefined;
 
-  const { data: budget, isLoading: budgetEnCours, isError: budgetEnErreur } =
-    useBudgetAnnee(derniereAnnee);
+  const {
+    data: budget,
+    isLoading: budgetEnCours,
+    isError: budgetEnErreur,
+  } = useBudgetAnnee(derniereAnnee);
   const { data: missions, isLoading: missionsEnCours } = useMissions(derniereAnnee);
   const { data: recettes, isLoading: recettesEnCours } = useRecettes(derniereAnnee);
 
@@ -191,10 +210,45 @@ export default function Simulateur() {
   );
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">
-        Simulateur budgétaire — Refais le budget {derniereAnnee}
-      </h1>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">
+            Simulateur — refaites le budget {derniereAnnee}
+          </h1>
+          <p className="mt-0.5 text-[13px] text-ink-muted">
+            Ajustez les dépenses et voyez l&apos;effet immédiat sur le{' '}
+            <GlossaryTerm term="déficit">déficit</GlossaryTerm>.
+          </p>
+        </div>
+
+        <div className="ml-auto flex flex-wrap items-center gap-2">
+          <div
+            className="flex h-8 overflow-hidden rounded-md border border-line-strong"
+            role="group"
+            aria-label="Mode de simulation"
+          >
+            {(['simple', 'avance'] as const).map((valeur) => (
+              <button
+                key={valeur}
+                type="button"
+                onClick={() => setMode(valeur)}
+                aria-pressed={mode === valeur}
+                className={`border-r border-line px-3 text-[13px] font-medium last:border-r-0 ${
+                  mode === valeur
+                    ? 'bg-accent-soft font-semibold text-accent'
+                    : 'text-ink-muted hover:bg-surface-hover hover:text-ink'
+                }`}
+              >
+                {valeur === 'simple' ? 'Mode simple' : 'Mode avancé'}
+              </button>
+            ))}
+          </div>
+          <Button variant="secondary" onClick={handleReinitialiser}>
+            Réinitialiser
+          </Button>
+        </div>
+      </div>
 
       {/* Avertissement de neutralité (CDC principe 1.3, non négociable) :
           toujours visible, jamais masquable. */}
@@ -207,90 +261,44 @@ export default function Simulateur() {
         </p>
       </Card>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-2">
-          <Button
-            variant={mode === 'simple' ? 'primary' : 'secondary'}
-            onClick={() => setMode('simple')}
-            aria-pressed={mode === 'simple'}
-          >
-            Mode simple
-          </Button>
-          <Button
-            variant={mode === 'avance' ? 'primary' : 'secondary'}
-            onClick={() => setMode('avance')}
-            aria-pressed={mode === 'avance'}
-          >
-            Mode avancé
-          </Button>
-        </div>
-        <Button variant="secondary" onClick={handleReinitialiser}>
-          Réinitialiser
-        </Button>
+      <div className="sticky top-14 z-10 -mx-4 bg-ground px-4 py-2 sm:-mx-5 sm:px-5">
+        <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Card>
+            <p className="text-sm text-ink-muted">Dépenses simulées</p>
+            <p className="mt-1 text-xl font-bold text-ink">{formatMd(resultat.depensesAjustees)}</p>
+            {resultat.deltaDepenses !== 0 && (
+              <p className={`text-sm ${resultat.deltaDepenses >= 0 ? 'text-neg' : 'text-pos'}`}>
+                {formatDeltaMd(resultat.deltaDepenses)}
+              </p>
+            )}
+          </Card>
+          <Card>
+            <p className="text-sm text-ink-muted">
+              Recettes simulées {mode === 'simple' && '(non ajustables en mode simple)'}
+            </p>
+            <p className="mt-1 text-xl font-bold text-ink">{formatMd(resultat.recettesAjustees)}</p>
+            {resultat.deltaRecettes !== 0 && (
+              <p className={`text-sm ${resultat.deltaRecettes >= 0 ? 'text-pos' : 'text-neg'}`}>
+                {formatDeltaMd(resultat.deltaRecettes)}
+              </p>
+            )}
+          </Card>
+          <Card className="border-accent-line bg-accent-soft ">
+            <p className="text-sm text-accent">
+              <GlossaryTerm term="déficit">Déficit</GlossaryTerm> simulé
+            </p>
+            <p className="mt-1 text-xl font-bold text-accent">{formatMd(resultat.deficitAjuste)}</p>
+            {resultat.deltaDeficit !== 0 && (
+              <p className={`text-sm ${resultat.deltaDeficit >= 0 ? 'text-neg' : 'text-pos'}`}>
+                {formatDeltaMd(resultat.deltaDeficit)}
+              </p>
+            )}
+          </Card>
+        </section>
       </div>
 
-      <section className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card>
-          <p className="text-sm text-ink-muted">Dépenses simulées</p>
-          <p className="mt-1 text-xl font-bold text-ink">
-            {formatMd(resultat.depensesAjustees)}
-          </p>
-          {resultat.deltaDepenses !== 0 && (
-            <p
-              className={`text-sm ${
-                resultat.deltaDepenses >= 0
-                  ? 'text-neg'
-                  : 'text-pos'
-              }`}
-            >
-              {formatDeltaMd(resultat.deltaDepenses)}
-            </p>
-          )}
-        </Card>
-        <Card>
-          <p className="text-sm text-ink-muted">
-            Recettes simulées {mode === 'simple' && '(non ajustables en mode simple)'}
-          </p>
-          <p className="mt-1 text-xl font-bold text-ink">
-            {formatMd(resultat.recettesAjustees)}
-          </p>
-          {resultat.deltaRecettes !== 0 && (
-            <p
-              className={`text-sm ${
-                resultat.deltaRecettes >= 0
-                  ? 'text-pos'
-                  : 'text-neg'
-              }`}
-            >
-              {formatDeltaMd(resultat.deltaRecettes)}
-            </p>
-          )}
-        </Card>
-        <Card className="border-accent-line bg-accent-soft ">
-          <p className="text-sm text-accent">
-            <GlossaryTerm term="déficit">Déficit</GlossaryTerm> simulé
-          </p>
-          <p className="mt-1 text-xl font-bold text-accent">
-            {formatMd(resultat.deficitAjuste)}
-          </p>
-          {resultat.deltaDeficit !== 0 && (
-            <p
-              className={`text-sm ${
-                resultat.deltaDeficit >= 0
-                  ? 'text-neg'
-                  : 'text-pos'
-              }`}
-            >
-              {formatDeltaMd(resultat.deltaDeficit)}
-            </p>
-          )}
-        </Card>
-      </section>
-
       <section>
-        <h2 className="text-lg font-semibold text-ink">
-          Dépenses par mission
-        </h2>
+        <h2 className="text-lg font-semibold text-ink">Dépenses par mission</h2>
         <ul className="mt-2 divide-y divide-line">
           {missionsTriees.map((mission) => (
             <CurseurAjustement

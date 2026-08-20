@@ -63,7 +63,12 @@ export default function DepensesFiscales() {
   const rechercheNormalisee = normaliserPourRecherche(recherche.trim());
   const depensesFiltrees = (depensesFiscales ?? []).filter((depense) => {
     if (rechercheNormalisee === '') return true;
-    const champs = [depense.categorie, depense.sousCategorie, depense.libelle, depense.beneficiaire];
+    const champs = [
+      depense.categorie,
+      depense.sousCategorie,
+      depense.libelle,
+      depense.beneficiaire,
+    ];
     return champs.some((champ) => normaliserPourRecherche(champ).includes(rechercheNormalisee));
   });
 
@@ -73,6 +78,10 @@ export default function DepensesFiscales() {
   const mesuresChiffrees = (depensesFiscales ?? []).filter(
     (depense) => depense.statutMontant === 'chiffre' && depense.montantMillions !== null,
   );
+  const mesureLaPlusCouteuse = mesuresChiffrees
+    .slice()
+    .sort((a, b) => (b.montantMillions ?? 0) - (a.montantMillions ?? 0))[0];
+
   const totalChiffreEuros = mesuresChiffrees.reduce(
     (somme, depense) => somme + (depense.montantMillions ?? 0) * 1_000_000,
     0,
@@ -118,24 +127,28 @@ export default function DepensesFiscales() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">
-          Dépenses fiscales (niches fiscales)
-        </h1>
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-start gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-[-0.02em] text-ink">Niches fiscales</h1>
+          <p className="mt-0.5 max-w-prose text-[13px] text-ink-muted">
+            Les dépenses fiscales — exonérations, crédits et réductions d&apos;impôt — recensées par
+            l&apos;annexe « Voies et moyens » du projet de loi de finances.
+          </p>
+        </div>
 
         {anneesDisponibles.length > 1 && (
           <label
             htmlFor="annee-depenses-fiscales"
-            className="text-sm font-medium text-ink-muted"
+            className="ml-auto flex items-center gap-2 text-[13px] font-medium text-ink-muted"
           >
             Année
             <select
               id="annee-depenses-fiscales"
               value={anneeActive}
               onChange={(event) => setAnneeChoisie(Number(event.target.value))}
-              className="ml-2 rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
+              className="h-8 rounded-md border border-line-strong bg-surface px-2 text-[13px]
+                font-semibold text-ink"
             >
               {anneesDisponibles.map((annee) => (
                 <option key={annee} value={annee}>
@@ -147,10 +160,56 @@ export default function DepensesFiscales() {
         )}
       </div>
 
+      {(depensesFiscales ?? []).length > 0 && (
+        <section
+          aria-label="Repères du millésime"
+          className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4"
+        >
+          <Card className="flex flex-col gap-1.5">
+            <span className="text-[12.5px] font-medium text-ink-muted">Total chiffré</span>
+            <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
+              {formatMd(totalChiffreEuros)}
+            </span>
+            <span className="text-xs text-ink-faint">millésime {anneeActive}</span>
+          </Card>
+          <Card className="flex flex-col gap-1.5">
+            <span className="text-[12.5px] font-medium text-ink-muted">Mesures recensées</span>
+            <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
+              {(depensesFiscales ?? []).length}
+            </span>
+            <span className="text-xs tabular-nums text-ink-faint">
+              dont {mesuresChiffrees.length} avec un montant
+            </span>
+          </Card>
+          <Card className="flex flex-col gap-1.5">
+            <span className="text-[12.5px] font-medium text-ink-muted">
+              Sans montant exploitable
+            </span>
+            <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
+              {(depensesFiscales ?? []).length - mesuresChiffrees.length}
+            </span>
+            <span className="text-xs text-ink-faint">exclues du total et du graphique</span>
+          </Card>
+          <Card className="flex flex-col gap-1.5">
+            <span className="text-[12.5px] font-medium text-ink-muted">
+              Mesure la plus coûteuse
+            </span>
+            <span className="text-2xl font-bold tracking-[-0.028em] tabular-nums text-ink">
+              {mesureLaPlusCouteuse
+                ? formatMd((mesureLaPlusCouteuse.montantMillions ?? 0) * 1e6)
+                : '—'}
+            </span>
+            <span className="truncate text-xs text-ink-faint" title={mesureLaPlusCouteuse?.libelle}>
+              {mesureLaPlusCouteuse?.libelle ?? 'aucune mesure chiffrée'}
+            </span>
+          </Card>
+        </section>
+      )}
+
       <Card className="border-accent-line bg-accent-soft ">
         <p className="text-sm text-accent">
-          Données {anneeActive ?? ''} (dernier montant réalisé connu — pas une prévision), issues
-          de l&apos;annexe « Voies et moyens » Tome II du PLF, seule édition publiée dans un format
+          Données {anneeActive ?? ''} (dernier montant réalisé connu — pas une prévision), issues de
+          l&apos;annexe « Voies et moyens » Tome II du PLF, seule édition publiée dans un format
           structuré exploitable. Une dépense fiscale n&apos;est connue avec certitude qu&apos;après
           dépouillement des déclarations fiscales de l&apos;année suivante : aucune édition plus
           récente n&apos;existe sous cette forme.
@@ -216,28 +275,16 @@ export default function DepensesFiscales() {
           <table className="min-w-full divide-y divide-line text-sm ">
             <thead className="bg-surface-sunken">
               <tr>
-                <th
-                  scope="col"
-                  className="px-3 py-2 text-left font-medium text-ink-muted"
-                >
+                <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
                   Impôt concerné
                 </th>
-                <th
-                  scope="col"
-                  className="px-3 py-2 text-left font-medium text-ink-muted"
-                >
+                <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
                   Libellé
                 </th>
-                <th
-                  scope="col"
-                  className="px-3 py-2 text-left font-medium text-ink-muted"
-                >
+                <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
                   Bénéficiaire
                 </th>
-                <th
-                  scope="col"
-                  className="px-3 py-2 text-right font-medium text-ink-muted"
-                >
+                <th scope="col" className="px-3 py-2 text-right font-medium text-ink-muted">
                   Montant
                 </th>
               </tr>
@@ -252,15 +299,11 @@ export default function DepensesFiscales() {
               ) : (
                 depensesFiltrees.map((depense) => (
                   <tr key={depense.numero}>
-                    <td className="px-3 py-2 text-ink">
-                      {depense.categorie}
-                    </td>
+                    <td className="px-3 py-2 text-ink">{depense.categorie}</td>
                     <td className="px-3 py-2 text-ink-muted" title={depense.libelle}>
                       {depense.libelle}
                     </td>
-                    <td className="px-3 py-2 text-ink-muted">
-                      {depense.beneficiaire}
-                    </td>
+                    <td className="px-3 py-2 text-ink-muted">{depense.beneficiaire}</td>
                     <td className="px-3 py-2 text-right text-ink-muted">
                       {formatMontant(depense)}
                     </td>
