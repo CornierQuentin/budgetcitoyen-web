@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { animate, useReducedMotion } from 'framer-motion';
 
 import { SourceIcon } from '../components/ui/SourceIcon';
-import { CodeIcon, LinkIcon, ListIcon, ShieldIcon } from '../components/ui/icons';
+import { CodeIcon, ExternalLinkIcon, LinkIcon, ListIcon, ShieldIcon } from '../components/ui/icons';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useComparateur } from '../hooks/useComparateur';
@@ -11,6 +11,7 @@ import { useHistorique } from '../hooks/useHistorique';
 import { useMarches } from '../hooks/useMarches';
 import { useMissions } from '../hooks/useMissions';
 import { formatEuros, formatMd, soldeDepuisDeficit } from '../utils/format';
+import { urlDocumentationApi } from '../utils/urlsApi';
 
 // `formatEuros` arrondit à l'euro entier : il transformerait le ratio 1,29 en
 // « 1 € », c'est-à-dire en contresens (« l'État dépense 1 € pour chaque euro
@@ -659,6 +660,17 @@ export default function Home() {
           >
             Voir toutes les sources
           </Link>
+          <a
+            href={urlDocumentationApi()}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex h-10 items-center gap-1.5 rounded-md border border-line-strong
+              bg-surface px-4 text-[14.5px] font-medium text-ink transition-colors
+              hover:bg-surface-hover"
+          >
+            Documentation de l&apos;API
+            <ExternalLinkIcon className="h-3.5 w-3.5 text-ink-faint" />
+          </a>
         </div>
       </Section>
 
