@@ -114,7 +114,7 @@ describe('DonutChart', () => {
     expect(lignesLibelleLong.join(' ')).toBe(libelleLong);
   });
 
-  it("recalcule les positions de façon stable même si <Pie> rappelle le label plusieurs fois (navigation clavier)", () => {
+  it('recalcule les positions de façon stable même si <Pie> rappelle le label plusieurs fois (navigation clavier)', () => {
     // Régression : une première implémentation accumulait la géométrie de
     // chaque tranche dans un tableau mutable partagé entre tous les appels
     // du callback `label`, sans le réinitialiser — recharts pouvant
@@ -206,5 +206,65 @@ describe('DonutChart', () => {
 
     const secteurs = container.querySelectorAll('.recharts-pie-sector path');
     expect(() => fireEvent.click(secteurs[0])).not.toThrow();
+  });
+
+  describe('variante compacte', () => {
+    it('porte le total au centre de l’anneau et le détail dans la légende', () => {
+      render(<DonutChart data={data} variant="compact" />);
+
+      // 290 Md€ au centre, découpés en nombre et unité sur deux lignes.
+      expect(screen.getByText('290')).toBeInTheDocument();
+      expect(screen.getByText('Md€')).toBeInTheDocument();
+
+      // Chaque ligne de légende porte son montant ET sa part — c'est ce qui
+      // permet de se passer des étiquettes à traits dans une colonne étroite.
+      expect(screen.getByText('TVA')).toBeInTheDocument();
+      expect(screen.getByText('200 Md€')).toBeInTheDocument();
+      expect(screen.getByText('69 %')).toBeInTheDocument();
+    });
+
+    it('dessine un segment d’anneau par tranche, proportionnel à sa part', () => {
+      const { container } = render(<DonutChart data={data} variant="compact" />);
+
+      const segments = container.querySelectorAll('svg circle');
+      expect(segments).toHaveLength(2);
+
+      // Circonférence du cercle de rayon 60 : la longueur du premier segment
+      // doit valoir la part de la TVA (200/290) de ce tour complet.
+      const circonference = 2 * Math.PI * 60;
+      const [longueur] = (segments[0].getAttribute('stroke-dasharray') ?? '').split(' ');
+      expect(Number(longueur)).toBeCloseTo((200 / 290) * circonference, 1);
+
+      // Le second segment démarre exactement là où le premier s'arrête.
+      expect(Number(segments[1].getAttribute('stroke-dashoffset'))).toBeCloseTo(
+        -Number(longueur),
+        1,
+      );
+    });
+
+    it('rend la légende cliquable quand `onSliceClick` est fourni', () => {
+      const onSliceClick = vi.fn();
+      render(<DonutChart data={data} variant="compact" onSliceClick={onSliceClick} />);
+
+      fireEvent.click(screen.getByRole('button', { name: /TVA/ }));
+
+      expect(onSliceClick).toHaveBeenCalledWith('TVA');
+    });
+
+    it('laisse la légende non interactive sans `onSliceClick`', () => {
+      render(<DonutChart data={data} variant="compact" />);
+
+      expect(screen.queryByRole('button', { name: /TVA/ })).not.toBeInTheDocument();
+    });
+
+    it('applique la palette imposée dans l’ordre des tranches', () => {
+      const { container } = render(
+        <DonutChart data={data} variant="compact" palette={['#16326b', '#dbe4f3']} />,
+      );
+
+      const segments = container.querySelectorAll('svg circle');
+      expect(segments[0]).toHaveAttribute('stroke', '#16326b');
+      expect(segments[1]).toHaveAttribute('stroke', '#dbe4f3');
+    });
   });
 });

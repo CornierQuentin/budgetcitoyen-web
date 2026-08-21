@@ -27,6 +27,22 @@ export function formatMd(montant: number): string {
   return `${valeur} Md€`;
 }
 
+/**
+ * Même valeur que `formatMd`, mais séparée en nombre et unité — le centre des
+ * camemberts compacts empile les deux sur deux lignes de tailles et de
+ * graisses différentes (cf. maquettes validées), ce qu'une chaîne unique ne
+ * permet pas. Fabriqué à partir de `formatMd` plutôt qu'en parallèle, pour
+ * qu'une évolution de l'arrondi ne puisse jamais désaccorder les deux.
+ */
+export function formatMdParties(montant: number): { valeur: string; unite: string } {
+  const complet = formatMd(montant);
+  const dernierEspace = complet.lastIndexOf(' ');
+  return {
+    valeur: complet.slice(0, dernierEspace),
+    unite: complet.slice(dernierEspace + 1),
+  };
+}
+
 export function formatPct(ratio: number): string {
   return percentFormatter.format(ratio);
 }

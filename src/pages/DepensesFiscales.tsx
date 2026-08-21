@@ -5,9 +5,11 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { SourceIcon } from '../components/ui/SourceIcon';
 import { useDepensesFiscales, useDepensesFiscalesAnnees } from '../hooks/useDepensesFiscales';
+import { useThemeStore } from '../store/useThemeStore';
 import type { DepenseFiscale, StatutMontant } from '../types/domain';
 import { exportCsv } from '../utils/exportCsv';
 import { formatMd } from '../utils/format';
+import { rampeSequentielle } from '../utils/rampeSequentielle';
 import { topNAvecAutres } from '../utils/topNAvecAutres';
 
 // URL publique du dataset (portail data.economie.gouv.fr, OpenDataSoft) : la
@@ -62,6 +64,7 @@ function normaliserPourRecherche(valeur: string): string {
 }
 
 export default function DepensesFiscales() {
+  const estSombre = useThemeStore((state) => state.theme === 'dark');
   const { data: annees } = useDepensesFiscalesAnnees();
   const anneesDisponibles = (annees ?? []).slice().sort((a, b) => b - a);
   const [anneeChoisie, setAnneeChoisie] = useState<number | undefined>(undefined);
@@ -118,6 +121,13 @@ export default function DepensesFiscales() {
       NB_CATEGORIES_DISTINCTES,
     );
   }, [mesuresChiffrees]);
+
+  // Les tranches arrivent triées par montant décroissant : une rampe d'une
+  // seule teinte fait alors lire la quantité à la couleur (cf. maquettes).
+  const rampeDonut = useMemo(
+    () => rampeSequentielle(donutData.length, estSombre),
+    [donutData.length, estSombre],
+  );
 
   const handleExportCsv = () => {
     exportCsv(
@@ -236,85 +246,85 @@ export default function DepensesFiscales() {
 
       <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.62fr)_minmax(0,1fr)]">
         <div>
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <h2 className="text-lg font-semibold text-ink">
-            Les mesures les plus coûteuses{' '}
-            <span className="text-sm font-normal text-ink-muted">
-              {depensesFiscales ? `(${depensesFiscales.length} recensées)` : ''}
-            </span>
-          </h2>
-          {depensesFiscales && depensesFiscales.length > 0 && (
-            <Button
-              type="button"
-              variant="secondary"
-              className="px-3 py-1 text-xs"
-              onClick={handleExportCsv}
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <h2 className="text-lg font-semibold text-ink">
+              Les mesures les plus coûteuses{' '}
+              <span className="text-sm font-normal text-ink-muted">
+                {depensesFiscales ? `(${depensesFiscales.length} recensées)` : ''}
+              </span>
+            </h2>
+            {depensesFiscales && depensesFiscales.length > 0 && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="px-3 py-1 text-xs"
+                onClick={handleExportCsv}
+              >
+                Exporter CSV
+              </Button>
+            )}
+          </div>
+
+          <div className="mt-3 max-w-sm">
+            <label
+              htmlFor="recherche-depense-fiscale"
+              className="block text-sm font-medium text-ink-muted"
             >
-              Exporter CSV
-            </Button>
-          )}
-        </div>
-
-        <div className="mt-3 max-w-sm">
-          <label
-            htmlFor="recherche-depense-fiscale"
-            className="block text-sm font-medium text-ink-muted"
-          >
-            Rechercher une mesure
-            <input
-              id="recherche-depense-fiscale"
-              type="search"
-              value={recherche}
-              onChange={(event) => setRecherche(event.target.value)}
-              placeholder="Ex. TVA, entreprises, crédit d'impôt…"
-              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+              Rechercher une mesure
+              <input
+                id="recherche-depense-fiscale"
+                type="search"
+                value={recherche}
+                onChange={(event) => setRecherche(event.target.value)}
+                placeholder="Ex. TVA, entreprises, crédit d'impôt…"
+                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
                 "
-            />
-          </label>
-        </div>
+              />
+            </label>
+          </div>
 
-        <div className="mt-3 overflow-x-auto rounded-lg border border-line">
-          <table className="min-w-full divide-y divide-line text-sm ">
-            <thead className="bg-surface-sunken">
-              <tr>
-                <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
-                  Impôt concerné
-                </th>
-                <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
-                  Libellé
-                </th>
-                <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
-                  Bénéficiaire
-                </th>
-                <th scope="col" className="px-3 py-2 text-right font-medium text-ink-muted">
-                  Montant
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-line">
-              {depensesFiltrees.length === 0 ? (
+          <div className="mt-3 overflow-x-auto rounded-lg border border-line">
+            <table className="min-w-full divide-y divide-line text-sm ">
+              <thead className="bg-surface-sunken">
                 <tr>
-                  <td colSpan={4} className="px-3 py-4 text-center text-ink-muted">
-                    Aucune mesure ne correspond à « {recherche.trim()} ».
-                  </td>
+                  <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
+                    Impôt concerné
+                  </th>
+                  <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
+                    Libellé
+                  </th>
+                  <th scope="col" className="px-3 py-2 text-left font-medium text-ink-muted">
+                    Bénéficiaire
+                  </th>
+                  <th scope="col" className="px-3 py-2 text-right font-medium text-ink-muted">
+                    Montant
+                  </th>
                 </tr>
-              ) : (
-                depensesFiltrees.map((depense) => (
-                  <tr key={depense.numero}>
-                    <td className="px-3 py-2 text-ink">{depense.categorie}</td>
-                    <td className="px-3 py-2 text-ink-muted" title={depense.libelle}>
-                      {depense.libelle}
-                    </td>
-                    <td className="px-3 py-2 text-ink-muted">{depense.beneficiaire}</td>
-                    <td className="px-3 py-2 text-right text-ink-muted">
-                      {formatMontant(depense)}
+              </thead>
+              <tbody className="divide-y divide-line">
+                {depensesFiltrees.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-3 py-4 text-center text-ink-muted">
+                      Aucune mesure ne correspond à « {recherche.trim()} ».
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  depensesFiltrees.map((depense) => (
+                    <tr key={depense.numero}>
+                      <td className="px-3 py-2 text-ink">{depense.categorie}</td>
+                      <td className="px-3 py-2 text-ink-muted" title={depense.libelle}>
+                        {depense.libelle}
+                      </td>
+                      <td className="px-3 py-2 text-ink-muted">{depense.beneficiaire}</td>
+                      <td className="px-3 py-2 text-right text-ink-muted">
+                        {formatMontant(depense)}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4">
@@ -322,6 +332,9 @@ export default function DepensesFiscales() {
             <Card title="Par impôt concerné" note={`total chiffré ${formatMd(totalChiffreEuros)}`}>
               <DonutChart
                 data={donutData}
+                variant="compact"
+                palette={rampeDonut}
+                titreAccessible="Répartition des dépenses fiscales par impôt concerné"
                 nomFichierExport={`depenses-fiscales-${anneeActive}.png`}
               />
               {nbNonChiffrees > 0 && (

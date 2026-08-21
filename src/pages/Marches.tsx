@@ -13,10 +13,12 @@ import { SourceIcon } from '../components/ui/SourceIcon';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useMarches, useMarchesBornes, useMarchesRepartitionCpv } from '../hooks/useMarches';
 import { useSyncSearchParams } from '../hooks/useSyncSearchParams';
+import { useThemeStore } from '../store/useThemeStore';
 import type { MarchePublic } from '../types/domain';
 import { exportCsv } from '../utils/exportCsv';
 import { formatEuros, formatMd } from '../utils/format';
 import { parseIntSearchParam, parseStringSearchParam } from '../utils/searchParams';
+import { rampeSequentielle } from '../utils/rampeSequentielle';
 import { topNAvecAutres } from '../utils/topNAvecAutres';
 
 const SOURCE_URL =
@@ -36,6 +38,7 @@ function formatDate(iso: string): string {
 }
 
 export default function Marches() {
+  const estSombre = useThemeStore((state) => state.theme === 'dark');
   const [searchParams] = useSearchParams();
 
   const [q, setQ] = useState(() => parseStringSearchParam(searchParams.get('q')) ?? '');
@@ -122,6 +125,13 @@ export default function Marches() {
         NB_DIVISIONS_DISTINCTES,
       ),
     [repartition],
+  );
+
+  // Les tranches arrivent triées par montant décroissant : une rampe d'une
+  // seule teinte fait alors lire la quantité à la couleur (cf. maquettes).
+  const rampeDonut = useMemo(
+    () => rampeSequentielle(donutData.length, estSombre),
+    [donutData.length, estSombre],
   );
 
   const handleClicTrancheCpv = (label: string) => {
@@ -254,105 +264,111 @@ export default function Marches() {
 
       <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.62fr)_minmax(0,1fr)]">
         <div>
-        <div className="flex flex-wrap items-start justify-between gap-2">
-          <h2 className="text-lg font-semibold text-ink">
-            Liste des marchés {pageData ? `(${pageData.total.toLocaleString('fr-FR')})` : ''}
-          </h2>
-          {pageData && pageData.items.length > 0 && (
-            <Button
-              type="button"
-              variant="secondary"
-              className="px-3 py-1 text-xs"
-              onClick={handleExportCsv}
+          <div className="flex flex-wrap items-start justify-between gap-2">
+            <h2 className="text-lg font-semibold text-ink">
+              Liste des marchés {pageData ? `(${pageData.total.toLocaleString('fr-FR')})` : ''}
+            </h2>
+            {pageData && pageData.items.length > 0 && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="px-3 py-1 text-xs"
+                onClick={handleExportCsv}
+              >
+                Exporter cette page (CSV)
+              </Button>
+            )}
+          </div>
+
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <SearchInput
+              id="recherche-marche"
+              label="Rechercher (objet)"
+              value={q}
+              onChange={setQ}
+              placeholder="Ex. hôpital, école, voirie…"
+            />
+            <label htmlFor="date-debut-marche" className="block text-sm font-medium text-ink-muted">
+              Notifié à partir du
+              <input
+                id="date-debut-marche"
+                type="date"
+                value={dateDebut}
+                min={bornes?.dateMin ?? undefined}
+                max={bornes?.dateMax ?? undefined}
+                onChange={(event) => setDateDebut(event.target.value)}
+                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
+              />
+            </label>
+            <label htmlFor="date-fin-marche" className="block text-sm font-medium text-ink-muted">
+              Notifié jusqu&apos;au
+              <input
+                id="date-fin-marche"
+                type="date"
+                value={dateFin}
+                min={bornes?.dateMin ?? undefined}
+                max={bornes?.dateMax ?? undefined}
+                onChange={(event) => setDateFin(event.target.value)}
+                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
+              />
+            </label>
+            <label
+              htmlFor="montant-min-marche"
+              className="block text-sm font-medium text-ink-muted"
             >
-              Exporter cette page (CSV)
-            </Button>
+              Montant minimum (€)
+              <input
+                id="montant-min-marche"
+                type="number"
+                min={0}
+                value={montantMin}
+                onChange={(event) => setMontantMin(event.target.value)}
+                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
+              />
+            </label>
+            <label
+              htmlFor="montant-max-marche"
+              className="block text-sm font-medium text-ink-muted"
+            >
+              Montant maximum (€)
+              <input
+                id="montant-max-marche"
+                type="number"
+                min={0}
+                value={montantMax}
+                onChange={(event) => setMontantMax(event.target.value)}
+                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
+                "
+              />
+            </label>
+            <div className="flex items-end">
+              <Button type="button" variant="secondary" onClick={resetFiltres}>
+                Réinitialiser les filtres
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-3">
+            <Table
+              columns={columns}
+              rows={pageData?.items ?? []}
+              getRowKey={(m) => String(m.id)}
+              emptyMessage={messageVide}
+            />
+          </div>
+
+          {pageData && (
+            <div className="mt-4">
+              <Pagination
+                page={pageData.page}
+                totalPages={pageData.totalPages}
+                onPageChange={setPage}
+              />
+            </div>
           )}
-        </div>
-
-        <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          <SearchInput
-            id="recherche-marche"
-            label="Rechercher (objet)"
-            value={q}
-            onChange={setQ}
-            placeholder="Ex. hôpital, école, voirie…"
-          />
-          <label htmlFor="date-debut-marche" className="block text-sm font-medium text-ink-muted">
-            Notifié à partir du
-            <input
-              id="date-debut-marche"
-              type="date"
-              value={dateDebut}
-              min={bornes?.dateMin ?? undefined}
-              max={bornes?.dateMax ?? undefined}
-              onChange={(event) => setDateDebut(event.target.value)}
-              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
-            />
-          </label>
-          <label htmlFor="date-fin-marche" className="block text-sm font-medium text-ink-muted">
-            Notifié jusqu&apos;au
-            <input
-              id="date-fin-marche"
-              type="date"
-              value={dateFin}
-              min={bornes?.dateMin ?? undefined}
-              max={bornes?.dateMax ?? undefined}
-              onChange={(event) => setDateFin(event.target.value)}
-              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
-            />
-          </label>
-          <label htmlFor="montant-min-marche" className="block text-sm font-medium text-ink-muted">
-            Montant minimum (€)
-            <input
-              id="montant-min-marche"
-              type="number"
-              min={0}
-              value={montantMin}
-              onChange={(event) => setMontantMin(event.target.value)}
-              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
-            />
-          </label>
-          <label htmlFor="montant-max-marche" className="block text-sm font-medium text-ink-muted">
-            Montant maximum (€)
-            <input
-              id="montant-max-marche"
-              type="number"
-              min={0}
-              value={montantMax}
-              onChange={(event) => setMontantMax(event.target.value)}
-              className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
-            />
-          </label>
-          <div className="flex items-end">
-            <Button type="button" variant="secondary" onClick={resetFiltres}>
-              Réinitialiser les filtres
-            </Button>
-          </div>
-        </div>
-
-        <div className="mt-3">
-          <Table
-            columns={columns}
-            rows={pageData?.items ?? []}
-            getRowKey={(m) => String(m.id)}
-            emptyMessage={messageVide}
-          />
-        </div>
-
-        {pageData && (
-          <div className="mt-4">
-            <Pagination
-              page={pageData.page}
-              totalPages={pageData.totalPages}
-              onPageChange={setPage}
-            />
-          </div>
-        )}
         </div>
 
         <div className="flex flex-col gap-4">
@@ -371,6 +387,9 @@ export default function Marches() {
             >
               <DonutChart
                 data={donutData}
+                variant="compact"
+                palette={rampeDonut}
+                titreAccessible="Répartition des marchés publics par catégorie d'achat"
                 nomFichierExport="marches-publics-repartition-cpv.png"
                 onSliceClick={handleClicTrancheCpv}
               />
