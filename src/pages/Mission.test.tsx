@@ -22,8 +22,8 @@ const detailMock: MissionDetail = {
 };
 
 const historiqueMock: MissionHistoriqueItem[] = [
-  { annee: 2022, nomOfficiel: 'Défense (ancien libellé)' },
-  { annee: 2023, nomOfficiel: 'Défense' },
+  { annee: 2022, nomOfficiel: 'Défense (ancien libellé)', montantTotal: 49_600_000_000 },
+  { annee: 2023, nomOfficiel: 'Défense', montantTotal: 53_100_000_000 },
 ];
 
 const budgetAnneeMock: AnneeBudgetDetail = {

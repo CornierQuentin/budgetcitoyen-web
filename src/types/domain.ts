@@ -36,6 +36,7 @@ export interface Mission {
 export interface MissionHistoriqueItem {
   annee: number;
   nomOfficiel: string;
+  montantTotal: number;
 }
 
 export interface ActionDetail {
