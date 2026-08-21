@@ -1,4 +1,11 @@
-import { Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  type MouseEvent as ReactMouseEvent,
+  Suspense,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { Link, Outlet, useNavigate, useSearchParams } from 'react-router-dom';
 
 import DonutChart from '../components/charts/DonutChart';
@@ -118,6 +125,22 @@ export default function Dashboard() {
     () => new Map((missions ?? []).map((mission) => [mission.nomOfficiel, mission.slug])),
     [missions],
   );
+
+  // Toute la ligne du tableau des missions ouvre le détail, pas seulement son
+  // nom : la ligne est la cible que l'oeil vise (retour utilisateur). Le
+  // <Link> reste en place et garde son rôle — c'est lui qui porte l'URL
+  // réelle (clic droit, ouverture dans un nouvel onglet, survol qui affiche la
+  // destination) et le parcours clavier. La ligne n'ajoute qu'un raccourci à
+  // la souris, sans créer de second arrêt de tabulation ni dupliquer
+  // l'annonce faite aux lecteurs d'écran.
+  const ouvrirMission = (event: ReactMouseEvent<HTMLTableRowElement>, slug: string) => {
+    // Clic sur le lien lui-même : déjà pris en charge par React Router.
+    if ((event.target as HTMLElement).closest('a')) return;
+    // Ne pas emmener ailleurs quelqu'un qui vient de sélectionner un montant
+    // pour le copier — le relâchement de la souris est alors un clic.
+    if (window.getSelection()?.toString()) return;
+    navigate(`/tableau-de-bord/mission/${slug}`);
+  };
 
   const handleClicTrancheMission = (label: string) => {
     const slug = slugParNomMission.get(label);
@@ -382,7 +405,9 @@ export default function Dashboard() {
                   missionsTriees.map((mission) => (
                     <tr
                       key={mission.slug}
-                      className="border-b border-line last:border-b-0 hover:bg-surface-hover"
+                      onClick={(event) => ouvrirMission(event, mission.slug)}
+                      className="cursor-pointer border-b border-line last:border-b-0
+                        hover:bg-surface-hover"
                     >
                       <td className="px-4 py-2.5">
                         <Link
