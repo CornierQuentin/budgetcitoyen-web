@@ -1,6 +1,7 @@
 import { type ReactNode, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 
+import { useAnnees } from '../../hooks/useAnnees';
 import { useThemeStore } from '../../store/useThemeStore';
 import { CloseIcon, LogoMarkIcon, MenuIcon, MoonIcon, SunIcon } from '../ui/icons';
 import Footer from './Footer';
@@ -37,6 +38,14 @@ export default function LandingShell({ children }: LandingShellProps) {
 
   const [menuOuvert, setMenuOuvert] = useState(false);
   const libelleMenu = menuOuvert ? 'Fermer le menu' : 'Ouvrir le menu';
+
+  // L'exercice visé est annoncé dans l'appel à l'action : « Explorer le budget
+  // 2026 » dit où l'on atterrit, pas seulement qu'on va quelque part. La
+  // requête est déjà faite par la page d'accueil, React Query la mutualise.
+  const { data: annees } = useAnnees();
+  const derniereAnnee =
+    annees && annees.length > 0 ? Math.max(...annees.map((item) => item.annee)) : undefined;
+  const libelleExplorer = derniereAnnee ? `Explorer le budget ${derniereAnnee}` : 'Explorer le budget';
 
   useEffect(() => {
     if (!menuOuvert) return undefined;
@@ -95,7 +104,7 @@ export default function LandingShell({ children }: LandingShellProps) {
                   text-[13.5px] font-semibold text-accent-contrast transition-colors
                   hover:border-accent-hover hover:bg-accent-hover sm:inline-flex"
               >
-                Explorer le budget
+                {libelleExplorer}
               </Link>
 
               <button
@@ -137,7 +146,7 @@ export default function LandingShell({ children }: LandingShellProps) {
                 className="mt-1 rounded-md bg-accent px-2 py-2 text-center text-[14.5px]
                   font-semibold text-accent-contrast"
               >
-                Explorer le budget
+                {libelleExplorer}
               </Link>
             </nav>
           )}
