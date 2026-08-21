@@ -29,6 +29,8 @@ describe('useMissionDetail', () => {
           nom: 'Équipement des forces',
           montant_total: 20_000_000_000,
           actions: [{ id: 100, code: '146-01', nom: 'Dissuasion', ae: 1000, cp: 900 }],
+          code_officiel: true,
+          actions_detaillees: true,
         },
       ],
     };
@@ -55,6 +57,8 @@ describe('useMissionDetail', () => {
           nom: 'Équipement des forces',
           montantTotal: 20_000_000_000,
           actions: [{ id: 100, code: '146-01', nom: 'Dissuasion', ae: 1000, cp: 900 }],
+          codeOfficiel: true,
+          actionsDetaillees: true,
         },
       ],
     };
