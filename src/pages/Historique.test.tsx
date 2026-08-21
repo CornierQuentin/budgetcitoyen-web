@@ -161,26 +161,43 @@ describe('Historique', () => {
 
     // Défense (53 Md€ en 2023) plutôt que Culture (4 Md€) : le choix par
     // défaut est la courbe la plus parlante, jamais le premier de la liste.
-    expect(screen.getByLabelText('Mission')).toHaveValue('defense');
+    expect(screen.getByRole('combobox', { name: 'Mission' })).toHaveValue('Défense');
     expect(screen.getByText(/Défense — 3 exercices de 2021 à 2023/)).toBeInTheDocument();
   });
 
   it('propose toutes les missions ayant existé, pas seulement celles du dernier exercice', () => {
     renderHistorique();
 
-    const options = within(screen.getByLabelText('Mission')).getAllByRole('option');
+    fireEvent.focus(screen.getByRole('combobox', { name: 'Mission' }));
+
+    const options = within(screen.getByRole('listbox')).getAllByRole('option');
     // Dédoublonnées par slug malgré une entrée par année dans la source.
     expect(options.map((option) => option.textContent)).toEqual(['Culture', 'Défense']);
+  });
+
+  it('filtre la liste des missions à la saisie, sans accent ni casse', () => {
+    renderHistorique();
+
+    const champ = screen.getByRole('combobox', { name: 'Mission' });
+    fireEvent.focus(champ);
+    fireEvent.change(champ, { target: { value: 'defen' } });
+
+    const options = within(screen.getByRole('listbox')).getAllByRole('option');
+    expect(options.map((option) => option.textContent)).toEqual(['Défense']);
   });
 
   it("restitue la mission passée dans l'URL, et écrit celle qu'on choisit", () => {
     renderHistorique(['/historique?mission=culture']);
 
-    expect(screen.getByLabelText('Mission')).toHaveValue('culture');
+    const champ = screen.getByRole('combobox', { name: 'Mission' });
+    expect(champ).toHaveValue('Culture');
 
-    fireEvent.change(screen.getByLabelText('Mission'), { target: { value: 'defense' } });
+    fireEvent.focus(champ);
+    fireEvent.mouseDown(
+      within(screen.getByRole('listbox')).getByRole('option', { name: 'Défense' }),
+    );
 
-    expect(screen.getByLabelText('Mission')).toHaveValue('defense');
+    expect(screen.getByRole('combobox', { name: 'Mission' })).toHaveValue('Défense');
   });
 
   it("donne l'évolution de la mission sur la période affichée", () => {

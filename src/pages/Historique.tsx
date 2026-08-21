@@ -5,6 +5,7 @@ import LineChart, { type LineChartSerie } from '../components/charts/LineChart';
 import { Badge } from '../components/ui/Badge';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { Combobox, type ComboboxOption } from '../components/ui/Combobox';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { useHistorique } from '../hooks/useHistorique';
 import { useMissionHistorique } from '../hooks/useMissionHistorique';
@@ -126,6 +127,15 @@ export default function Historique() {
     });
     return Array.from(parSlug.values()).sort((a, b) => a.nomOfficiel.localeCompare(b.nomOfficiel));
   }, [toutesMissions]);
+
+  const optionsMissions: ComboboxOption[] = useMemo(
+    () =>
+      missionsSelectionnables.map((mission) => ({
+        value: mission.slug,
+        label: mission.nomOfficiel,
+      })),
+    [missionsSelectionnables],
+  );
 
   const [searchParamsInitiaux] = useSearchParams();
   const [missionChoisie, setMissionChoisie] = useState<string>(
@@ -312,25 +322,16 @@ export default function Historique() {
             : undefined
         }
         actions={
-          <label
-            htmlFor="mission-historique"
-            className="flex items-center gap-2 text-[13px] text-ink-muted"
-          >
-            <span className="whitespace-nowrap">Mission</span>
-            <select
-              id="mission-historique"
-              value={missionActive}
-              onChange={(event) => setMissionChoisie(event.target.value)}
-              className="h-8 max-w-[19rem] rounded-md border border-line-strong bg-surface px-2
-                text-[13px] font-semibold text-ink"
-            >
-              {missionsSelectionnables.map((mission) => (
-                <option key={mission.slug} value={mission.slug}>
-                  {mission.nomOfficiel}
-                </option>
-              ))}
-            </select>
-          </label>
+          <Combobox
+            id="mission-historique"
+            label="Mission"
+            options={optionsMissions}
+            value={missionActive}
+            onChange={setMissionChoisie}
+            placeholder="Ex. défense, justice, écologie…"
+            messageVide="Aucune mission ne correspond."
+            className="w-full sm:w-[21rem]"
+          />
         }
         footer={
           serieMission.length > 0

@@ -12,16 +12,8 @@ import { useExportPng } from '../hooks/useExportPng';
 import type { MissionDelta, RecetteDelta } from '../types/domain';
 import { exportCsv } from '../utils/exportCsv';
 import { formatEcartMd, formatMd, formatPct, soldeDepuisDeficit } from '../utils/format';
+import { normaliserPourRecherche } from '../utils/normaliserPourRecherche';
 import { parseIntSearchParam } from '../utils/searchParams';
-
-// Normalise une chaîne pour une recherche insensible à la casse et aux
-// accents (ex : "defense" doit trouver "Défense").
-function normaliserPourRecherche(valeur: string): string {
-  return valeur
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase();
-}
 
 export default function Comparateur() {
   const { data: annees } = useAnnees();

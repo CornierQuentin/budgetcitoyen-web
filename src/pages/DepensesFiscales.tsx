@@ -9,6 +9,7 @@ import { useThemeStore } from '../store/useThemeStore';
 import type { DepenseFiscale, StatutMontant } from '../types/domain';
 import { exportCsv } from '../utils/exportCsv';
 import { formatMd } from '../utils/format';
+import { normaliserPourRecherche } from '../utils/normaliserPourRecherche';
 import { rampeSequentielle } from '../utils/rampeSequentielle';
 import { topNAvecAutres } from '../utils/topNAvecAutres';
 
@@ -54,13 +55,6 @@ function formatMontant(depense: DepenseFiscale): string {
     return formatMontantMillions(depense.montantMillions);
   }
   return STATUT_LABEL[depense.statutMontant];
-}
-
-function normaliserPourRecherche(valeur: string): string {
-  return valeur
-    .normalize('NFD')
-    .replace(/\p{Diacritic}/gu, '')
-    .toLowerCase();
 }
 
 export default function DepensesFiscales() {
