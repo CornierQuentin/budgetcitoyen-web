@@ -6,6 +6,7 @@ import { useThemeStore } from '../../store/useThemeStore';
 import { couleurPourLabel } from '../../utils/couleurCategorielle';
 import { formatMd, formatPct } from '../../utils/format';
 import { Button } from '../ui/Button';
+import DonutCompact from './DonutCompact';
 
 export interface DonutDatum {
   label: string;
@@ -24,12 +25,12 @@ interface DonutChartProps {
   /** Nom de fichier proposé pour l'export PNG (CDC 6.2). */
   nomFichierExport?: string;
   /**
-   * Palette imposée, appliquée dans l'ordre des tranches. Sert aux séries
-   * courtes et ordonnées (les 5 types de recettes), où une rampe d'une seule
-   * teinte fait lire la quantité à la valeur. Sans cette prop, on retombe sur
-   * la palette catégorielle par hash du libellé — seule tenable quand les
-   * catégories sont nombreuses et non ordonnées (les 46 divisions CPV des
-   * marchés publics, par exemple).
+   * Palette imposée, appliquée dans l'ordre des tranches. Sert aux
+   * répartitions triées par montant décroissant (recettes, impôts, catégories
+   * d'achat), où une rampe d'une seule teinte — cf. `rampeSequentielle` — fait
+   * lire la quantité à la couleur. Sans cette prop, on retombe sur la palette
+   * catégorielle par hash du libellé, réservée aux séries dont l'ordre ne
+   * porte aucun sens (les missions du budget, par exemple).
    */
   palette?: string[];
   /**
@@ -38,6 +39,16 @@ interface DonutChartProps {
    * clavier native de recharts). Laisser vide pour un graphique non cliquable.
    */
   onSliceClick?: (label: string) => void;
+  /**
+   * `etiquettes` (défaut) : grand disque avec étiquettes externes reliées par
+   * un trait, pour une carte pleine largeur. `compact` : anneau réduit, total
+   * au centre, légende en colonne avec montant et part — la forme des
+   * maquettes validées pour les cartes de répartition en colonne latérale,
+   * où les étiquettes à traits n'ont pas la largeur qu'elles réclament.
+   */
+  variant?: 'etiquettes' | 'compact';
+  /** Description du graphique pour les lecteurs d'écran (variante compacte). */
+  titreAccessible?: string;
 }
 
 interface DonutTooltipProps {
@@ -233,7 +244,8 @@ function calculerPositionsLabels(
     const mx = cx + (outerRadius + RAYON_COUDE_TRAIT) * cos;
     const my = cy + (outerRadius + RAYON_COUDE_TRAIT) * sin;
     const cote: 'gauche' | 'droite' = cos >= 0 ? 'droite' : 'gauche';
-    const ex = mx + (cote === 'droite' ? LONGUEUR_SEGMENT_HORIZONTAL : -LONGUEUR_SEGMENT_HORIZONTAL);
+    const ex =
+      mx + (cote === 'droite' ? LONGUEUR_SEGMENT_HORIZONTAL : -LONGUEUR_SEGMENT_HORIZONTAL);
 
     return {
       index: tranche.index,
@@ -276,6 +288,8 @@ export default function DonutChart({
   nomFichierExport = 'recettes-par-type.png',
   palette,
   onSliceClick,
+  variant = 'etiquettes',
+  titreAccessible = 'Répartition',
 }: DonutChartProps) {
   const estSombre = useThemeStore((state) => state.theme === 'dark');
   const { ref: exportRef, exporterPng, enCours: exportEnCours } = useExportPng<HTMLDivElement>();
@@ -295,6 +309,39 @@ export default function DonutChart({
   }
 
   const total = data.reduce((sum, item) => sum + item.value, 0);
+
+  // Le bouton d'export encadre les deux variantes de la même façon : c'est le
+  // contenu de `exportRef` qui change, pas le contrat de la carte.
+  const avecExport = (contenu: React.ReactNode) => (
+    <div className="space-y-2">
+      <div className="flex justify-end">
+        <Button
+          type="button"
+          variant="secondary"
+          className="px-3 py-1 text-xs"
+          onClick={() => exporterPng(nomFichierExport)}
+          disabled={exportEnCours}
+        >
+          {exportEnCours ? 'Export en cours…' : 'Exporter PNG'}
+        </Button>
+      </div>
+      <div ref={exportRef} className="space-y-2 bg-surface">
+        {contenu}
+      </div>
+    </div>
+  );
+
+  if (variant === 'compact') {
+    return avecExport(
+      <DonutCompact
+        data={data}
+        total={total}
+        couleurTranche={couleurTranche}
+        titreAccessible={titreAccessible}
+        onSliceClick={onSliceClick}
+      />,
+    );
+  }
 
   // Géométrie ANGULAIRE des étiquettes à trait (tout sauf la position
   // pixel réelle, qui dépend de la taille rendue du graphique — voir
@@ -405,22 +452,9 @@ export default function DonutChart({
   };
   /* eslint-enable react/prop-types */
 
-  return (
-    <div className="space-y-2">
-      <div className="flex justify-end">
-        <Button
-          type="button"
-          variant="secondary"
-          className="px-3 py-1 text-xs"
-          onClick={() => exporterPng(nomFichierExport)}
-          disabled={exportEnCours}
-        >
-          {exportEnCours ? 'Export en cours…' : 'Exporter PNG'}
-        </Button>
-      </div>
-
-      <div ref={exportRef} className="space-y-2 bg-surface">
-        {/* donut-chart-pie : classe ciblée par src/index.css pour neutraliser
+  return avecExport(
+    <>
+      {/* donut-chart-pie : classe ciblée par src/index.css pour neutraliser
             le contour de focus par défaut du navigateur au clic souris tout
             en le conservant à la navigation clavier (:focus-visible).
             Marges horizontales réduites au minimum tenant compte de
@@ -431,61 +465,61 @@ export default function DonutChart({
             rayon ici (bien plus grande que la largeur disponible en colonne
             côte à côte) : elle sert uniquement à donner assez d'espace
             vertical aux étiquettes qui s'enveloppent sur plusieurs lignes. */}
-        <div className="donut-chart-pie h-[26rem]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart margin={{ top: 24, right: 110, bottom: 24, left: 110 }}>
-              <Pie
-                data={data}
-                dataKey="value"
-                nameKey="label"
-                innerRadius="42%"
-                outerRadius="66%"
-                paddingAngle={2}
-                stroke={estSombre ? '#111827' : '#fcfcfb'}
-                strokeWidth={2}
-                label={renderLabelATrait}
-                labelLine={false}
-                // Désactivée : l'animation d'entrée démarre les tranches à un
-                // angle nul, ce qui retarde leur présence dans le DOM (gênant
-                // pour les tests, et pour un éventuel export PNG déclenché
-                // juste après le montage).
-                isAnimationActive={false}
-                className={onSliceClick ? 'cursor-pointer' : undefined}
-                onClick={onSliceClick ? declencherClic : undefined}
-                // Empêche le focus au clic souris sur la tranche (chaque
-                // secteur est un <g tabIndex="-1"> posé par recharts pour
-                // son support clavier — un tel élément reçoit normalement le
-                // focus au clic, avec le contour associé). `preventDefault`
-                // sur mousedown est la façon standard de bloquer ce focus
-                // « au clic » sans toucher au clic lui-même (mousedown
-                // précède click ; le clic et la navigation continuent de
-                // fonctionner normalement) ni à la navigation clavier
-                // (Tab/flèches, qui ne passe jamais par mousedown). Nécessaire
-                // en complément de :focus-visible (src/index.css) : les
-                // navigateurs l'appliquent aussi sur un clic pour ce type
-                // d'élément SVG non nativement interactif — retour
-                // utilisateur constaté au clic sur une tranche.
-                onMouseDown={(_entry, _index, event) => event.preventDefault()}
-                onKeyDown={
-                  onSliceClick
-                    ? (entry, _index, event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          declencherClic(entry);
-                        }
+      <div className="donut-chart-pie h-[26rem]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart margin={{ top: 24, right: 110, bottom: 24, left: 110 }}>
+            <Pie
+              data={data}
+              dataKey="value"
+              nameKey="label"
+              innerRadius="42%"
+              outerRadius="66%"
+              paddingAngle={2}
+              stroke={estSombre ? '#111827' : '#fcfcfb'}
+              strokeWidth={2}
+              label={renderLabelATrait}
+              labelLine={false}
+              // Désactivée : l'animation d'entrée démarre les tranches à un
+              // angle nul, ce qui retarde leur présence dans le DOM (gênant
+              // pour les tests, et pour un éventuel export PNG déclenché
+              // juste après le montage).
+              isAnimationActive={false}
+              className={onSliceClick ? 'cursor-pointer' : undefined}
+              onClick={onSliceClick ? declencherClic : undefined}
+              // Empêche le focus au clic souris sur la tranche (chaque
+              // secteur est un <g tabIndex="-1"> posé par recharts pour
+              // son support clavier — un tel élément reçoit normalement le
+              // focus au clic, avec le contour associé). `preventDefault`
+              // sur mousedown est la façon standard de bloquer ce focus
+              // « au clic » sans toucher au clic lui-même (mousedown
+              // précède click ; le clic et la navigation continuent de
+              // fonctionner normalement) ni à la navigation clavier
+              // (Tab/flèches, qui ne passe jamais par mousedown). Nécessaire
+              // en complément de :focus-visible (src/index.css) : les
+              // navigateurs l'appliquent aussi sur un clic pour ce type
+              // d'élément SVG non nativement interactif — retour
+              // utilisateur constaté au clic sur une tranche.
+              onMouseDown={(_entry, _index, event) => event.preventDefault()}
+              onKeyDown={
+                onSliceClick
+                  ? (entry, _index, event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        declencherClic(entry);
                       }
-                    : undefined
-                }
-              >
-                {data.map((entry, index) => (
-                  <Cell key={entry.label} fill={couleurTranche(entry.label, index)} />
-                ))}
-              </Pie>
-              <Tooltip content={<DonutTooltip total={total} estSombre={estSombre} />} />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+                    }
+                  : undefined
+              }
+            >
+              {data.map((entry, index) => (
+                <Cell key={entry.label} fill={couleurTranche(entry.label, index)} />
+              ))}
+            </Pie>
+            <Tooltip content={<DonutTooltip total={total} estSombre={estSombre} />} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
 
-        {/* Légende de rappel simplifiée (couleur + nom, sans valeur — déjà
+      {/* Légende de rappel simplifiée (couleur + nom, sans valeur — déjà
             portée par les étiquettes à traits ci-dessus) : les callout labels
             remplacent la légende recharts comme lecture principale, mais une
             légende reste nécessaire dès 2 séries pour ne jamais faire
@@ -494,19 +528,18 @@ export default function DonutChart({
             couleur (collision de hash, cf. couleurCategorielle.ts) ou si le
             libellé d'une tranche est difficile à repérer visuellement parmi
             les autres. */}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-xs text-ink-muted">
-          {data.map((entry, index) => (
-            <span key={entry.label} className="inline-flex items-center gap-1.5">
-              <span
-                aria-hidden="true"
-                className="h-2.5 w-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: couleurTranche(entry.label, index) }}
-              />
-              {entry.label}
-            </span>
-          ))}
-        </div>
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-xs text-ink-muted">
+        {data.map((entry, index) => (
+          <span key={entry.label} className="inline-flex items-center gap-1.5">
+            <span
+              aria-hidden="true"
+              className="h-2.5 w-2.5 shrink-0 rounded-full"
+              style={{ backgroundColor: couleurTranche(entry.label, index) }}
+            />
+            {entry.label}
+          </span>
+        ))}
       </div>
-    </div>
+    </>,
   );
 }

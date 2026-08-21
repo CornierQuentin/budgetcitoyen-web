@@ -3,7 +3,12 @@ import { MemoryRouter } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useMarches, useMarchesBornes, useMarchesRepartitionCpv } from '../hooks/useMarches';
-import type { MarchePublic, MarchesBornes, MarchesCpvRepartitionItem, MarchesPage } from '../types/domain';
+import type {
+  MarchePublic,
+  MarchesBornes,
+  MarchesCpvRepartitionItem,
+  MarchesPage,
+} from '../types/domain';
 
 function creerMarche(overrides: Partial<MarchePublic> = {}): MarchePublic {
   return {
@@ -143,7 +148,7 @@ describe('Marches', () => {
     expect(screen.queryByRole('link', { name: 'FR59000017896' })).not.toBeInTheDocument();
   });
 
-  it("affiche un message neutre quand la base est vide (aucun filtre actif)", () => {
+  it('affiche un message neutre quand la base est vide (aucun filtre actif)', () => {
     mockedUseMarches.mockReturnValue({
       data: creerPage([]),
       isFetching: false,
@@ -172,7 +177,7 @@ describe('Marches', () => {
     expect(screen.getByLabelText(/rechercher \(objet\)/i)).toHaveValue('');
   });
 
-  it('affiche le camembert des catégories CPV et filtre au clic sur une tranche', () => {
+  it('affiche le camembert des catégories CPV et filtre au clic sur une ligne de légende', () => {
     mockedUseMarches.mockReturnValue({
       data: creerPage([creerMarche()]),
       isFetching: false,
@@ -181,14 +186,15 @@ describe('Marches', () => {
       data: repartitionMock,
     } as ReturnType<typeof useMarchesRepartitionCpv>);
 
-    const { container } = renderPage();
+    renderPage();
 
-    const secteurs = container.querySelectorAll('.recharts-pie-sector path');
-    expect(secteurs.length).toBeGreaterThan(0);
+    // Dans la variante compacte du camembert (celle des maquettes validées),
+    // c'est la ligne de légende qui porte le clic, pas le secteur SVG : une
+    // cible plus grande, atteignable au clavier, et qui affiche déjà son
+    // montant et sa part.
+    fireEvent.click(screen.getByRole('button', { name: /travaux de construction/i }));
 
-    fireEvent.click(secteurs[0]);
-
-    expect(screen.getByRole('button', { name: /retirer le filtre catégorie/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /retirer le filtre/i })).toBeInTheDocument();
   });
 
   it('propose un export CSV de la page courante', () => {
