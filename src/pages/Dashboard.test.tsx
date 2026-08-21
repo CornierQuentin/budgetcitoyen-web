@@ -178,12 +178,27 @@ describe('Dashboard', () => {
 
     expect(container.querySelector('#camembert-missions')).toBeInTheDocument();
 
-    const secteurs = container.querySelectorAll('#camembert-missions .recharts-pie-sector path');
-    expect(secteurs.length).toBeGreaterThan(0);
-
-    fireEvent.click(secteurs[0]);
+    // Le camembert a désormais la forme compacte des maquettes, comme tous
+    // les autres du site : c'est la légende qui porte le clic, pas un secteur
+    // recharts.
+    const camembert = container.querySelector('#camembert-missions') as HTMLElement;
+    fireEvent.click(within(camembert).getByRole('button', { name: /Défense/ }));
 
     expect(screen.getByText('Page mission')).toBeInTheDocument();
+  });
+
+  it('réconcilie le total du camembert des recettes avec le chiffre clé', () => {
+    // Le camembert somme les recettes par type (190 + 95) tandis que le
+    // chiffre clé « Recettes totales » vaut 190 : l'écart est celui des
+    // prélèvements sur recettes, que l'API retranche du total de l'année sans
+    // les stocker par type. Deux chiffres qui ne tombent pas juste doivent
+    // être expliqués, jamais laissés à la charge du lecteur.
+    renderDashboard();
+
+    expect(
+      screen.getByText(/reversés aux collectivités territoriales et à l'Union européenne/i),
+    ).toBeInTheDocument();
+    expect(screen.getByText(/de recettes nettes affichés en haut de page/i)).toBeInTheDocument();
   });
 
   it('affiche un rappel des sigles de recettes (IR, TVA, IS, TICPE, AUTRES)', () => {

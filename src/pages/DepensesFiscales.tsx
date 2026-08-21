@@ -277,8 +277,8 @@ export default function DepensesFiscales() {
                 value={recherche}
                 onChange={(event) => setRecherche(event.target.value)}
                 placeholder="Ex. TVA, entreprises, crédit d'impôt…"
-                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
+                className="mt-1 block w-full rounded-md border border-line-strong bg-surface px-3
+                  py-1.5 text-sm text-ink placeholder:text-ink-faint"
               />
             </label>
           </div>

@@ -93,6 +93,8 @@ export default function Dashboard() {
     [missions],
   );
 
+  const rampeMissions = rampeSequentielle(missionsDonutData.length, estSombre);
+
   const missionsTriees = useMemo(
     () =>
       (missions ?? [])
@@ -137,6 +139,23 @@ export default function Dashboard() {
   // non `var(--data-*)` — l'export PNG rasterise le graphique hors du
   // document, où une variable CSS n'a pas toujours de valeur résolue.
   const rampeRecettes = rampeSequentielle(donutDataRecettes.length, estSombre);
+
+  // Le camembert totalise MOINS que le chiffre clé « Recettes totales » de
+  // l'en-tête, et l'écart est celui des prélèvements sur recettes (PSR) :
+  // les sommes reversées aux collectivités territoriales et à l'Union
+  // européenne. Le tableau d'équilibre officiel les présente en déduction des
+  // recettes brutes plutôt qu'en dépense, si bien que l'API les retranche du
+  // total de l'année (`AnneeBudget.recettes_nettes`) sans les stocker parmi
+  // les types de recettes — les deux chiffres sont justes, ils ne mesurent
+  // simplement pas la même chose. L'écart est donc DÉDUIT des deux totaux
+  // réels plutôt que codé en dur, et affiché : deux chiffres qui ne tombent
+  // pas juste sans explication détruisent plus de confiance que la
+  // complexité qu'ils recouvrent.
+  const totalRecettesAvantPsr = donutDataRecettes.reduce((somme, item) => somme + item.value, 0);
+  const prelevementsSurRecettes =
+    budgetAnnee !== undefined && totalRecettesAvantPsr > 0
+      ? totalRecettesAvantPsr - budgetAnnee.recettesNettes
+      : 0;
 
   const handleExportMissionsCsv = () => {
     exportCsv(missionsCsvData, `missions-${anneeActive}.csv`, [
@@ -298,6 +317,9 @@ export default function Dashboard() {
             <div id="camembert-missions" className="border-b border-line p-4">
               <DonutChart
                 data={missionsDonutData}
+                variant="compact"
+                palette={rampeMissions}
+                titreAccessible="Répartition des dépenses de l'État par mission"
                 nomFichierExport={`missions-${anneeActive}.png`}
                 onSliceClick={handleClicTrancheMission}
               />
@@ -417,13 +439,24 @@ export default function Dashboard() {
           }
           footer={
             donutDataRecettes.length > 0 ? (
-              <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span>Sigles :</span>
-                {SIGLES_RECETTES.map((code) => (
-                  <GlossaryTerm key={code} term={code}>
-                    {code}
-                  </GlossaryTerm>
-                ))}
+              <span className="flex flex-col gap-1.5">
+                {prelevementsSurRecettes > 0 && (
+                  <span>
+                    {formatMd(totalRecettesAvantPsr)} au total, moins{' '}
+                    {formatMd(prelevementsSurRecettes)} reversés aux collectivités territoriales et
+                    à l&apos;Union européenne, soit les{' '}
+                    {formatMd(totalRecettesAvantPsr - prelevementsSurRecettes)} de recettes nettes
+                    affichés en haut de page.
+                  </span>
+                )}
+                <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                  <span>Sigles :</span>
+                  {SIGLES_RECETTES.map((code) => (
+                    <GlossaryTerm key={code} term={code}>
+                      {code}
+                    </GlossaryTerm>
+                  ))}
+                </span>
               </span>
             ) : undefined
           }

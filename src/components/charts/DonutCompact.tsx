@@ -27,6 +27,22 @@ const CENTRE = 74;
 const VIEWBOX = 148;
 const CIRCONFERENCE = 2 * Math.PI * RAYON;
 
+/**
+ * Texte affiché au survol d'une tranche : libellé, montant, part. Quand la
+ * tranche regroupe des sous-éléments (la tranche « Autres » des missions),
+ * leur détail suit — c'est la seule façon de le consulter, la légende ne
+ * pouvant afficher que le total du regroupement.
+ */
+function infobulleTranche(entry: DonutDatum, part: number): string {
+  const entete = `${entry.label} : ${formatMd(entry.value)} (${formatPct(part)})`;
+  if (!entry.details || entry.details.length === 0) return entete;
+
+  const detail = entry.details
+    .map((sous) => `  ${sous.label} : ${formatMd(sous.value)}`)
+    .join('\n');
+  return `${entete}\n${detail}`;
+}
+
 interface DonutCompactProps {
   data: DonutDatum[];
   total: number;
@@ -74,7 +90,7 @@ export default function DonutCompact({
           {/* Rotation d'un quart de tour : le premier segment — la plus
               grosse part, les données arrivant triées — démarre à midi. */}
           <g transform={`rotate(-90 ${CENTRE} ${CENTRE})`} fill="none" strokeWidth={EPAISSEUR}>
-            {segments.map(({ entry, longueur, offset, couleur }) => (
+            {segments.map(({ entry, part, longueur, offset, couleur }) => (
               <circle
                 key={entry.label}
                 cx={CENTRE}
@@ -83,7 +99,14 @@ export default function DonutCompact({
                 stroke={couleur}
                 strokeDasharray={`${longueur} ${CIRCONFERENCE}`}
                 strokeDashoffset={-offset}
-              />
+                className={onSliceClick ? 'cursor-pointer' : undefined}
+                onClick={onSliceClick ? () => onSliceClick(entry.label) : undefined}
+              >
+                {/* <title> natif du SVG : le navigateur l'affiche au survol de
+                    la tranche, sans script ni dépendance, et les lecteurs
+                    d'écran le lisent comme nom accessible de la forme. */}
+                <title>{infobulleTranche(entry, part)}</title>
+              </circle>
             ))}
           </g>
         </svg>
@@ -102,6 +125,7 @@ export default function DonutCompact({
           basculement en colonne. */}
       <ul className="flex min-w-0 grow basis-80 flex-col text-[13px]">
         {segments.map(({ entry, part, couleur }) => {
+          const infobulle = infobulleTranche(entry, part);
           const contenu = (
             <>
               <span
@@ -109,9 +133,7 @@ export default function DonutCompact({
                 className="h-[9px] w-[9px] shrink-0 rounded-[2px]"
                 style={{ backgroundColor: couleur }}
               />
-              <span className="min-w-0 flex-1 truncate text-left" title={entry.label}>
-                {entry.label}
-              </span>
+              <span className="min-w-0 flex-1 truncate text-left">{entry.label}</span>
               <span className="font-semibold tabular-nums">{formatMd(entry.value)}</span>
               <span className="w-12 shrink-0 text-right text-xs tabular-nums text-ink-faint">
                 {formatPct(part)}
@@ -124,6 +146,7 @@ export default function DonutCompact({
               {onSliceClick ? (
                 <button
                   type="button"
+                  title={infobulle}
                   onClick={() => onSliceClick(entry.label)}
                   className="flex w-full items-center gap-2.5 rounded-md px-1.5 py-[5px]
                     hover:bg-surface-hover"
@@ -131,7 +154,10 @@ export default function DonutCompact({
                   {contenu}
                 </button>
               ) : (
-                <span className="flex w-full items-center gap-2.5 rounded-md px-1.5 py-[5px]">
+                <span
+                  title={infobulle}
+                  className="flex w-full items-center gap-2.5 rounded-md px-1.5 py-[5px]"
+                >
                   {contenu}
                 </span>
               )}

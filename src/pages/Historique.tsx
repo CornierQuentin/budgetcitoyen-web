@@ -74,14 +74,19 @@ export default function Historique() {
     };
   }, [data]);
 
-  // Écart de dépenses d'une année sur la précédente, pour la colonne
-  // d'évolution du tableau (décroissant : l'année la plus récente en tête).
+  // Écart de SOLDE d'une année sur la précédente, pour la colonne d'évolution
+  // du tableau (décroissant : l'année la plus récente en tête). Le solde
+  // plutôt que les dépenses : les trois colonnes qui précèdent donnent déjà
+  // les dépenses et les recettes en niveau, et c'est leur différence qui dit
+  // si l'exercice s'est redressé ou dégradé. Un écart POSITIF est toujours une
+  // amélioration — le solde étant signé, il vaut aussi bien pour un déficit
+  // qui se réduit que pour un excédent qui grandit.
   const lignes = useMemo(
     () =>
       data
         .map((item, index) => ({
           ...item,
-          ecartDepenses: index > 0 ? item.depenses - data[index - 1].depenses : undefined,
+          ecartSolde: index > 0 ? item.solde - data[index - 1].solde : undefined,
         }))
         .slice()
         .reverse(),
@@ -231,7 +236,7 @@ export default function Historique() {
                   >
                     Année
                   </th>
-                  {['Dépenses', 'Recettes', 'Solde', 'Évolution des dépenses'].map((entete) => (
+                  {['Dépenses', 'Recettes', 'Solde', 'Évolution du solde'].map((entete) => (
                     <th
                       key={entete}
                       scope="col"
@@ -260,11 +265,14 @@ export default function Historique() {
                       {formatMd(ligne.solde)}
                     </td>
                     <td className="whitespace-nowrap px-4 py-2.5 text-right">
-                      {ligne.ecartDepenses === undefined ? (
+                      {ligne.ecartSolde === undefined ? (
                         <span className="text-ink-faint">—</span>
                       ) : (
-                        <Badge tone="quiet" className="tabular-nums">
-                          {formatEcartMd(ligne.ecartDepenses)}
+                        <Badge
+                          tone={ligne.ecartSolde >= 0 ? 'pos' : 'neg'}
+                          className="tabular-nums"
+                        >
+                          {formatEcartMd(ligne.ecartSolde)}
                         </Badge>
                       )}
                     </td>

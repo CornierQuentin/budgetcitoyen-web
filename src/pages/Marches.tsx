@@ -297,8 +297,8 @@ export default function Marches() {
                 min={bornes?.dateMin ?? undefined}
                 max={bornes?.dateMax ?? undefined}
                 onChange={(event) => setDateDebut(event.target.value)}
-                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
+                className="mt-1 block w-full rounded-md border border-line-strong bg-surface px-3
+                  py-1.5 text-sm text-ink placeholder:text-ink-faint"
               />
             </label>
             <label htmlFor="date-fin-marche" className="block text-sm font-medium text-ink-muted">
@@ -310,8 +310,8 @@ export default function Marches() {
                 min={bornes?.dateMin ?? undefined}
                 max={bornes?.dateMax ?? undefined}
                 onChange={(event) => setDateFin(event.target.value)}
-                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
+                className="mt-1 block w-full rounded-md border border-line-strong bg-surface px-3
+                  py-1.5 text-sm text-ink placeholder:text-ink-faint"
               />
             </label>
             <label
@@ -325,8 +325,8 @@ export default function Marches() {
                 min={0}
                 value={montantMin}
                 onChange={(event) => setMontantMin(event.target.value)}
-                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
+                className="mt-1 block w-full rounded-md border border-line-strong bg-surface px-3
+                  py-1.5 text-sm text-ink placeholder:text-ink-faint"
               />
             </label>
             <label
@@ -340,8 +340,8 @@ export default function Marches() {
                 min={0}
                 value={montantMax}
                 onChange={(event) => setMontantMax(event.target.value)}
-                className="mt-1 block w-full rounded-md border border-line-strong px-3 py-1.5 text-sm
-                "
+                className="mt-1 block w-full rounded-md border border-line-strong bg-surface px-3
+                  py-1.5 text-sm text-ink placeholder:text-ink-faint"
               />
             </label>
             <div className="flex items-end">
