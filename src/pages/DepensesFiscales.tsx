@@ -11,19 +11,13 @@ import { exportCsv } from '../utils/exportCsv';
 import { formatMd } from '../utils/format';
 import { normaliserPourRecherche } from '../utils/normaliserPourRecherche';
 import { rampeSequentielle } from '../utils/rampeSequentielle';
-import { topNAvecAutres } from '../utils/topNAvecAutres';
+import { NB_TRANCHES_MAX_CAMEMBERT, topNAvecAutres } from '../utils/topNAvecAutres';
 
 // URL publique du dataset (portail data.economie.gouv.fr, OpenDataSoft) : la
 // seule édition de l'annexe "Voies et moyens" Tome II disponible en format
 // structuré (xlsx) — pas d'édition plus récente publiée sous cette forme.
 const SOURCE_URL =
   'https://www.data.economie.gouv.fr/explore/assets/plf2023_voies_et_moyens_t2_liste_des_depenses_fiscales/';
-
-// 9 catégories (types d'impôt) au total dans la source : aucune agrégation
-// "Autres" ne se déclenche en pratique, topNAvecAutres reste néanmoins la
-// même brique que Dashboard/Comparateur pour rester générique si une future
-// édition ajoutait des catégories.
-const NB_CATEGORIES_DISTINCTES = 9;
 
 const STATUT_LABEL: Record<StatutMontant, string> = {
   chiffre: '',
@@ -112,7 +106,7 @@ export default function DepensesFiscales() {
     }, new Map<string, number>());
     return topNAvecAutres(
       Array.from(parCategorie, ([label, value]) => ({ label, value })),
-      NB_CATEGORIES_DISTINCTES,
+      NB_TRANCHES_MAX_CAMEMBERT,
     );
   }, [mesuresChiffrees]);
 

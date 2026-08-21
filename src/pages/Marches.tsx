@@ -19,18 +19,12 @@ import { exportCsv } from '../utils/exportCsv';
 import { formatEuros, formatMd } from '../utils/format';
 import { parseIntSearchParam, parseStringSearchParam } from '../utils/searchParams';
 import { rampeSequentielle } from '../utils/rampeSequentielle';
-import { topNAvecAutres } from '../utils/topNAvecAutres';
+import { NB_TRANCHES_MAX_CAMEMBERT, topNAvecAutres } from '../utils/topNAvecAutres';
 
 const SOURCE_URL =
   'https://www.data.economie.gouv.fr/explore/dataset/decp-2022-marches-valides/information/';
 
 const PAGE_SIZE = 20;
-// Au-dela de 10 tranches distinctes, le camembert (jusqu'a 46 divisions CPV
-// possibles) devient illisible - meme raisonnement que Dashboard.tsx (8
-// missions) : les divisions les plus importantes sont detaillees, le reste
-// regroupe dans une tranche "Autres".
-const NB_DIVISIONS_DISTINCTES = 10;
-
 const dateFormatter = new Intl.DateTimeFormat('fr-FR');
 
 function formatDate(iso: string): string {
@@ -122,7 +116,7 @@ export default function Marches() {
     () =>
       topNAvecAutres(
         (repartition ?? []).map((item) => ({ label: item.label, value: item.montantTotal })),
-        NB_DIVISIONS_DISTINCTES,
+        NB_TRANCHES_MAX_CAMEMBERT,
       ),
     [repartition],
   );

@@ -25,9 +25,7 @@ import { exportCsv } from '../utils/exportCsv';
 import { formatEcartMd, formatMd, formatPct, soldeDepuisDeficit } from '../utils/format';
 import { parseIntSearchParam } from '../utils/searchParams';
 import { rampeSequentielle } from '../utils/rampeSequentielle';
-import { topNAvecAutres } from '../utils/topNAvecAutres';
-
-const NB_MISSIONS_DISTINCTES = 8;
+import { NB_TRANCHES_MAX_CAMEMBERT, topNAvecAutres } from '../utils/topNAvecAutres';
 
 const SIGLES_RECETTES: TypeRecette[] = ['IR', 'TVA', 'IS', 'TICPE', 'AUTRES'];
 
@@ -95,7 +93,7 @@ export default function Dashboard() {
           label: mission.nomOfficiel,
           value: mission.montantTotal,
         })),
-        NB_MISSIONS_DISTINCTES,
+        NB_TRANCHES_MAX_CAMEMBERT,
       ),
     [missions],
   );
@@ -163,21 +161,18 @@ export default function Dashboard() {
   // document, où une variable CSS n'a pas toujours de valeur résolue.
   const rampeRecettes = rampeSequentielle(donutDataRecettes.length, estSombre);
 
-  // Le camembert totalise MOINS que le chiffre clé « Recettes totales » de
-  // l'en-tête, et l'écart est celui des prélèvements sur recettes (PSR) :
-  // les sommes reversées aux collectivités territoriales et à l'Union
-  // européenne. Le tableau d'équilibre officiel les présente en déduction des
-  // recettes brutes plutôt qu'en dépense, si bien que l'API les retranche du
-  // total de l'année (`AnneeBudget.recettes_nettes`) sans les stocker parmi
-  // les types de recettes — les deux chiffres sont justes, ils ne mesurent
-  // simplement pas la même chose. L'écart est donc DÉDUIT des deux totaux
-  // réels plutôt que codé en dur, et affiché : deux chiffres qui ne tombent
-  // pas juste sans explication détruisent plus de confiance que la
-  // complexité qu'ils recouvrent.
-  const totalRecettesAvantPsr = donutDataRecettes.reduce((somme, item) => somme + item.value, 0);
-  const prelevementsSurRecettes =
-    budgetAnnee !== undefined && totalRecettesAvantPsr > 0
-      ? totalRecettesAvantPsr - budgetAnnee.recettesNettes
+  // Le camembert et le chiffre clé « Recettes totales » ne tombent pas sur la
+  // même somme, et les deux sont justes : le camembert détaille les recettes
+  // par impôt, le chiffre clé est le total du tableau d'équilibre officiel,
+  // qui retranche les prélèvements reversés aux collectivités et à l'Union
+  // européenne puis intègre le retraitement des remboursements d'impôts.
+  // L'écart est DÉDUIT des deux totaux réels plutôt que codé en dur, et
+  // affiché : deux chiffres qui ne tombent pas juste sans explication
+  // détruisent plus de confiance que la complexité qu'ils recouvrent.
+  const totalRecettesParImpot = donutDataRecettes.reduce((somme, item) => somme + item.value, 0);
+  const ecartTableauEquilibre =
+    budgetAnnee !== undefined && totalRecettesParImpot > 0
+      ? budgetAnnee.recettesNettes - totalRecettesParImpot
       : 0;
 
   const handleExportMissionsCsv = () => {
@@ -465,13 +460,14 @@ export default function Dashboard() {
           footer={
             donutDataRecettes.length > 0 ? (
               <span className="flex flex-col gap-1.5">
-                {prelevementsSurRecettes > 0 && (
+                {ecartTableauEquilibre !== 0 && (
                   <span>
-                    {formatMd(totalRecettesAvantPsr)} au total, moins{' '}
-                    {formatMd(prelevementsSurRecettes)} reversés aux collectivités territoriales et
-                    à l&apos;Union européenne, soit les{' '}
-                    {formatMd(totalRecettesAvantPsr - prelevementsSurRecettes)} de recettes nettes
-                    affichés en haut de page.
+                    Ce camembert détaille {formatMd(totalRecettesParImpot)} de recettes par impôt.
+                    Le total de {formatMd(budgetAnnee?.recettesNettes ?? 0)} affiché en haut de page
+                    est celui du tableau d&apos;équilibre officiel : il retranche les prélèvements
+                    reversés aux collectivités territoriales et à l&apos;Union européenne, et
+                    intègre le retraitement des remboursements d&apos;impôts. Écart :{' '}
+                    {formatEcartMd(ecartTableauEquilibre)}.
                   </span>
                 )}
                 <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
