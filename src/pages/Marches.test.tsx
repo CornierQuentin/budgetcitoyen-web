@@ -188,7 +188,7 @@ describe('Marches', () => {
 
     fireEvent.click(secteurs[0]);
 
-    expect(screen.getByRole('button', { name: /retirer le filtre catégorie/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /retirer le filtre/i })).toBeInTheDocument();
   });
 
   it('propose un export CSV de la page courante', () => {

@@ -1,6 +1,6 @@
 import { Badge } from '../components/ui/Badge';
 import { Card } from '../components/ui/Card';
-import { ExternalLinkIcon } from '../components/ui/icons';
+import { DocumentIcon, ExternalLinkIcon, ShieldIcon } from '../components/ui/icons';
 import { useAnnees } from '../hooks/useAnnees';
 import { useBudgetAnnee } from '../hooks/useBudgetAnnee';
 import { useIndicateur } from '../hooks/useIndicateur';
@@ -13,6 +13,8 @@ interface SourceDonnee {
   alimente?: string;
   /** Cadence de publication à la source. */
   cadence?: string;
+  /** Période réellement couverte par les données ingérées. */
+  couverture?: string;
 }
 
 const sourcesStatiques: SourceDonnee[] = [
@@ -21,12 +23,14 @@ const sourcesStatiques: SourceDonnee[] = [
     url: 'https://www.data.gouv.fr/',
     alimente: 'Marchés publics (DECP)',
     cadence: 'Quotidienne',
+    couverture: '2010 → aujourd’hui',
   },
   {
     nom: 'performance-publique.budget.gouv.fr',
     url: 'https://www.performance-publique.budget.gouv.fr/',
     alimente: 'Missions, programmes et actions',
     cadence: 'Annuelle',
+    couverture: '2006 → 2026',
   },
   {
     nom: 'Direction du budget (budget.gouv.fr)',
@@ -39,6 +43,7 @@ const sourcesStatiques: SourceDonnee[] = [
     url: 'https://www.assemblee-nationale.fr/',
     alimente: 'Niches fiscales (annexe « Voies et moyens »)',
     cadence: 'Annuelle',
+    couverture: 'millésime 2021',
   },
 ];
 
@@ -57,6 +62,7 @@ export default function Donnees() {
       url: budget.sourceUrl,
       alimente: 'Dépenses, recettes et solde',
       cadence: 'Annuelle',
+      couverture: `exercice ${budget.annee}`,
     });
   }
   if (indicateur?.sourcePibUrl) {
@@ -65,6 +71,7 @@ export default function Donnees() {
       url: indicateur.sourcePibUrl,
       alimente: 'Ratios rapportés au PIB',
       cadence: 'Annuelle',
+      couverture: `${indicateur.annee}`,
     });
   }
   if (indicateur?.sourcePopulationUrl) {
@@ -73,6 +80,7 @@ export default function Donnees() {
       url: indicateur.sourcePopulationUrl,
       alimente: 'Montants par habitant',
       cadence: 'Annuelle',
+      couverture: `${indicateur.annee}`,
     });
   }
 
@@ -114,7 +122,7 @@ export default function Donnees() {
           <table className="min-w-full text-[13px]">
             <thead>
               <tr>
-                {['Source', 'Alimente', 'Mise à jour'].map((entete) => (
+                {['Source', 'Alimente', 'Couverture', 'Mise à jour'].map((entete) => (
                   <th
                     key={entete}
                     scope="col"
@@ -145,6 +153,9 @@ export default function Donnees() {
                     </a>
                   </td>
                   <td className="px-4 py-2.5 text-ink-muted">{source.alimente ?? '—'}</td>
+                  <td className="whitespace-nowrap px-4 py-2.5 tabular-nums text-ink-muted">
+                    {source.couverture ?? '—'}
+                  </td>
                   <td className="px-4 py-2.5">
                     {source.cadence ? (
                       <Badge tone={source.cadence === 'Quotidienne' ? 'accent' : 'quiet'}>
@@ -164,6 +175,47 @@ export default function Donnees() {
           pas seulement au portail. Données réutilisables sous Licence Ouverte 2.0.
         </div>
       </Card>
+
+      <section className="grid gap-4 lg:grid-cols-2">
+        <Card className="flex items-start gap-3">
+          <span
+            aria-hidden="true"
+            className="flex h-8 w-8 flex-none items-center justify-center rounded-md
+              bg-accent-soft text-accent"
+          >
+            <DocumentIcon className="h-[17px] w-[17px]" />
+          </span>
+          <div>
+            <h2 className="text-[13.5px] font-bold text-ink">Réutiliser les données</h2>
+            <p className="mt-1 text-[12.5px] text-ink-muted">
+              Toutes les vues s&apos;exportent en CSV, tous les graphiques en PNG, et chaque page
+              produit une URL partageable qui restitue vos filtres. Une API REST publique et
+              documentée expose les mêmes données.
+            </p>
+          </div>
+        </Card>
+
+        {/* Dire ce que le site ne fait pas vaut engagement : c'est la
+            contrepartie de la neutralité politique et du refus d'estimer une
+            donnée manquante (cf. PRODUCT.md). */}
+        <Card className="flex items-start gap-3">
+          <span
+            aria-hidden="true"
+            className="flex h-8 w-8 flex-none items-center justify-center rounded-md
+              bg-surface-sunken text-ink-muted"
+          >
+            <ShieldIcon className="h-[17px] w-[17px]" />
+          </span>
+          <div>
+            <h2 className="text-[13.5px] font-bold text-ink">Ce que le site ne fait pas</h2>
+            <p className="mt-1 text-[12.5px] text-ink-muted">
+              Aucun commentaire partisan, aucune donnée inventée pour combler un trou. Quand une
+              donnée manque — la population de l&apos;année en cours, le nom d&apos;un titulaire de
+              marché — la page le dit au lieu de l&apos;estimer.
+            </p>
+          </div>
+        </Card>
+      </section>
     </div>
   );
 }

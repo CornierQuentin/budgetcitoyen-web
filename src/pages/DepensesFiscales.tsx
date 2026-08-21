@@ -29,6 +29,16 @@ const STATUT_LABEL: Record<StatutMontant, string> = {
   aucun_effet: '—',
 };
 
+// Libellés lisibles des statuts, pour la carte « Qualité du chiffrage » :
+// `STATUT_LABEL` ci-dessus sert au jeton compact affiché dans le tableau
+// (ε / nc / —), illisible hors contexte.
+const STATUT_DESCRIPTION: Record<StatutMontant, string> = {
+  chiffre: 'Chiffré',
+  non_calculable: 'Non calculable',
+  epsilon: 'Inférieur à 0,5 M€',
+  aucun_effet: 'Aucun effet budgétaire',
+};
+
 const montantFormatter = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
 
 function formatMontantMillions(montantMillions: number): string {
@@ -78,6 +88,13 @@ export default function DepensesFiscales() {
   const mesuresChiffrees = (depensesFiscales ?? []).filter(
     (depense) => depense.statutMontant === 'chiffre' && depense.montantMillions !== null,
   );
+  const repartitionStatuts = (Object.keys(STATUT_LABEL) as (keyof typeof STATUT_LABEL)[]).map(
+    (statut) => ({
+      statut,
+      nombre: (depensesFiscales ?? []).filter((d) => d.statutMontant === statut).length,
+    }),
+  );
+
   const mesureLaPlusCouteuse = mesuresChiffrees
     .slice()
     .sort((a, b) => (b.montantMillions ?? 0) - (a.montantMillions ?? 0))[0];
@@ -217,29 +234,14 @@ export default function DepensesFiscales() {
         </p>
       </Card>
 
-      {depensesFiscales && depensesFiscales.length > 0 && (
-        <section>
-          <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-            <h2 className="text-sm font-semibold text-ink-muted">
-              Répartition par impôt concerné (total chiffré {formatMd(totalChiffreEuros)})
-            </h2>
-          </div>
-          {nbNonChiffrees > 0 && (
-            <p className="mb-2 text-xs text-ink-muted">
-              {nbNonChiffrees} mesure{nbNonChiffrees > 1 ? 's' : ''} sur {depensesFiscales.length}{' '}
-              n&apos;a pas de montant chiffré exploitable (effet non calculé ou nul) et{' '}
-              {nbNonChiffrees > 1 ? 'sont exclues' : 'est exclue'} de ce total et du graphique —
-              voir le statut de chaque mesure dans le tableau ci-dessous.
-            </p>
-          )}
-          <DonutChart data={donutData} nomFichierExport={`depenses-fiscales-${anneeActive}.png`} />
-        </section>
-      )}
-
-      <section>
+      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.62fr)_minmax(0,1fr)]">
+        <div>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <h2 className="text-lg font-semibold text-ink">
-            Liste des mesures {depensesFiscales ? `(${depensesFiscales.length})` : ''}
+            Les mesures les plus coûteuses{' '}
+            <span className="text-sm font-normal text-ink-muted">
+              {depensesFiscales ? `(${depensesFiscales.length} recensées)` : ''}
+            </span>
           </h2>
           {depensesFiscales && depensesFiscales.length > 0 && (
             <Button
@@ -312,6 +314,41 @@ export default function DepensesFiscales() {
               )}
             </tbody>
           </table>
+        </div>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {depensesFiscales && depensesFiscales.length > 0 && (
+            <Card title="Par impôt concerné" note={`total chiffré ${formatMd(totalChiffreEuros)}`}>
+              <DonutChart
+                data={donutData}
+                nomFichierExport={`depenses-fiscales-${anneeActive}.png`}
+              />
+              {nbNonChiffrees > 0 && (
+                <p className="mt-2 text-xs text-ink-muted">
+                  {nbNonChiffrees} mesure{nbNonChiffrees > 1 ? 's' : ''} sur{' '}
+                  {depensesFiscales.length} n&apos;a pas de montant chiffré exploitable et{' '}
+                  {nbNonChiffrees > 1 ? 'sont exclues' : 'est exclue'} de ce total et du graphique.
+                </p>
+              )}
+            </Card>
+          )}
+
+          {depensesFiscales && depensesFiscales.length > 0 && (
+            <Card
+              title="Qualité du chiffrage"
+              footer="Le statut vient de la source officielle : il n'est ni interprété ni comblé."
+            >
+              <ul className="flex flex-col gap-2 text-[13px]">
+                {repartitionStatuts.map(({ statut, nombre }) => (
+                  <li key={statut} className="flex items-center gap-3">
+                    <span className="text-ink">{STATUT_DESCRIPTION[statut]}</span>
+                    <span className="ml-auto font-semibold tabular-nums text-ink">{nombre}</span>
+                  </li>
+                ))}
+              </ul>
+            </Card>
+          )}
         </div>
       </section>
     </div>

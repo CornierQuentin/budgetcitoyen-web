@@ -149,6 +149,15 @@ export function DatabaseIcon({ className = 'h-4 w-4' }: IconProps) {
   );
 }
 
+export function DocumentIcon({ className = 'h-4 w-4' }: IconProps) {
+  return (
+    <svg {...COMMON_PROPS} className={className}>
+      <path d="M6 3h6l3 3v11H6z" />
+      <path d="M11.5 3v3.5H15" />
+    </svg>
+  );
+}
+
 export function ShieldIcon({ className = 'h-4 w-4' }: IconProps) {
   return (
     <svg {...COMMON_PROPS} className={className}>

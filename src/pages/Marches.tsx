@@ -8,6 +8,7 @@ import { SearchInput } from '../components/table/SearchInput';
 import { Table, type TableColumn } from '../components/table/Table';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
+import { SearchIcon } from '../components/ui/icons';
 import { SourceIcon } from '../components/ui/SourceIcon';
 import { useDebouncedValue } from '../hooks/useDebouncedValue';
 import { useMarches, useMarchesBornes, useMarchesRepartitionCpv } from '../hooks/useMarches';
@@ -251,63 +252,8 @@ export default function Marches() {
         </Card>
       </section>
 
-      {/* La limite de la source est dite une fois, à sa place, plutôt que
-          répétée à côté de chaque colonne « titulaire ». */}
-      <div
-        className="flex items-start gap-2.5 rounded-lg border border-accent-line bg-accent-soft
-          px-3.5 py-2.5 text-[12.5px] text-ink"
-      >
-        <svg
-          className="mt-px h-4 w-4 flex-none text-accent"
-          viewBox="0 0 20 20"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.7"
-          strokeLinecap="round"
-          aria-hidden="true"
-        >
-          <circle cx="10" cy="10" r="7" />
-          <path d="M10 13.5v-4M10 6.5h.01" />
-        </svg>
-        <span>
-          Cette source ne fournit aucun nom d&apos;entreprise ni d&apos;administration, seulement
-          des identifiants. Quand il s&apos;agit d&apos;un SIRET, le numéro renvoie vers
-          l&apos;annuaire public des entreprises.
-        </span>
-      </div>
-
-      {donutData.length > 0 && (
-        <section>
-          <div className="mb-2 flex flex-wrap items-start justify-between gap-2">
-            <h2 className="text-sm font-semibold text-ink-muted">
-              Répartition par catégorie (impôt/CPV)
-              {totalChiffreLabel && ` — total ${totalChiffreLabel}`}
-              {cpvDivision && (
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="ml-3 px-2 py-0.5 text-xs"
-                  onClick={() => setCpvDivision(undefined)}
-                >
-                  Retirer le filtre catégorie
-                </Button>
-              )}
-            </h2>
-          </div>
-          <p className="mb-2 text-xs text-ink-muted">
-            Cliquez une tranche pour filtrer la liste par catégorie. Répartition calculée sur
-            l&apos;ensemble des marchés correspondant aux filtres actifs, pas seulement la page
-            affichée.
-          </p>
-          <DonutChart
-            data={donutData}
-            nomFichierExport="marches-publics-repartition-cpv.png"
-            onSliceClick={handleClicTrancheCpv}
-          />
-        </section>
-      )}
-
-      <section>
+      <section className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.62fr)_minmax(0,1fr)]">
+        <div>
         <div className="flex flex-wrap items-start justify-between gap-2">
           <h2 className="text-lg font-semibold text-ink">
             Liste des marchés {pageData ? `(${pageData.total.toLocaleString('fr-FR')})` : ''}
@@ -407,6 +353,52 @@ export default function Marches() {
             />
           </div>
         )}
+        </div>
+
+        <div className="flex flex-col gap-4">
+          {donutData.length > 0 && (
+            <Card
+              title="Par catégorie d'achat"
+              note={totalChiffreLabel ? `total ${totalChiffreLabel}` : undefined}
+              actions={
+                cpvDivision ? (
+                  <Button variant="secondary" size="sm" onClick={() => setCpvDivision(undefined)}>
+                    Retirer le filtre
+                  </Button>
+                ) : undefined
+              }
+              footer="Cliquez une tranche pour filtrer la liste. Répartition calculée sur l'ensemble des marchés correspondant aux filtres actifs, pas seulement la page affichée."
+            >
+              <DonutChart
+                data={donutData}
+                nomFichierExport="marches-publics-repartition-cpv.png"
+                onSliceClick={handleClicTrancheCpv}
+              />
+            </Card>
+          )}
+
+          {/* La limite de la source est dite une fois, à sa place, plutôt que
+              répétée à côté de chaque colonne « titulaire ». */}
+          <Card className="flex items-start gap-3">
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 flex-none items-center justify-center rounded-md
+                bg-accent-soft text-accent"
+            >
+              <SearchIcon className="h-[17px] w-[17px]" />
+            </span>
+            <div>
+              <h2 className="text-[13.5px] font-bold text-ink">
+                Pourquoi pas de noms d&apos;entreprises ?
+              </h2>
+              <p className="mt-1 text-[12.5px] text-ink-muted">
+                La source ne fournit que des identifiants. Quand il s&apos;agit d&apos;un SIRET, le
+                numéro renvoie vers l&apos;annuaire public des entreprises ; les autres types
+                d&apos;identifiants (TVA, hors-UE…) ne sont pas cliquables.
+              </p>
+            </div>
+          </Card>
+        </div>
       </section>
     </div>
   );
