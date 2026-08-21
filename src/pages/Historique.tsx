@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import LineChart, { type LineChartSerie } from '../components/charts/LineChart';
 import { Badge } from '../components/ui/Badge';
@@ -6,6 +7,9 @@ import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
 import { GlossaryTerm } from '../components/ui/GlossaryTerm';
 import { useHistorique } from '../hooks/useHistorique';
+import { useMissionHistorique } from '../hooks/useMissionHistorique';
+import { useMissions } from '../hooks/useMissions';
+import { useSyncSearchParams } from '../hooks/useSyncSearchParams';
 import { exportCsv } from '../utils/exportCsv';
 import { formatEcartMd, formatMd, formatPct, soldeDepuisDeficit } from '../utils/format';
 
@@ -25,6 +29,9 @@ const SERIES_DEPENSES_RECETTES: LineChartSerie[] = [
 ];
 const SERIES_SOLDE: LineChartSerie[] = [
   { key: 'solde', label: 'Solde budgétaire', color: COULEUR_SOLDE },
+];
+const SERIES_MISSION: LineChartSerie[] = [
+  { key: 'montant', label: 'Crédits de paiement', color: COULEUR_DEPENSES },
 ];
 
 /** Nombre d'années affichées par le sélecteur de période. */
@@ -92,6 +99,85 @@ export default function Historique() {
         .reverse(),
     [data],
   );
+
+  // --- Évolution d'une dépense, mission par mission -----------------------
+  //
+  // La liste complète (toutes années confondues, dédoublonnée par slug) plutôt
+  // que celle de la dernière année : une mission créée puis supprimée est
+  // précisément un cas que cette page sert à explorer, et la restreindre à
+  // l'exercice en cours la rendrait invisible. Coût assumé : ~90 Ko contre 6,
+  // en une requête mise en cache pour la session.
+  const { data: toutesMissions } = useMissions();
+
+  const missionsSelectionnables = useMemo(() => {
+    // Un même slug apparaît une fois par année, avec le libellé officiel de
+    // cette année-là. On garde celui de l'année la plus récente : c'est le nom
+    // sous lequel la mission se cherche aujourd'hui.
+    const parSlug = new Map<string, { slug: string; nomOfficiel: string; annee: number }>();
+    (toutesMissions ?? []).forEach((mission) => {
+      const connue = parSlug.get(mission.slug);
+      if (connue === undefined || mission.annee > connue.annee) {
+        parSlug.set(mission.slug, {
+          slug: mission.slug,
+          nomOfficiel: mission.nomOfficiel,
+          annee: mission.annee,
+        });
+      }
+    });
+    return Array.from(parSlug.values()).sort((a, b) => a.nomOfficiel.localeCompare(b.nomOfficiel));
+  }, [toutesMissions]);
+
+  const [searchParamsInitiaux] = useSearchParams();
+  const [missionChoisie, setMissionChoisie] = useState<string>(
+    () => searchParamsInitiaux.get('mission') ?? '',
+  );
+
+  // Sans choix explicite, la plus grosse mission du dernier exercice : c'est
+  // la courbe la plus parlante à l'ouverture, et jamais un choix arbitraire.
+  const missionParDefaut = useMemo(() => {
+    const derniereAnnee = (toutesMissions ?? []).reduce((max, m) => Math.max(max, m.annee), 0);
+    return (toutesMissions ?? [])
+      .filter((mission) => mission.annee === derniereAnnee)
+      .reduce<string | undefined>(
+        (meilleure, mission, _index, liste) =>
+          mission.montantTotal === Math.max(...liste.map((m) => m.montantTotal))
+            ? mission.slug
+            : meilleure,
+        undefined,
+      );
+  }, [toutesMissions]);
+
+  const missionActive = missionChoisie || missionParDefaut || '';
+  const { data: historiqueMission } = useMissionHistorique(missionActive || undefined);
+
+  // Un paramètre d'URL n'est écrit que sur un choix explicite : la valeur par
+  // défaut ne doit pas se figer dans l'URL partagée, sinon elle survivrait à
+  // un changement de données.
+  useSyncSearchParams({ mission: missionChoisie || undefined });
+
+  const serieMission = useMemo(() => {
+    const points = (historiqueMission ?? [])
+      .slice()
+      .sort((a, b) => a.annee - b.annee)
+      .map((item) => ({ annee: item.annee, montant: item.montantTotal }));
+    // Même fenêtre que le reste de la page : le sélecteur de période en tête
+    // pilote tous les graphiques, sinon deux graphiques côte à côte
+    // couvriraient des périodes différentes sans le dire.
+    return periode === 'tout' ? points : points.slice(-periode);
+  }, [historiqueMission, periode]);
+
+  const nomMissionActive =
+    missionsSelectionnables.find((mission) => mission.slug === missionActive)?.nomOfficiel ?? '';
+
+  // Évolution sur la fenêtre affichée, jamais sur la série complète : le
+  // chiffre doit suivre ce que le graphique montre.
+  const evolutionMission = useMemo(() => {
+    if (serieMission.length < 2) return undefined;
+    const premier = serieMission[0];
+    const dernier = serieMission[serieMission.length - 1];
+    if (premier.montant <= 0) return undefined;
+    return { premier, dernier, ratio: dernier.montant / premier.montant - 1 };
+  }, [serieMission]);
 
   const handleExportCsv = () => {
     exportCsv(data, 'historique-depenses-recettes-deficit.csv', [
@@ -212,6 +298,56 @@ export default function Historique() {
           courbe serait écrasée et quasi illisible. */}
       <Card title="Solde budgétaire">
         <LineChart data={data} series={SERIES_SOLDE} nomFichierExport="historique-solde.png" />
+      </Card>
+
+      {/* Du général au particulier : les totaux de l'État d'abord, puis une
+          dépense choisie. */}
+      <Card
+        title="Évolution d'une dépense"
+        note={
+          evolutionMission
+            ? `${evolutionMission.premier.annee} → ${evolutionMission.dernier.annee} : ${
+                evolutionMission.ratio >= 0 ? '+' : ''
+              }${formatPct(evolutionMission.ratio)}`
+            : undefined
+        }
+        actions={
+          <label
+            htmlFor="mission-historique"
+            className="flex items-center gap-2 text-[13px] text-ink-muted"
+          >
+            <span className="whitespace-nowrap">Mission</span>
+            <select
+              id="mission-historique"
+              value={missionActive}
+              onChange={(event) => setMissionChoisie(event.target.value)}
+              className="h-8 max-w-[19rem] rounded-md border border-line-strong bg-surface px-2
+                text-[13px] font-semibold text-ink"
+            >
+              {missionsSelectionnables.map((mission) => (
+                <option key={mission.slug} value={mission.slug}>
+                  {mission.nomOfficiel}
+                </option>
+              ))}
+            </select>
+          </label>
+        }
+        footer={
+          serieMission.length > 0
+            ? `${nomMissionActive} — ${serieMission.length} exercice${
+                serieMission.length > 1 ? 's' : ''
+              } de ${serieMission[0].annee} à ${serieMission[serieMission.length - 1].annee}. ` +
+              'Crédits de paiement du budget général, périmètre identique à celui des totaux ' +
+              'ci-dessus. Une mission absente d’un exercice n’y apparaît pas : la série ' +
+              'commence à sa création et s’arrête à sa suppression ou à son renommage.'
+            : undefined
+        }
+      >
+        <LineChart
+          data={serieMission}
+          series={SERIES_MISSION}
+          nomFichierExport={`historique-${missionActive || 'mission'}.png`}
+        />
       </Card>
 
       {lignes.length > 0 && (

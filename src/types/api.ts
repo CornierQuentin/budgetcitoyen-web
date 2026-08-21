@@ -38,6 +38,7 @@ export interface MissionResponseDto {
 export interface MissionHistoriqueItemDto {
   annee: number;
   nom_officiel: string;
+  montant_total: number;
 }
 
 export interface ActionDetailItemDto {

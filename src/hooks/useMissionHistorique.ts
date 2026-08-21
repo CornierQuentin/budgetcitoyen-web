@@ -4,8 +4,10 @@ import { apiClient } from '../services/apiClient';
 import type { MissionHistoriqueItem } from '../types/domain';
 
 /**
- * Récupère l'historique des libellés officiels d'une mission (l'API ne
- * fournit pas de série de montants par année sur cet endpoint).
+ * Récupère la série annuelle d'une mission : son montant (crédits de
+ * paiement) et son libellé officiel, année par année. Le libellé fait partie
+ * de la série et n'est pas déduit une fois pour toutes : une mission gardant
+ * le même slug peut être renommée d'une loi de finances à l'autre.
  */
 export function useMissionHistorique(slug: string | undefined, de?: number, a?: number) {
   return useQuery({

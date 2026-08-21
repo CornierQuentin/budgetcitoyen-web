@@ -17,8 +17,8 @@ const mockedGet = vi.mocked(apiClient.get);
 describe('useMissionHistorique', () => {
   it('appelle GET /missions/{slug}/historique avec de et a, et mappe la réponse en camelCase', async () => {
     const fixture: MissionHistoriqueItemDto[] = [
-      { annee: 2020, nom_officiel: 'Défense (ancien libellé)' },
-      { annee: 2023, nom_officiel: 'Défense' },
+      { annee: 2020, nom_officiel: 'Défense (ancien libellé)', montant_total: 47_700_000_000 },
+      { annee: 2023, nom_officiel: 'Défense', montant_total: 53_100_000_000 },
     ];
     mockedGet.mockResolvedValueOnce({ data: camelizeKeys(fixture) });
 
@@ -33,8 +33,8 @@ describe('useMissionHistorique', () => {
     });
 
     const expected: MissionHistoriqueItem[] = [
-      { annee: 2020, nomOfficiel: 'Défense (ancien libellé)' },
-      { annee: 2023, nomOfficiel: 'Défense' },
+      { annee: 2020, nomOfficiel: 'Défense (ancien libellé)', montantTotal: 47_700_000_000 },
+      { annee: 2023, nomOfficiel: 'Défense', montantTotal: 53_100_000_000 },
     ];
     expect(result.current.data).toEqual(expected);
   });
