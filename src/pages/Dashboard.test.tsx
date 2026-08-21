@@ -154,6 +154,29 @@ describe('Dashboard', () => {
     expect(screen.getByText('Page mission')).toBeInTheDocument();
   });
 
+  it('ouvre la mission au clic sur toute la ligne, pas seulement sur son nom', () => {
+    renderDashboard();
+
+    const ligne = within(screen.getByRole('table')).getAllByRole('row')[1];
+    // Le montant, pas le lien : c'est précisément ce que le clic sur le nom
+    // seul ne couvrait pas.
+    fireEvent.click(within(ligne).getByText('50 Md€'));
+
+    expect(screen.getByText('Page mission')).toBeInTheDocument();
+  });
+
+  it('ne navigue pas quand le clic conclut une sélection de texte', () => {
+    renderDashboard();
+
+    const selection = { toString: () => '50 Md€' } as Selection;
+    vi.spyOn(window, 'getSelection').mockReturnValue(selection);
+
+    const ligne = within(screen.getByRole('table')).getAllByRole('row')[1];
+    fireEvent.click(within(ligne).getByText('50 Md€'));
+
+    expect(screen.queryByText('Page mission')).not.toBeInTheDocument();
+  });
+
   it('met à jour l’année sélectionnée (et l’URL) quand l’utilisateur change le sélecteur', () => {
     renderDashboard();
 
