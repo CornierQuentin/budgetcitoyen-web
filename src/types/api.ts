@@ -55,6 +55,8 @@ export interface ProgrammeDetailItemDto {
   nom: string;
   montant_total: number;
   actions: ActionDetailItemDto[];
+  code_officiel: boolean;
+  actions_detaillees: boolean;
 }
 
 export interface MissionDetailResponseDto {

@@ -53,6 +53,18 @@ export interface ProgrammeDetail {
   nom: string;
   montantTotal: number;
   actions: ActionDetail[];
+  /**
+   * Faux quand `code` est une clé interne et non un numéro de programme
+   * publié : l'annexe « État B » de la LFI parue au Journal officiel (années
+   * 2015 et 2026) ne fournit pas ces numéros. Calculé par l'API, à qui la
+   * convention appartient.
+   */
+  codeOfficiel: boolean;
+  /**
+   * Faux quand `actions` ne contient qu'une action de remplissage, qui reprend
+   * le code et le libellé de son programme — même source, même limite.
+   */
+  actionsDetaillees: boolean;
 }
 
 export interface MissionDetail {
