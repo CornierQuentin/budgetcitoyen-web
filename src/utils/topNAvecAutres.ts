@@ -5,6 +5,22 @@
 // appelant (Dashboard), que la décision « combien de tranches distinctes »
 // est prise.
 
+/**
+ * Nombre maximal de tranches distinctes d'un camembert de répartition, le
+ * reste étant regroupé dans « Autres ».
+ *
+ * Une seule valeur pour tous les camemberts du site : trois pages traçaient
+ * la même chose avec trois plafonds différents (8 missions, 9 catégories
+ * d'impôt, 10 divisions d'achat), sans qu'aucune raison ne distingue les
+ * cas — un lecteur passant d'une page à l'autre n'a aucun moyen de savoir
+ * que « Autres » ne recouvre pas la même chose.
+ *
+ * 10 plutôt que 8 : c'est la valeur qui laisse le plus de catégories
+ * nommées tout en restant lisible, vérifiée sur le cas le plus dense (les
+ * 46 divisions d'achat des marchés publics).
+ */
+export const NB_TRANCHES_MAX_CAMEMBERT = 10;
+
 export interface ItemAgregeable {
   label: string;
   value: number;
